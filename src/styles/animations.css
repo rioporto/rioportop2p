@@ -1,0 +1,223 @@
+/* Animações Skeumórficas - Rio Porto P2P */
+
+/* Animação de desbloqueio de cofre */
+@keyframes cofre-unlock {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-90deg); }
+  50% { transform: rotate(-180deg); }
+  75% { transform: rotate(-270deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* Brilho metálico */
+@keyframes shine {
+  0% { 
+    opacity: 0;
+    transform: translateX(-100%) rotate(45deg);
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    opacity: 0;
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+/* Pulsação de LED */
+@keyframes led-pulse {
+  0% { box-shadow: 0 0 4px currentColor; }
+  50% { box-shadow: 0 0 16px currentColor, 0 0 24px currentColor; }
+  100% { box-shadow: 0 0 4px currentColor; }
+}
+
+/* Pressão de botão */
+@keyframes button-press {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(2px); }
+}
+
+/* Fade in suave */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scale up suave */
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Rotação de moeda */
+@keyframes coin-flip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+/* Vibração de erro */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+/* Loading de cofre */
+@keyframes vault-loading {
+  0% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9) rotate(360deg);
+    opacity: 0.8;
+  }
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Bounce suave */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Rotação de engrenagem */
+@keyframes gear-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Classes de animação utilitárias */
+.animate-cofre-unlock {
+  animation: cofre-unlock 2s ease-in-out;
+}
+
+.animate-shine {
+  animation: shine 0.5s ease-in-out;
+}
+
+.animate-led-pulse {
+  animation: led-pulse 2s ease-in-out infinite;
+}
+
+.animate-button-press {
+  animation: button-press 0.1s ease;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-scaleUp {
+  animation: scaleUp 0.3s ease-out;
+}
+
+.animate-coin-flip {
+  animation: coin-flip 1s ease-in-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-vault-loading {
+  animation: vault-loading 2s ease-in-out infinite;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.3s ease-out;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.3s ease-out;
+}
+
+.animate-bounce {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+.animate-gear-rotate {
+  animation: gear-rotate 10s linear infinite;
+}
+
+/* Durações de animação */
+.animation-duration-200 {
+  animation-duration: 200ms;
+}
+
+.animation-duration-300 {
+  animation-duration: 300ms;
+}
+
+.animation-duration-500 {
+  animation-duration: 500ms;
+}
+
+.animation-duration-1000 {
+  animation-duration: 1000ms;
+}
+
+/* Delays de animação */
+.animation-delay-100 {
+  animation-delay: 100ms;
+}
+
+.animation-delay-200 {
+  animation-delay: 200ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}

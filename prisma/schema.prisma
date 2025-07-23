@@ -1,0 +1,1093 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// Enums
+enum KYCLevel {
+  PLATFORM_ACCESS // Level 0: Email + Nome
+  BASIC           // Level 1: + CPF
+  INTERMEDIATE    // Level 2: + Documento + Endereço
+  ADVANCED        // Level 3: + Selfie com documento
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum TwoFactorMethod {
+  SMS
+  TOTP
+  EMAIL
+}
+
+enum DocumentType {
+  RG
+  CNH
+  PASSPORT
+  PROOF_OF_RESIDENCE
+}
+
+enum ValidationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum WalletType {
+  HOT
+  WARM
+  COLD
+}
+
+enum WalletStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+  FROZEN
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  INTERNAL
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMING
+  CONFIRMED
+  FAILED
+}
+
+enum OrderType {
+  MARKET
+  LIMIT
+  STOP
+  STOP_LIMIT
+}
+
+enum OrderSide {
+  BUY
+  SELL
+}
+
+enum TimeInForce {
+  GTC // Good Till Cancelled
+  IOC // Immediate or Cancel
+  FOK // Fill or Kill
+  GTD // Good Till Date
+}
+
+enum OrderStatus {
+  NEW
+  PARTIALLY_FILLED
+  FILLED
+  CANCELLED
+  EXPIRED
+  REJECTED
+}
+
+enum TradeMode {
+  P2P
+  B2P
+  OTC
+}
+
+enum PaymentType {
+  PIX
+  BANK_TRANSFER
+  CREDIT_CARD
+  DEBIT_CARD
+}
+
+enum PixKeyType {
+  CPF
+  EMAIL
+  PHONE
+  RANDOM
+}
+
+enum P2PAdType {
+  BUY
+  SELL
+}
+
+enum PriceType {
+  FIXED
+  MARGIN
+}
+
+enum P2PAdStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+enum P2PTradeStatus {
+  CREATED
+  PAYMENT_PENDING
+  PAYMENT_CONFIRMED
+  RELEASED
+  COMPLETED
+  CANCELLED
+  DISPUTED
+  EXPIRED
+}
+
+enum AnalysisType {
+  TRANSACTION_PATTERN
+  VOLUME_SPIKE
+  VELOCITY_CHECK
+  PEP_SCREENING
+  SANCTIONS_CHECK
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+// Models
+
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  emailVerified      Boolean   @default(false) @map("email_verified")
+  emailVerifiedAt    DateTime? @map("email_verified_at")
+  passwordHash       String    @map("password_hash")
+  cpf                String    @unique
+  cpfVerified        Boolean   @default(false) @map("cpf_verified")
+  cpfVerifiedAt      DateTime? @map("cpf_verified_at")
+  phone              String?
+  phoneVerified      Boolean   @default(false) @map("phone_verified")
+  phoneVerifiedAt    DateTime? @map("phone_verified_at")
+  firstName          String    @map("first_name")
+  lastName           String    @map("last_name")
+  birthDate          DateTime  @map("birth_date") @db.Date
+  
+  // KYC
+  kycLevel           KYCLevel  @default(PLATFORM_ACCESS) @map("kyc_level")
+  kycSubmittedAt     DateTime? @map("kyc_submitted_at")
+  kycApprovedAt      DateTime? @map("kyc_approved_at")
+  kycRejectedAt      DateTime? @map("kyc_rejected_at")
+  kycRejectionReason String?   @map("kyc_rejection_reason")
+  
+  // 2FA
+  twoFactorEnabled   Boolean          @default(false) @map("two_factor_enabled")
+  twoFactorMethod    TwoFactorMethod? @map("two_factor_method")
+  twoFactorSecret    String?          @map("two_factor_secret")
+  
+  // Status
+  status             UserStatus @default(ACTIVE)
+  suspendedAt        DateTime?  @map("suspended_at")
+  suspensionReason   String?    @map("suspension_reason")
+  deletedAt          DateTime?  @map("deleted_at")
+  
+  // Compliance
+  pepStatus          Boolean @default(false) @map("pep_status")
+  riskScore          Decimal @default(0.00) @map("risk_score") @db.Decimal(3, 2)
+  
+  // Metadata
+  referralCode       String?  @unique @map("referral_code")
+  referredById       String?  @map("referred_by")
+  referredBy         User?    @relation("Referrals", fields: [referredById], references: [id])
+  referrals          User[]   @relation("Referrals")
+  termsAcceptedAt    DateTime @map("terms_accepted_at")
+  privacyAcceptedAt  DateTime @map("privacy_accepted_at")
+  marketingConsent   Boolean  @default(false) @map("marketing_consent")
+  
+  // Timestamps
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  profile            UserProfile?
+  documents          UserDocument[]
+  devices            UserDevice[]
+  sessions           UserSession[]
+  wallets            Wallet[]
+  orders             Order[]
+  makerTrades        Trade[]          @relation("MakerTrades")
+  takerTrades        Trade[]          @relation("TakerTrades")
+  p2pAds             P2PAd[]
+  p2pBuyerTrades     P2PTrade[]       @relation("BuyerTrades")
+  p2pSellerTrades    P2PTrade[]       @relation("SellerTrades")
+  p2pDisputeWins     P2PTrade[]       @relation("DisputeWinner")
+  paymentMethods     PaymentMethod[]
+  pixTransactions    PixTransaction[]
+  amlMonitoring      AmlMonitoring[]
+  taxReports         TaxReport[]
+  operationalLimits  OperationalLimits?
+  auditLogs          AuditLog[]       @relation("UserAuditLogs")
+  adminAuditLogs     AuditLog[]       @relation("AdminAuditLogs")
+  validatedDocuments UserDocument[]   @relation("DocumentValidator")
+  processedRecons    BankReconciliation[] @relation("ReconciliationProcessor")
+  amlActions         AmlMonitoring[]  @relation("AmlActionTaker")
+  withdrawalWhitelist WithdrawalWhitelist[]
+  
+  @@index([email])
+  @@index([cpf])
+  @@index([status])
+  @@index([kycLevel])
+  @@index([referralCode])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model UserProfile {
+  userId                   String   @id @map("user_id")
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  avatarUrl                String?  @map("avatar_url")
+  bio                      String?
+  occupation               String?
+  monthlyIncomeRange       String?  @map("monthly_income_range")
+  investmentExperience     String?  @map("investment_experience")
+  
+  // Address
+  addressStreet            String?  @map("address_street")
+  addressNumber            String?  @map("address_number")
+  addressComplement        String?  @map("address_complement")
+  addressNeighborhood      String?  @map("address_neighborhood")
+  addressCity              String?  @map("address_city")
+  addressState             String?  @map("address_state") @db.VarChar(2)
+  addressZipCode           String?  @map("address_zip_code") @db.VarChar(8)
+  addressCountry           String   @default("BR") @map("address_country") @db.VarChar(2)
+  
+  // Preferences
+  preferredLanguage        String   @default("pt-BR") @map("preferred_language")
+  preferredCurrency        String   @default("BRL") @map("preferred_currency")
+  timezone                 String   @default("America/Sao_Paulo")
+  
+  // Trading preferences
+  defaultOrderType         String   @default("LIMIT") @map("default_order_type")
+  defaultTimeInForce       String   @default("GTC") @map("default_time_in_force")
+  enableNotifications      Boolean  @default(true) @map("enable_notifications")
+  enableEmailNotifications Boolean  @default(true) @map("enable_email_notifications")
+  enableSmsNotifications   Boolean  @default(false) @map("enable_sms_notifications")
+  
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+  
+  @@map("user_profiles")
+}
+
+model UserDocument {
+  id                 String           @id @default(uuid())
+  userId             String           @map("user_id")
+  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documentType       DocumentType     @map("document_type")
+  documentNumber     String?          @map("document_number")
+  documentFrontUrl   String?          @map("document_front_url")
+  documentBackUrl    String?          @map("document_back_url")
+  selfieUrl          String?          @map("selfie_url")
+  proofOfResidenceUrl String?         @map("proof_of_residence_url")
+  
+  // Validation
+  validationStatus   ValidationStatus @default(PENDING) @map("validation_status")
+  validatedAt        DateTime?        @map("validated_at")
+  validatedById      String?          @map("validated_by")
+  validatedBy        User?            @relation("DocumentValidator", fields: [validatedById], references: [id])
+  validationNotes    String?          @map("validation_notes")
+  
+  // OCR data
+  ocrData            Json?            @map("ocr_data")
+  ocrConfidence      Decimal?         @map("ocr_confidence") @db.Decimal(3, 2)
+  
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  
+  @@index([userId])
+  @@index([validationStatus])
+  @@map("user_documents")
+}
+
+model UserDevice {
+  id              String        @id @default(uuid())
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId        String        @map("device_id")
+  deviceName      String?       @map("device_name")
+  deviceType      String?       @map("device_type")
+  operatingSystem String?       @map("operating_system")
+  browser         String?
+  ipAddress       String?       @map("ip_address")
+  locationCountry String?       @map("location_country") @db.VarChar(2)
+  locationCity    String?       @map("location_city")
+  
+  // Security
+  isTrusted       Boolean       @default(false) @map("is_trusted")
+  lastUsedAt      DateTime?     @map("last_used_at")
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+  
+  // Relations
+  sessions        UserSession[]
+  
+  @@unique([userId, deviceId])
+  @@index([userId])
+  @@index([deviceId])
+  @@map("user_devices")
+}
+
+model UserSession {
+  id             String      @id @default(uuid())
+  userId         String      @map("user_id")
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId       String?     @map("device_id")
+  device         UserDevice? @relation(fields: [deviceId], references: [id])
+  tokenHash      String      @unique @map("token_hash")
+  ipAddress      String?     @map("ip_address")
+  userAgent      String?     @map("user_agent")
+  
+  // Control
+  expiresAt      DateTime    @map("expires_at")
+  revokedAt      DateTime?   @map("revoked_at")
+  revokeReason   String?     @map("revoke_reason")
+  
+  createdAt      DateTime    @default(now()) @map("created_at")
+  lastActivityAt DateTime    @default(now()) @map("last_activity_at")
+  
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+  @@map("user_sessions")
+}
+
+model Wallet {
+  id                     String                   @id @default(uuid())
+  userId                 String                   @map("user_id")
+  user                   User                     @relation(fields: [userId], references: [id], onDelete: Restrict)
+  currency               String
+  walletType             WalletType               @default(HOT) @map("wallet_type")
+  
+  // Addresses
+  address                String                   @unique
+  tag                    String?                  // For XRP, XLM, etc
+  
+  // Keys (encrypted)
+  encryptedPrivateKey    String?                  @map("encrypted_private_key")
+  publicKey              String?                  @map("public_key")
+  
+  // HD Derivation
+  derivationPath         String?                  @map("derivation_path")
+  walletIndex            Int?                     @map("wallet_index")
+  
+  // Status
+  status                 WalletStatus             @default(ACTIVE)
+  activatedAt            DateTime?                @map("activated_at")
+  deactivatedAt          DateTime?                @map("deactivated_at")
+  
+  // Metadata
+  label                  String?
+  isDefault              Boolean                  @default(false) @map("is_default")
+  
+  createdAt              DateTime                 @default(now()) @map("created_at")
+  updatedAt              DateTime                 @updatedAt @map("updated_at")
+  
+  // Relations
+  balance                WalletBalance?
+  blockchainTransactions BlockchainTransaction[]
+  depositAddresses       DepositAddress[]
+  
+  @@unique([userId, currency, walletIndex])
+  @@index([userId])
+  @@index([currency])
+  @@index([address])
+  @@index([status])
+  @@map("wallets")
+}
+
+model WalletBalance {
+  walletId           String   @id @map("wallet_id")
+  wallet             Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  
+  // Balances
+  availableBalance   Decimal  @default(0) @map("available_balance") @db.Decimal(36, 18)
+  lockedBalance      Decimal  @default(0) @map("locked_balance") @db.Decimal(36, 18)
+  pendingDeposit     Decimal  @default(0) @map("pending_deposit") @db.Decimal(36, 18)
+  pendingWithdrawal  Decimal  @default(0) @map("pending_withdrawal") @db.Decimal(36, 18)
+  
+  // Control
+  lastBlockHeight    BigInt?  @map("last_block_height")
+  lastSyncAt         DateTime? @map("last_sync_at")
+  
+  // Aggregates
+  totalDeposited     Decimal  @default(0) @map("total_deposited") @db.Decimal(36, 18)
+  totalWithdrawn     Decimal  @default(0) @map("total_withdrawn") @db.Decimal(36, 18)
+  depositCount       Int      @default(0) @map("deposit_count")
+  withdrawalCount    Int      @default(0) @map("withdrawal_count")
+  
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  
+  @@map("wallet_balances")
+}
+
+model BlockchainTransaction {
+  id               String            @id @default(uuid())
+  walletId         String            @map("wallet_id")
+  wallet           Wallet            @relation(fields: [walletId], references: [id])
+  transactionType  TransactionType   @map("transaction_type")
+  
+  // Blockchain data
+  txHash           String            @map("tx_hash")
+  blockHash        String?           @map("block_hash")
+  blockHeight      BigInt?           @map("block_height")
+  confirmations    Int               @default(0)
+  
+  // Transaction details
+  fromAddress      String?           @map("from_address")
+  toAddress        String?           @map("to_address")
+  amount           Decimal           @map("amount") @db.Decimal(36, 18)
+  fee              Decimal?          @db.Decimal(36, 18)
+  gasUsed          BigInt?           @map("gas_used")
+  gasPrice         Decimal?          @map("gas_price") @db.Decimal(36, 18)
+  
+  // Status
+  status           TransactionStatus @default(PENDING)
+  confirmedAt      DateTime?         @map("confirmed_at")
+  failedAt         DateTime?         @map("failed_at")
+  failureReason    String?           @map("failure_reason")
+  
+  // Metadata
+  memo             String?
+  rawTransaction   Json?             @map("raw_transaction")
+  
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  
+  @@index([walletId])
+  @@index([txHash])
+  @@index([status])
+  @@index([transactionType])
+  @@index([createdAt])
+  @@map("blockchain_transactions")
+}
+
+model DepositAddress {
+  id         String   @id @default(uuid())
+  walletId   String   @map("wallet_id")
+  wallet     Wallet   @relation(fields: [walletId], references: [id])
+  address    String   @unique
+  tag        String?
+  
+  // Control
+  isActive   Boolean  @default(true) @map("is_active")
+  usedCount  Int      @default(0) @map("used_count")
+  lastUsedAt DateTime? @map("last_used_at")
+  expiresAt  DateTime? @map("expires_at")
+  
+  // QR Code
+  qrCodeUrl  String?  @map("qr_code_url")
+  
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  @@unique([walletId, address])
+  @@index([walletId])
+  @@index([address])
+  @@index([isActive])
+  @@map("deposit_addresses")
+}
+
+model WithdrawalWhitelist {
+  id                     String    @id @default(uuid())
+  userId                 String    @map("user_id")
+  user                   User      @relation(fields: [userId], references: [id])
+  currency               String
+  address                String
+  tag                    String?
+  label                  String
+  
+  // Validation
+  isVerified             Boolean   @default(false) @map("is_verified")
+  verifiedAt             DateTime? @map("verified_at")
+  verificationCode       String?   @map("verification_code") @db.VarChar(6)
+  verificationExpiresAt  DateTime? @map("verification_expires_at")
+  
+  // Control
+  isActive               Boolean   @default(true) @map("is_active")
+  lastUsedAt             DateTime? @map("last_used_at")
+  useCount               Int       @default(0) @map("use_count")
+  
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  
+  @@unique([userId, currency, address])
+  @@index([userId])
+  @@index([currency])
+  @@index([isActive])
+  @@map("withdrawal_whitelist")
+}
+
+model TradingPair {
+  id              String   @id @default(uuid())
+  symbol          String   @unique
+  baseCurrency    String   @map("base_currency")
+  quoteCurrency   String   @map("quote_currency")
+  
+  // Configuration
+  isActive        Boolean  @default(true) @map("is_active")
+  tradingEnabled  Boolean  @default(true) @map("trading_enabled")
+  
+  // Limits
+  minOrderSize    Decimal  @map("min_order_size") @db.Decimal(36, 18)
+  maxOrderSize    Decimal  @map("max_order_size") @db.Decimal(36, 18)
+  minPrice        Decimal  @map("min_price") @db.Decimal(36, 18)
+  maxPrice        Decimal  @map("max_price") @db.Decimal(36, 18)
+  pricePrecision  Int      @map("price_precision")
+  quantityPrecision Int    @map("quantity_precision")
+  
+  // Fees
+  makerFee        Decimal  @default(0.0010) @map("maker_fee") @db.Decimal(6, 4)
+  takerFee        Decimal  @default(0.0015) @map("taker_fee") @db.Decimal(6, 4)
+  
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  orders          Order[]
+  trades          Trade[]
+  
+  @@unique([baseCurrency, quoteCurrency])
+  @@index([symbol])
+  @@index([isActive])
+  @@map("trading_pairs")
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  userId            String      @map("user_id")
+  user              User        @relation(fields: [userId], references: [id])
+  tradingPairId     String      @map("trading_pair_id")
+  tradingPair       TradingPair @relation(fields: [tradingPairId], references: [id])
+  
+  // Type and side
+  orderType         OrderType
+  side              OrderSide
+  timeInForce       TimeInForce @default(GTC) @map("time_in_force")
+  
+  // Values
+  quantity          Decimal     @db.Decimal(36, 18)
+  price             Decimal?    @db.Decimal(36, 18)
+  stopPrice         Decimal?    @map("stop_price") @db.Decimal(36, 18)
+  
+  // Execution
+  filledQuantity    Decimal     @default(0) @map("filled_quantity") @db.Decimal(36, 18)
+  averagePrice      Decimal?    @map("average_price") @db.Decimal(36, 18)
+  commission        Decimal     @default(0) @db.Decimal(36, 18)
+  commissionCurrency String?    @map("commission_currency")
+  
+  // Status
+  status            OrderStatus @default(NEW)
+  
+  // Metadata
+  clientOrderId     String?     @unique @map("client_order_id")
+  tradeMode         TradeMode   @map("trade_mode")
+  
+  // Timestamps
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  filledAt          DateTime?   @map("filled_at")
+  cancelledAt       DateTime?   @map("cancelled_at")
+  expiredAt         DateTime?   @map("expired_at")
+  
+  // Relations
+  makerTrades       Trade[]     @relation("MakerOrder")
+  takerTrades       Trade[]     @relation("TakerOrder")
+  pixTransaction    PixTransaction?
+  
+  @@index([userId])
+  @@index([tradingPairId, status])
+  @@index([createdAt])
+  @@index([status])
+  @@map("orders")
+}
+
+model Trade {
+  id               String      @id @default(uuid())
+  
+  // Orders
+  makerOrderId     String      @map("maker_order_id")
+  makerOrder       Order       @relation("MakerOrder", fields: [makerOrderId], references: [id])
+  takerOrderId     String      @map("taker_order_id")
+  takerOrder       Order       @relation("TakerOrder", fields: [takerOrderId], references: [id])
+  makerUserId      String      @map("maker_user_id")
+  makerUser        User        @relation("MakerTrades", fields: [makerUserId], references: [id])
+  takerUserId      String      @map("taker_user_id")
+  takerUser        User        @relation("TakerTrades", fields: [takerUserId], references: [id])
+  
+  // Trade details
+  tradingPairId    String      @map("trading_pair_id")
+  tradingPair      TradingPair @relation(fields: [tradingPairId], references: [id])
+  price            Decimal     @db.Decimal(36, 18)
+  quantity         Decimal     @db.Decimal(36, 18)
+  quoteQuantity    Decimal     @map("quote_quantity") @db.Decimal(36, 18)
+  
+  // Fees
+  makerFee         Decimal     @map("maker_fee") @db.Decimal(36, 18)
+  takerFee         Decimal     @map("taker_fee") @db.Decimal(36, 18)
+  makerFeeCurrency String      @map("maker_fee_currency")
+  takerFeeCurrency String      @map("taker_fee_currency")
+  
+  // Metadata
+  tradeMode        TradeMode   @map("trade_mode")
+  
+  executedAt       DateTime    @default(now()) @map("executed_at")
+  
+  @@index([makerOrderId])
+  @@index([takerOrderId])
+  @@index([makerUserId])
+  @@index([takerUserId])
+  @@index([tradingPairId])
+  @@index([executedAt])
+  @@map("trades")
+}
+
+model P2PAd {
+  id                  String      @id @default(uuid())
+  userId              String      @map("user_id")
+  user                User        @relation(fields: [userId], references: [id])
+  
+  // Ad configuration
+  adType              P2PAdType   @map("ad_type")
+  currency            String
+  fiatCurrency        String      @default("BRL") @map("fiat_currency")
+  
+  // Price
+  priceType           PriceType   @map("price_type")
+  fixedPrice          Decimal?    @map("fixed_price") @db.Decimal(20, 2)
+  marginPercent       Decimal?    @map("margin_percent") @db.Decimal(6, 2)
+  
+  // Limits
+  minAmount           Decimal     @map("min_amount") @db.Decimal(20, 2)
+  maxAmount           Decimal     @map("max_amount") @db.Decimal(20, 2)
+  availableAmount     Decimal     @map("available_amount") @db.Decimal(36, 18)
+  
+  // Payment methods
+  paymentMethods      Json        @map("payment_methods")
+  paymentTimeLimit    Int         @default(15) @map("payment_time_limit") // minutes
+  
+  // Terms
+  terms               String?
+  autoReplyMessage    String?     @map("auto_reply_message")
+  
+  // Restrictions
+  requireKycLevel     KYCLevel?   @map("require_kyc_level")
+  minTrades           Int         @default(0) @map("min_trades")
+  minCompletionRate   Decimal     @default(0) @map("min_completion_rate") @db.Decimal(5, 2)
+  blockedUsers        String[]    @default([]) @map("blocked_users")
+  
+  // Status
+  status              P2PAdStatus @default(ACTIVE)
+  
+  // Statistics
+  totalTrades         Int         @default(0) @map("total_trades")
+  successfulTrades    Int         @default(0) @map("successful_trades")
+  averageReleaseTime  Int?        @map("average_release_time") // seconds
+  
+  createdAt           DateTime    @default(now()) @map("created_at")
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+  
+  // Relations
+  trades              P2PTrade[]
+  
+  @@index([userId])
+  @@index([currency])
+  @@index([adType])
+  @@index([status])
+  @@index([currency, adType, status])
+  @@map("p2p_ads")
+}
+
+model P2PTrade {
+  id                  String         @id @default(uuid())
+  adId                String         @map("ad_id")
+  ad                  P2PAd          @relation(fields: [adId], references: [id])
+  buyerId             String         @map("buyer_id")
+  buyer               User           @relation("BuyerTrades", fields: [buyerId], references: [id])
+  sellerId            String         @map("seller_id")
+  seller              User           @relation("SellerTrades", fields: [sellerId], references: [id])
+  
+  // Values
+  cryptoAmount        Decimal        @map("crypto_amount") @db.Decimal(36, 18)
+  fiatAmount          Decimal        @map("fiat_amount") @db.Decimal(20, 2)
+  price               Decimal        @db.Decimal(20, 2)
+  feeAmount           Decimal        @map("fee_amount") @db.Decimal(36, 18)
+  
+  // Payment
+  paymentMethod       Json           @map("payment_method")
+  paymentReference    String?        @map("payment_reference")
+  
+  // Status and timestamps
+  status              P2PTradeStatus @default(CREATED)
+  
+  createdAt           DateTime       @default(now()) @map("created_at")
+  paymentConfirmedAt  DateTime?      @map("payment_confirmed_at")
+  cryptoReleasedAt    DateTime?      @map("crypto_released_at")
+  completedAt         DateTime?      @map("completed_at")
+  cancelledAt         DateTime?      @map("cancelled_at")
+  disputedAt          DateTime?      @map("disputed_at")
+  
+  // Time control
+  paymentDeadline     DateTime       @map("payment_deadline")
+  autoCancelAt        DateTime?      @map("auto_cancel_at")
+  
+  // Dispute
+  disputeReason       String?        @map("dispute_reason")
+  disputeResolvedAt   DateTime?      @map("dispute_resolved_at")
+  disputeWinnerId     String?        @map("dispute_winner_id")
+  disputeWinner       User?          @relation("DisputeWinner", fields: [disputeWinnerId], references: [id])
+  
+  // Chat
+  chatEnabled         Boolean        @default(true) @map("chat_enabled")
+  
+  // Relations
+  pixTransaction      PixTransaction?
+  
+  @@index([adId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("p2p_trades")
+}
+
+model PaymentMethod {
+  id                  String          @id @default(uuid())
+  userId              String          @map("user_id")
+  user                User            @relation(fields: [userId], references: [id])
+  
+  // Type and details
+  paymentType         PaymentType     @map("payment_type")
+  provider            String
+  
+  // Encrypted data
+  encryptedDetails    Json            @map("encrypted_details")
+  displayName         String          @map("display_name")
+  
+  // PIX specific
+  pixKeyType          PixKeyType?     @map("pix_key_type")
+  pixKeyValue         String?         @map("pix_key_value")
+  
+  // Validation
+  isVerified          Boolean         @default(false) @map("is_verified")
+  verifiedAt          DateTime?       @map("verified_at")
+  verificationMethod  String?         @map("verification_method")
+  
+  // Status
+  isActive            Boolean         @default(true) @map("is_active")
+  isDefault           Boolean         @default(false) @map("is_default")
+  
+  // Limits
+  dailyLimit          Decimal?        @map("daily_limit") @db.Decimal(20, 2)
+  monthlyLimit        Decimal?        @map("monthly_limit") @db.Decimal(20, 2)
+  
+  // Usage
+  lastUsedAt          DateTime?       @map("last_used_at")
+  useCount            Int             @default(0) @map("use_count")
+  
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+  
+  // Relations
+  pixTransactions     PixTransaction[]
+  
+  @@index([userId])
+  @@index([paymentType])
+  @@index([isActive])
+  @@map("payment_methods")
+}
+
+model PixTransaction {
+  id                  String         @id @default(uuid())
+  
+  // References
+  userId              String         @map("user_id")
+  user                User           @relation(fields: [userId], references: [id])
+  paymentMethodId     String?        @map("payment_method_id")
+  paymentMethod       PaymentMethod? @relation(fields: [paymentMethodId], references: [id])
+  orderId             String?        @unique @map("order_id")
+  order               Order?         @relation(fields: [orderId], references: [id])
+  p2pTradeId          String?        @unique @map("p2p_trade_id")
+  p2pTrade            P2PTrade?      @relation(fields: [p2pTradeId], references: [id])
+  
+  // Type and direction
+  transactionType     String         @map("transaction_type")
+  direction           String
+  
+  // Values
+  amount              Decimal        @db.Decimal(20, 2)
+  fee                 Decimal        @default(0) @db.Decimal(20, 2)
+  
+  // PIX data
+  pixId               String?        @unique @map("pix_id")
+  endToEndId          String?        @map("end_to_end_id") @db.VarChar(32)
+  txid                String?        @db.VarChar(35)
+  
+  // QR Code
+  qrCode              String?        @map("qr_code")
+  qrCodeImage         String?        @map("qr_code_image")
+  
+  // Payer/Receiver info
+  payerName           String?        @map("payer_name")
+  payerCpf            String?        @map("payer_cpf") @db.VarChar(11)
+  receiverName        String?        @map("receiver_name")
+  receiverCpf         String?        @map("receiver_cpf") @db.VarChar(11)
+  
+  // Status
+  status              String         @default("PENDING")
+  
+  // Timestamps
+  createdAt           DateTime       @default(now()) @map("created_at")
+  paidAt              DateTime?      @map("paid_at")
+  confirmedAt         DateTime?      @map("confirmed_at")
+  failedAt            DateTime?      @map("failed_at")
+  refundedAt          DateTime?      @map("refunded_at")
+  
+  // Mercado Pago
+  mpPaymentId         String?        @map("mp_payment_id")
+  mpStatus            String?        @map("mp_status")
+  mpStatusDetail      String?        @map("mp_status_detail")
+  mpWebhookData       Json?          @map("mp_webhook_data")
+  
+  // Control
+  expiresAt           DateTime?      @map("expires_at")
+  idempotencyKey      String?        @unique @map("idempotency_key")
+  
+  @@index([userId])
+  @@index([status])
+  @@index([pixId])
+  @@index([mpPaymentId])
+  @@index([createdAt])
+  @@map("pix_transactions")
+}
+
+model BankReconciliation {
+  id                  String    @id @default(uuid())
+  
+  // Period
+  reconciliationDate  DateTime  @map("reconciliation_date") @db.Date
+  bankAccount         String    @map("bank_account")
+  
+  // Values
+  openingBalance      Decimal   @map("opening_balance") @db.Decimal(20, 2)
+  totalCredits        Decimal   @map("total_credits") @db.Decimal(20, 2)
+  totalDebits         Decimal   @map("total_debits") @db.Decimal(20, 2)
+  closingBalance      Decimal   @map("closing_balance") @db.Decimal(20, 2)
+  
+  // Count
+  transactionCount    Int       @map("transaction_count")
+  matchedCount        Int       @map("matched_count")
+  unmatchedCount      Int       @map("unmatched_count")
+  
+  // Status
+  status              String    @default("PENDING")
+  
+  // File
+  statementFileUrl    String?   @map("statement_file_url")
+  
+  // Processing
+  processedById       String?   @map("processed_by")
+  processedBy         User?     @relation("ReconciliationProcessor", fields: [processedById], references: [id])
+  processedAt         DateTime? @map("processed_at")
+  notes               String?
+  
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  @@unique([reconciliationDate, bankAccount])
+  @@index([reconciliationDate])
+  @@index([status])
+  @@map("bank_reconciliation")
+}
+
+model AmlMonitoring {
+  id                    String       @id @default(uuid())
+  userId                String       @map("user_id")
+  user                  User         @relation(fields: [userId], references: [id])
+  
+  // Analysis
+  analysisType          AnalysisType @map("analysis_type")
+  riskScore             Decimal      @map("risk_score") @db.Decimal(3, 2)
+  riskLevel             RiskLevel    @map("risk_level")
+  
+  // Indicators
+  indicators            Json
+  
+  // Action
+  actionRequired        Boolean      @default(false) @map("action_required")
+  actionTaken           String?      @map("action_taken")
+  actionTakenAt         DateTime?    @map("action_taken_at")
+  actionTakenById       String?      @map("action_taken_by")
+  actionTakenBy         User?        @relation("AmlActionTaker", fields: [actionTakenById], references: [id])
+  
+  // Report
+  reportGenerated       Boolean      @default(false) @map("report_generated")
+  reportFileUrl         String?      @map("report_file_url")
+  reportedToAuthorities Boolean      @default(false) @map("reported_to_authorities")
+  reportedAt            DateTime?    @map("reported_at")
+  
+  createdAt             DateTime     @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@index([riskLevel])
+  @@index([createdAt])
+  @@map("aml_monitoring")
+}
+
+model TaxReport {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  user              User     @relation(fields: [userId], references: [id])
+  
+  // Period
+  taxYear           Int      @map("tax_year")
+  startDate         DateTime @map("start_date") @db.Date
+  endDate           DateTime @map("end_date") @db.Date
+  
+  // Summary
+  totalBuyVolume    Decimal  @map("total_buy_volume") @db.Decimal(20, 2)
+  totalSellVolume   Decimal  @map("total_sell_volume") @db.Decimal(20, 2)
+  totalFeesPaid     Decimal  @map("total_fees_paid") @db.Decimal(20, 2)
+  
+  // Gains/Losses
+  realizedGains     Decimal  @map("realized_gains") @db.Decimal(20, 2)
+  realizedLosses    Decimal  @map("realized_losses") @db.Decimal(20, 2)
+  netGainLoss       Decimal  @map("net_gain_loss") @db.Decimal(20, 2)
+  
+  // Currency details
+  currencyDetails   Json     @map("currency_details")
+  
+  // Files
+  reportFileUrl     String?  @map("report_file_url")
+  xmlFileUrl        String?  @map("xml_file_url")
+  
+  // Status
+  status            String   @default("PENDING")
+  generatedAt       DateTime? @map("generated_at")
+  sentToUserAt      DateTime? @map("sent_to_user_at")
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  @@unique([userId, taxYear])
+  @@index([userId])
+  @@index([taxYear])
+  @@index([status])
+  @@map("tax_reports")
+}
+
+model OperationalLimits {
+  id                      String   @id @default(uuid())
+  userId                  String   @unique @map("user_id")
+  user                    User     @relation(fields: [userId], references: [id])
+  
+  // Daily limits
+  dailyWithdrawalLimit    Decimal  @default(10000.00) @map("daily_withdrawal_limit") @db.Decimal(20, 2)
+  dailyDepositLimit       Decimal  @default(50000.00) @map("daily_deposit_limit") @db.Decimal(20, 2)
+  dailyTradingLimit       Decimal  @default(100000.00) @map("daily_trading_limit") @db.Decimal(20, 2)
+  
+  // Monthly limits
+  monthlyWithdrawalLimit  Decimal  @default(100000.00) @map("monthly_withdrawal_limit") @db.Decimal(20, 2)
+  monthlyDepositLimit     Decimal  @default(500000.00) @map("monthly_deposit_limit") @db.Decimal(20, 2)
+  monthlyTradingLimit     Decimal  @default(1000000.00) @map("monthly_trading_limit") @db.Decimal(20, 2)
+  
+  // Per transaction limits
+  maxWithdrawalAmount     Decimal  @default(50000.00) @map("max_withdrawal_amount") @db.Decimal(20, 2)
+  maxDepositAmount        Decimal  @default(100000.00) @map("max_deposit_amount") @db.Decimal(20, 2)
+  maxOrderAmount          Decimal  @default(200000.00) @map("max_order_amount") @db.Decimal(20, 2)
+  
+  // Current usage
+  dailyWithdrawalUsed     Decimal  @default(0) @map("daily_withdrawal_used") @db.Decimal(20, 2)
+  dailyDepositUsed        Decimal  @default(0) @map("daily_deposit_used") @db.Decimal(20, 2)
+  dailyTradingUsed        Decimal  @default(0) @map("daily_trading_used") @db.Decimal(20, 2)
+  
+  monthlyWithdrawalUsed   Decimal  @default(0) @map("monthly_withdrawal_used") @db.Decimal(20, 2)
+  monthlyDepositUsed      Decimal  @default(0) @map("monthly_deposit_used") @db.Decimal(20, 2)
+  monthlyTradingUsed      Decimal  @default(0) @map("monthly_trading_used") @db.Decimal(20, 2)
+  
+  // Reset dates
+  dailyResetAt            DateTime @default(now()) @map("daily_reset_at") @db.Date
+  monthlyResetAt          DateTime @default(now()) @map("monthly_reset_at") @db.Date
+  
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+  
+  @@index([userId])
+  @@map("operational_limits")
+}
+
+model AuditLog {
+  id          String    @id @default(uuid())
+  
+  // Context
+  userId      String?   @map("user_id")
+  user        User?     @relation("UserAuditLogs", fields: [userId], references: [id])
+  adminId     String?   @map("admin_id")
+  admin       User?     @relation("AdminAuditLogs", fields: [adminId], references: [id])
+  
+  // Action
+  action      String
+  entityType  String    @map("entity_type")
+  entityId    String    @map("entity_id")
+  
+  // Details
+  oldValues   Json?     @map("old_values")
+  newValues   Json?     @map("new_values")
+  metadata    Json?
+  
+  // Request info
+  ipAddress   String?   @map("ip_address")
+  userAgent   String?   @map("user_agent")
+  requestId   String?   @map("request_id")
+  
+  createdAt   DateTime  @default(now()) @map("created_at")
+  
+  @@index([createdAt])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+model SystemEvent {
+  id              String    @id @default(uuid())
+  
+  // Event
+  eventType       String    @map("event_type")
+  eventSource     String    @map("event_source")
+  eventVersion    String    @map("event_version")
+  
+  // Data
+  eventData       Json      @map("event_data")
+  
+  // Context
+  correlationId   String?   @map("correlation_id")
+  causationId     String?   @map("causation_id")
+  
+  // Processing
+  processed       Boolean   @default(false)
+  processedAt     DateTime? @map("processed_at")
+  errorCount      Int       @default(0) @map("error_count")
+  lastError       String?   @map("last_error")
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  
+  @@index([eventType])
+  @@index([processed])
+  @@index([createdAt])
+  @@index([correlationId])
+  @@map("system_events")
+}

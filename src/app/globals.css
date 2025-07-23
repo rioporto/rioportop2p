@@ -1,0 +1,308 @@
+/* Importar fontes primeiro */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Roboto+Mono:wght@400;500;600;700&family=Bebas+Neue&display=swap');
+
+/* Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Variáveis CSS do Design System */
+:root {
+  /* Cores do Cofre/Banco */
+  --azul-cofre: #1E3A5F;
+  --prata-metal: #C0C5CE;
+  --dourado-real: #FFD700;
+  --verde-cedula: #2E7D32;
+  
+  /* Cores de Confiança */
+  --azul-bancario: #0047AB;
+  --cinza-seguro: #434B5C;
+  
+  /* Estados e Feedback */
+  --verde-confirmacao: #4CAF50;
+  --amarelo-atencao: #FFC107;
+  --vermelho-alerta: #D32F2F;
+  --azul-info: #1976D2;
+  
+  /* Texturas e Sombras */
+  --sombra-suave: rgba(0,0,0,0.15);
+  --sombra-media: rgba(0,0,0,0.25);
+  --sombra-forte: rgba(0,0,0,0.35);
+  --brilho-metal: rgba(255,255,255,0.6);
+  
+  /* Cores base */
+  --primary: #0047AB;
+  --secondary: #4CAF50;
+  --accent: #FFD700;
+  --danger: #D32F2F;
+  --background: #f3f4f6;
+  --surface: #ffffff;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+}
+
+/* Reset e estilos base */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: 'Roboto', Arial, sans-serif;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Utilitários globais */
+.font-money {
+  font-family: 'Roboto Mono', 'Courier New', monospace;
+}
+
+.font-display {
+  font-family: 'Bebas Neue', 'Impact', sans-serif;
+}
+
+/* Textura de segurança para cards bancários */
+.texture-security::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255,255,255,0.03) 10px,
+      rgba(255,255,255,0.03) 20px
+    );
+  pointer-events: none;
+}
+
+/* Animação de brilho metálico */
+.shine-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shine-effect::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255,255,255,0.5) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg) translateX(-100%);
+  transition: all 0.5s;
+  opacity: 0;
+}
+
+.shine-effect:hover::before {
+  animation: shine 0.5s ease-in-out;
+}
+
+/* Classes de elevação skeumórficas */
+.elevation-1 {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.elevation-2 {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.elevation-3 {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+/* Transições suaves globais */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Scrollbar customizada */
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--prata-metal);
+  border-radius: 6px;
+  border: 2px solid var(--background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--cinza-seguro);
+}
+
+/* Focus styles acessíveis */
+:focus-visible {
+  outline: 2px solid var(--azul-bancario);
+  outline-offset: 2px;
+}
+
+/* Desabilitar outline padrão para mouse */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Animações Skeumórficas */
+
+/* Animação de desbloqueio de cofre */
+@keyframes cofre-unlock {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-90deg); }
+  50% { transform: rotate(-180deg); }
+  75% { transform: rotate(-270deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+/* Brilho metálico */
+@keyframes shine {
+  0% { 
+    opacity: 0;
+    transform: translateX(-100%) rotate(45deg);
+  }
+  50% { 
+    opacity: 1;
+  }
+  100% { 
+    opacity: 0;
+    transform: translateX(100%) rotate(45deg);
+  }
+}
+
+/* Pulsação de LED */
+@keyframes led-pulse {
+  0% { box-shadow: 0 0 4px currentColor; }
+  50% { box-shadow: 0 0 16px currentColor, 0 0 24px currentColor; }
+  100% { box-shadow: 0 0 4px currentColor; }
+}
+
+/* Pressão de botão */
+@keyframes button-press {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(2px); }
+}
+
+/* Fade in suave */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scale up suave */
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Rotação de moeda */
+@keyframes coin-flip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+/* Vibração de erro */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+/* Loading de cofre */
+@keyframes vault-loading {
+  0% {
+    transform: scale(0.9) rotate(0deg);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.05) rotate(180deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9) rotate(360deg);
+    opacity: 0.8;
+  }
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Bounce suave */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Rotação de engrenagem */
+@keyframes gear-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
