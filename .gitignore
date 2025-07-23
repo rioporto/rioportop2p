@@ -48,6 +48,10 @@ next-env.d.ts
 # Documentation (internal use only)
 /*.md
 !README.md
+!CLAUDE.md
+!ENVIRONMENT_VARIABLES.md
+!TESTING_GUIDE.md
+!DEVELOPMENT_ORCHESTRATION.md
 *.txt
 /docs/
 /documentation/
