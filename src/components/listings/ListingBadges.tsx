@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CheckIcon, SparklesIcon, ClockIcon, StarIcon, TrendingUpIcon, CrownIcon } from '@heroicons/react/24/solid';
+import { CheckIcon, SparklesIcon, ClockIcon, StarIcon, ArrowTrendingUpIcon, FireIcon } from '@heroicons/react/24/solid';
 
 export type BadgeType = 'verified' | 'top-trader' | 'fast-response' | 'new' | 'trending' | 'premium';
 
@@ -43,14 +43,14 @@ const badgeConfigs: Record<BadgeType, BadgeConfig> = {
     animation: 'animate-pulse'
   },
   trending: {
-    icon: TrendingUpIcon,
+    icon: ArrowTrendingUpIcon,
     label: 'Em Alta',
     bgGradient: 'from-red-400 to-rose-600',
     iconColor: 'text-white',
     animation: 'animate-bounce'
   },
   premium: {
-    icon: CrownIcon,
+    icon: FireIcon,
     label: 'Premium',
     bgGradient: 'from-indigo-400 via-purple-500 to-pink-500',
     iconColor: 'text-white',

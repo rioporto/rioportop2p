@@ -5,7 +5,7 @@ import PriceRangeSlider from './PriceRangeSlider';
 import CryptoSelector from './CryptoSelector';
 import PaymentMethodFilter from './PaymentMethodFilter';
 import FilterChips from './FilterChips';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'next/navigation';
 
 interface FilterState {
   priceRange: { min: number; max: number };

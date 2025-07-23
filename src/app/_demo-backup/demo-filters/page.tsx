@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FilterPanel from '@/components/filters/FilterPanel';
 import { ListingCard } from '@/components/listings';
@@ -348,10 +348,12 @@ export default function DemoFiltersPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Filter Panel */}
           <div className="lg:col-span-1">
-            <FilterPanel 
-              onFiltersChange={handleFiltersChange}
-              resultCount={filteredListings.length}
-            />
+            <Suspense fallback={<div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>}>
+              <FilterPanel 
+                onFiltersChange={handleFiltersChange}
+                resultCount={filteredListings.length}
+              />
+            </Suspense>
           </div>
 
           {/* Listings */}
