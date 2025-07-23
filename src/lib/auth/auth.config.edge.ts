@@ -4,6 +4,7 @@ import type { NextAuthConfig } from 'next-auth';
 // Não pode incluir Prisma ou outras dependências Node.js
 export const authConfigEdge: NextAuthConfig = {
   providers: [], // Providers serão adicionados no auth.ts (Node.js runtime)
+  trustHost: true,
   pages: {
     signIn: '/login',
     error: '/auth/error',

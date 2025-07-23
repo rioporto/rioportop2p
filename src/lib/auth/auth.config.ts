@@ -25,11 +25,11 @@ export const authConfig: NextAuthConfig = {
           where: { email },
         });
 
-        if (!user || !user.password) {
+        if (!user || !user.passwordHash) {
           return null;
         }
 
-        const passwordsMatch = await bcrypt.compare(password, user.password);
+        const passwordsMatch = await bcrypt.compare(password, user.passwordHash);
 
         if (!passwordsMatch) {
           return null;
@@ -38,13 +38,8 @@ export const authConfig: NextAuthConfig = {
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
-          cpf: user.cpf,
-          phone: user.phone,
-          emailVerified: user.emailVerified,
-          phoneVerified: user.phoneVerified,
+          name: `${user.firstName} ${user.lastName}`,
           kycLevel: user.kycLevel,
-          image: user.image,
         };
       },
     }),

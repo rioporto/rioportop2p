@@ -64,7 +64,7 @@ enum TransactionType {
   INTERNAL
 }
 
-enum TransactionStatus {
+enum BlockchainTransactionStatus {
   PENDING
   CONFIRMING
   CONFIRMED
@@ -135,6 +135,11 @@ enum P2PAdStatus {
   DELETED
 }
 
+enum ListingType {
+  BUY
+  SELL
+}
+
 enum P2PTradeStatus {
   CREATED
   PAYMENT_PENDING
@@ -144,6 +149,29 @@ enum P2PTradeStatus {
   CANCELLED
   DISPUTED
   EXPIRED
+}
+
+enum TransactionStatus {
+  PENDING
+  AWAITING_PAYMENT
+  PAYMENT_CONFIRMED
+  RELEASING_CRYPTO
+  COMPLETED
+  CANCELLED
+  DISPUTED
+}
+
+enum EscrowStatus {
+  LOCKED
+  RELEASED
+  REFUNDED
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  PAYMENT_PROOF
 }
 
 enum AnalysisType {
@@ -238,6 +266,13 @@ model User {
   processedRecons    BankReconciliation[] @relation("ReconciliationProcessor")
   amlActions         AmlMonitoring[]  @relation("AmlActionTaker")
   withdrawalWhitelist WithdrawalWhitelist[]
+  listings           Listing[]
+  buyerTransactions  Transaction[]    @relation("BuyerTransactions")
+  sellerTransactions Transaction[]    @relation("SellerTransactions")
+  sentMessages       Message[]        @relation("MessageSender")
+  raterRatings       Rating[]         @relation("RaterRatings")
+  ratedRatings       Rating[]         @relation("RatedRatings")
+  reputation         UserReputation?
   
   @@index([email])
   @@index([cpf])
@@ -458,7 +493,7 @@ model BlockchainTransaction {
   gasPrice         Decimal?          @map("gas_price") @db.Decimal(36, 18)
   
   // Status
-  status           TransactionStatus @default(PENDING)
+  status           BlockchainTransactionStatus @default(PENDING)
   confirmedAt      DateTime?         @map("confirmed_at")
   failedAt         DateTime?         @map("failed_at")
   failureReason    String?           @map("failure_reason")
@@ -805,6 +840,7 @@ model PaymentMethod {
   
   // Relations
   pixTransactions     PixTransaction[]
+  transactions        Transaction[]
   
   @@index([userId])
   @@index([paymentType])
@@ -1091,4 +1127,225 @@ model SystemEvent {
   @@index([createdAt])
   @@index([correlationId])
   @@map("system_events")
+}
+
+model PaymentMethodType {
+  id              String    @id @default(uuid())
+  name            String
+  slug            String    @unique
+  isActive        Boolean   @default(true) @map("is_active")
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  listings        ListingPaymentMethod[]
+  
+  @@index([slug])
+  @@index([isActive])
+  @@map("payment_method_types")
+}
+
+model Listing {
+  id                  String    @id @default(uuid())
+  userId              String    @map("user_id")
+  user                User      @relation(fields: [userId], references: [id])
+  
+  // Type and currencies
+  type                ListingType
+  cryptocurrency      String
+  fiatCurrency        String    @default("BRL") @map("fiat_currency")
+  
+  // Price
+  pricePerUnit        Decimal   @map("price_per_unit") @db.Decimal(20, 8)
+  
+  // Limits
+  minAmount           Decimal   @map("min_amount") @db.Decimal(20, 2)
+  maxAmount           Decimal   @map("max_amount") @db.Decimal(20, 2)
+  
+  // Terms
+  terms               String?
+  
+  // Status
+  isActive            Boolean   @default(true) @map("is_active")
+  
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  
+  // Relations
+  paymentMethods      ListingPaymentMethod[]
+  transactions        Transaction[]
+  
+  @@index([userId])
+  @@index([type])
+  @@index([cryptocurrency])
+  @@index([fiatCurrency])
+  @@index([isActive])
+  @@index([type, cryptocurrency, fiatCurrency, isActive])
+  @@index([createdAt])
+  @@map("listings")
+}
+
+model ListingPaymentMethod {
+  id                  String    @id @default(uuid())
+  listingId           String    @map("listing_id")
+  listing             Listing   @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  paymentMethodId     String    @map("payment_method_id")
+  paymentMethod       PaymentMethodType @relation(fields: [paymentMethodId], references: [id])
+  
+  createdAt           DateTime  @default(now()) @map("created_at")
+  
+  @@unique([listingId, paymentMethodId])
+  @@index([listingId])
+  @@index([paymentMethodId])
+  @@map("listing_payment_methods")
+}
+
+model Transaction {
+  id                String              @id @default(uuid())
+  listingId         String              @map("listing_id")
+  listing           Listing             @relation(fields: [listingId], references: [id])
+  buyerId           String              @map("buyer_id")
+  buyer             User                @relation("BuyerTransactions", fields: [buyerId], references: [id])
+  sellerId          String              @map("seller_id")
+  seller            User                @relation("SellerTransactions", fields: [sellerId], references: [id])
+  
+  // Values
+  amount            Decimal             @db.Decimal(36, 18)
+  pricePerUnit      Decimal             @map("price_per_unit") @db.Decimal(20, 8)
+  totalPrice        Decimal             @map("total_price") @db.Decimal(20, 2)
+  
+  // Status
+  status            TransactionStatus   @default(PENDING)
+  
+  // Payment
+  paymentMethodId   String              @map("payment_method_id")
+  paymentMethod     PaymentMethod       @relation(fields: [paymentMethodId], references: [id])
+  
+  // Timestamps
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+  completedAt       DateTime?           @map("completed_at")
+  
+  // Relations
+  escrow            Escrow?
+  conversation      Conversation?
+  rating            Rating?
+  
+  @@index([listingId])
+  @@index([buyerId])
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model Escrow {
+  id                String        @id @default(uuid())
+  transactionId     String        @unique @map("transaction_id")
+  transaction       Transaction   @relation(fields: [transactionId], references: [id])
+  
+  // Values
+  cryptoAmount      Decimal       @map("crypto_amount") @db.Decimal(36, 18)
+  
+  // Status
+  status            EscrowStatus  @default(LOCKED)
+  
+  // Timestamps
+  releasedAt        DateTime?     @map("released_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+  
+  @@index([transactionId])
+  @@index([status])
+  @@map("escrows")
+}
+
+model Conversation {
+  id                String      @id @default(uuid())
+  transactionId     String      @unique @map("transaction_id")
+  transaction       Transaction @relation(fields: [transactionId], references: [id])
+  
+  // Timestamps
+  lastMessageAt     DateTime?   @map("last_message_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  
+  // Relations
+  messages          Message[]
+  
+  @@index([transactionId])
+  @@index([lastMessageAt])
+  @@map("conversations")
+}
+
+model Message {
+  id                String         @id @default(uuid())
+  conversationId    String         @map("conversation_id")
+  conversation      Conversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId          String         @map("sender_id")
+  sender            User           @relation("MessageSender", fields: [senderId], references: [id])
+  
+  // Content
+  content           String
+  type              MessageType    @default(TEXT)
+  fileUrl           String?        @map("file_url")
+  
+  // Read status
+  isRead            Boolean        @default(false) @map("is_read")
+  readAt            DateTime?      @map("read_at")
+  
+  // Timestamps
+  createdAt         DateTime       @default(now()) @map("created_at")
+  
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+model Rating {
+  id                String      @id @default(uuid())
+  transactionId     String      @unique @map("transaction_id")
+  transaction       Transaction @relation(fields: [transactionId], references: [id])
+  ratedById         String      @map("rated_by_id")
+  ratedBy           User        @relation("RaterRatings", fields: [ratedById], references: [id])
+  ratedUserId       String      @map("rated_user_id")
+  ratedUser         User        @relation("RatedRatings", fields: [ratedUserId], references: [id])
+  
+  // Rating details
+  score             Int         // 1-5
+  comment           String?
+  
+  // Timestamps
+  createdAt         DateTime    @default(now()) @map("created_at")
+  
+  @@index([transactionId])
+  @@index([ratedById])
+  @@index([ratedUserId])
+  @@index([createdAt])
+  @@map("ratings")
+}
+
+model UserReputation {
+  id                String   @id @default(uuid())
+  userId            String   @unique @map("user_id")
+  user              User     @relation(fields: [userId], references: [id])
+  
+  // Reputation metrics
+  totalRatings      Int      @default(0) @map("total_ratings")
+  averageScore      Decimal  @default(0) @map("average_score") @db.Decimal(3, 2)
+  successfulTrades  Int      @default(0) @map("successful_trades")
+  totalVolume       Decimal  @default(0) @map("total_volume") @db.Decimal(36, 18)
+  
+  // Processing control
+  lastCalculatedAt  DateTime @default(now()) @map("last_calculated_at")
+  
+  // Timestamps
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  @@index([userId])
+  @@index([averageScore])
+  @@map("user_reputations")
 }

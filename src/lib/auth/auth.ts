@@ -10,6 +10,7 @@ import { loginSchema } from '@/lib/validations/auth';
 // Configuração completa do NextAuth (Node.js runtime)
 const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID || '',
