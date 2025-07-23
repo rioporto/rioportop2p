@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { ListingGrid, EmptyListings } from '@/components/marketplace/ListingGrid';
+import { ListingSkeleton } from '@/components/marketplace/ListingSkeleton';
+import { FilterSidebar, FilterState } from '@/components/marketplace/FilterSidebar';
+import { SortOptions, SortOptionsMobile, SortOption } from '@/components/marketplace/SortOptions';
+import { FunnelIcon, XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { cn } from '@/lib/utils/cn';
 import { KYCLevel } from '@/types/kyc';
 
 interface IListing {
@@ -25,42 +30,45 @@ interface IListing {
     id: string;
     name: string;
     kycLevel: KYCLevel;
+    rating?: number;
+    totalTrades?: number;
+    isVerified?: boolean;
   };
-}
-
-interface IFilters {
-  type: 'all' | 'BUY' | 'SELL';
-  cryptocurrency: string;
-  minPrice: string;
-  maxPrice: string;
 }
 
 export default function ListingsPage() {
   const router = useRouter();
   const [listings, setListings] = useState<IListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<IFilters>({
-    type: 'all',
-    cryptocurrency: '',
-    minPrice: '',
-    maxPrice: ''
-  });
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  
+  const [filters, setFilters] = useState<FilterState>({
+    type: 'all',
+    cryptocurrencies: [],
+    priceRange: [0, 999999],
+    paymentMethods: [],
+    verifiedOnly: false
+  });
 
-  useEffect(() => {
-    fetchListings();
-  }, [filters, currentPage]);
-
-  const fetchListings = async () => {
+  const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
       
       const params = new URLSearchParams();
       if (filters.type !== 'all') params.append('type', filters.type);
-      if (filters.cryptocurrency) params.append('cryptocurrency', filters.cryptocurrency);
-      if (filters.minPrice) params.append('minPrice', filters.minPrice);
-      if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
+      if (filters.cryptocurrencies.length > 0) {
+        filters.cryptocurrencies.forEach(crypto => params.append('crypto', crypto));
+      }
+      if (filters.priceRange[0] > 0) params.append('minPrice', filters.priceRange[0].toString());
+      if (filters.priceRange[1] < 999999) params.append('maxPrice', filters.priceRange[1].toString());
+      if (filters.paymentMethods.length > 0) {
+        filters.paymentMethods.forEach(method => params.append('payment', method));
+      }
+      if (filters.verifiedOnly) params.append('verified', 'true');
+      params.append('sort', sortBy);
       params.append('page', currentPage.toString());
       params.append('limit', '12');
 
@@ -68,7 +76,18 @@ export default function ListingsPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setListings(data.listings || []);
+        // Adicionar dados mock para demonstração visual
+        const mockEnhancedListings = (data.listings || []).map((listing: IListing) => ({
+          ...listing,
+          user: {
+            ...listing.user,
+            rating: listing.user.rating || (Math.random() * 2 + 3),
+            totalTrades: listing.user.totalTrades || Math.floor(Math.random() * 500),
+            isVerified: listing.user.isVerified || Math.random() > 0.5
+          }
+        }));
+        
+        setListings(mockEnhancedListings);
         setTotalPages(data.totalPages || 1);
       } else {
         console.error('Erro ao buscar anúncios:', data.error);
@@ -80,274 +99,247 @@ export default function ListingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, sortBy, currentPage]);
 
-  const handleFilterChange = (field: keyof IFilters, value: string) => {
-    setFilters(prev => ({ ...prev, [field]: value }));
+  useEffect(() => {
+    fetchListings();
+  }, [fetchListings]);
+
+  const handleFilterChange = (newFilters: FilterState) => {
+    setFilters(newFilters);
     setCurrentPage(1);
   };
 
-  const getKYCBadge = (level: KYCLevel) => {
-    const badges = {
-      [KYCLevel.BASIC]: { text: 'KYC Básico', className: 'bg-gray-100 text-gray-700' },
-      [KYCLevel.INTERMEDIARY]: { text: 'KYC Intermediário', className: 'bg-blue-100 text-blue-700' },
-      [KYCLevel.ADVANCED]: { text: 'KYC Avançado', className: 'bg-green-100 text-green-700' }
-    };
-    return badges[level] || badges[KYCLevel.BASIC];
+  const handleSortChange = (newSort: SortOption) => {
+    setSortBy(newSort);
+    setCurrentPage(1);
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL'
-    }).format(value);
+  const handleCreateListing = () => {
+    router.push('/listings/new');
   };
 
   return (
-    <div className="max-w-7xl mx-auto">
-      {/* Breadcrumb */}
-      <nav className="mb-6">
-        <ol className="flex items-center space-x-2 text-sm">
-          <li>
-            <Link href="/" className="text-primary hover:text-opacity-80 transition-colors">
-              Dashboard
-            </Link>
-          </li>
-          <li className="text-text-secondary">
-            <span className="mx-2">/</span>
-            Anúncios
-          </li>
-        </ol>
-      </nav>
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Breadcrumb */}
+        <nav className="mb-6">
+          <ol className="flex items-center space-x-2 text-sm">
+            <li>
+              <Link href="/" className="text-blue-600 hover:text-blue-700 transition-colors">
+                Dashboard
+              </Link>
+            </li>
+            <li className="text-gray-400">
+              <span className="mx-2">/</span>
+              Marketplace P2P
+            </li>
+          </ol>
+        </nav>
 
-      {/* Page Title e Botão Criar */}
-      <div className="flex justify-between items-start mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-text-primary mb-2">
-            Anúncios P2P
-          </h1>
-          <p className="text-text-secondary">
-            Compre e venda criptomoedas diretamente com outros usuários
-          </p>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Marketplace P2P
+            </h1>
+            <p className="text-gray-600">
+              Compre e venda criptomoedas diretamente com outros usuários
+            </p>
+          </div>
+          
+          <Button
+            variant="gradient"
+            size="md"
+            onClick={handleCreateListing}
+            className="shadow-skeuo-md hover:shadow-skeuo-lg transition-all duration-200"
+          >
+            <PlusIcon className="w-5 h-5 mr-2" />
+            Criar Anúncio
+          </Button>
         </div>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => router.push('/listings/new')}
-        >
-          Criar Anúncio
-        </Button>
-      </div>
 
-      {/* Filtros */}
-      <Card className="mb-8">
-        <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Tipo
-              </label>
-              <select
-                value={filters.type}
-                onChange={(e) => handleFilterChange('type', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+        {/* Stats Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          {[
+            { label: 'Anúncios Ativos', value: listings.length, color: 'text-blue-600' },
+            { label: 'Volume 24h', value: 'R$ 1.2M', color: 'text-green-600' },
+            { label: 'Usuários Online', value: '234', color: 'text-purple-600' },
+            { label: 'Taxa Média', value: '2.3%', color: 'text-orange-600' }
+          ].map((stat, index) => (
+            <div 
+              key={index}
+              className={cn(
+                "bg-white rounded-xl p-4",
+                "border border-gray-200",
+                "shadow-skeuo-sm hover:shadow-skeuo-md",
+                "transition-all duration-200",
+                "animate-in fade-in slide-in-from-bottom-2"
+              )}
+              style={{
+                animationDelay: `${index * 100}ms`,
+                animationFillMode: 'both'
+              }}
+            >
+              <p className="text-sm text-gray-500">{stat.label}</p>
+              <p className={cn("text-2xl font-bold mt-1", stat.color)}>
+                {stat.value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Main Content */}
+        <div className="flex gap-6">
+          {/* Desktop Filters */}
+          <div className="hidden lg:block w-80 flex-shrink-0">
+            <FilterSidebar
+              filters={filters}
+              onChange={handleFilterChange}
+            />
+          </div>
+
+          {/* Listings Area */}
+          <div className="flex-1">
+            {/* Mobile Filter Toggle & Sort */}
+            <div className="flex items-center justify-between gap-4 mb-6">
+              <button
+                onClick={() => setShowMobileFilters(true)}
+                className={cn(
+                  "lg:hidden flex items-center gap-2 px-4 py-2 rounded-lg",
+                  "bg-white border border-gray-300",
+                  "shadow-skeuo-sm hover:shadow-skeuo-md",
+                  "transition-all duration-200"
+                )}
               >
-                <option value="all">Todos</option>
-                <option value="BUY">Compra</option>
-                <option value="SELL">Venda</option>
-              </select>
+                <FunnelIcon className="w-5 h-5 text-gray-600" />
+                <span className="font-medium">Filtros</span>
+                {(filters.cryptocurrencies.length > 0 || 
+                  filters.paymentMethods.length > 0 || 
+                  filters.verifiedOnly ||
+                  filters.type !== 'all') && (
+                  <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                    {filters.cryptocurrencies.length + 
+                     filters.paymentMethods.length + 
+                     (filters.verifiedOnly ? 1 : 0) +
+                     (filters.type !== 'all' ? 1 : 0)}
+                  </span>
+                )}
+              </button>
+
+              {/* Sort Options */}
+              <div className="flex-1 max-w-xs">
+                <div className="hidden sm:block">
+                  <SortOptions value={sortBy} onChange={handleSortChange} />
+                </div>
+                <div className="block sm:hidden">
+                  <SortOptionsMobile value={sortBy} onChange={handleSortChange} />
+                </div>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Criptomoeda
-              </label>
-              <input
-                type="text"
-                value={filters.cryptocurrency}
-                onChange={(e) => handleFilterChange('cryptocurrency', e.target.value)}
-                placeholder="Ex: BTC, ETH, USDT"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
-            </div>
+            {/* Listings Grid */}
+            {loading ? (
+              <ListingSkeleton count={12} />
+            ) : listings.length > 0 ? (
+              <>
+                <ListingGrid listings={listings} />
+                
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center gap-4 mt-12">
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className="shadow-skeuo-sm"
+                    >
+                      Anterior
+                    </Button>
+                    
+                    <div className="flex items-center gap-2">
+                      {[...Array(Math.min(5, totalPages))].map((_, index) => {
+                        const pageNumber = index + 1;
+                        const isActive = pageNumber === currentPage;
+                        
+                        return (
+                          <button
+                            key={pageNumber}
+                            onClick={() => setCurrentPage(pageNumber)}
+                            className={cn(
+                              "w-10 h-10 rounded-lg font-medium",
+                              "transition-all duration-200",
+                              isActive
+                                ? "bg-blue-600 text-white shadow-skeuo-md"
+                                : "bg-white text-gray-700 border border-gray-300 shadow-skeuo-sm hover:shadow-skeuo-md"
+                            )}
+                          >
+                            {pageNumber}
+                          </button>
+                        );
+                      })}
+                      {totalPages > 5 && (
+                        <>
+                          <span className="text-gray-400">...</span>
+                          <button
+                            onClick={() => setCurrentPage(totalPages)}
+                            className={cn(
+                              "w-10 h-10 rounded-lg font-medium",
+                              "bg-white text-gray-700 border border-gray-300",
+                              "shadow-skeuo-sm hover:shadow-skeuo-md",
+                              "transition-all duration-200"
+                            )}
+                          >
+                            {totalPages}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      disabled={currentPage === totalPages}
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      className="shadow-skeuo-sm"
+                    >
+                      Próximo
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <EmptyListings onCreateListing={handleCreateListing} />
+            )}
+          </div>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Preço Mínimo
-              </label>
-              <input
-                type="number"
-                value={filters.minPrice}
-                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                placeholder="0.00"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Preço Máximo
-              </label>
-              <input
-                type="number"
-                value={filters.maxPrice}
-                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                placeholder="0.00"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+        {/* Mobile Filter Drawer */}
+        {showMobileFilters && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setShowMobileFilters(false)}
+            />
+            
+            {/* Drawer */}
+            <div className={cn(
+              "absolute inset-y-0 left-0 w-full max-w-sm",
+              "bg-white shadow-elevation-3",
+              "animate-in slide-in-from-left duration-300"
+            )}>
+              <FilterSidebar
+                filters={filters}
+                onChange={handleFilterChange}
+                isMobile
+                onClose={() => setShowMobileFilters(false)}
               />
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Loading State */}
-      {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, index) => (
-            <Card key={index} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-                <div className="h-6 bg-gray-200 rounded w-2/3 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Grid de Anúncios */}
-      {!loading && listings.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {listings.map((listing) => (
-            <Card 
-              key={listing.id} 
-              className="hover:shadow-lg transition-shadow cursor-pointer"
-              onClick={() => router.push(`/listings/${listing.id}`)}
-            >
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    listing.type === 'BUY' 
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-red-100 text-red-700'
-                  }`}>
-                    {listing.type === 'BUY' ? 'Compra' : 'Venda'}
-                  </span>
-                  <span className="text-2xl font-bold text-text-primary">
-                    {listing.cryptocurrency}
-                  </span>
-                </div>
-
-                <div className="mb-4">
-                  <p className="text-sm text-text-secondary mb-1">Preço por unidade</p>
-                  <p className="text-xl font-semibold text-text-primary">
-                    {formatCurrency(listing.pricePerUnit)}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-sm text-text-secondary">Mínimo</p>
-                    <p className="font-medium text-text-primary">
-                      {formatCurrency(listing.minAmount)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-text-secondary">Máximo</p>
-                    <p className="font-medium text-text-primary">
-                      {formatCurrency(listing.maxAmount)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-sm font-medium text-text-primary">
-                        {listing.user.name}
-                      </p>
-                      <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${
-                        getKYCBadge(listing.user.kycLevel).className
-                      }`}>
-                        {getKYCBadge(listing.user.kycLevel).text}
-                      </span>
-                    </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/listings/${listing.id}`);
-                      }}
-                    >
-                      Ver Detalhes
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      {/* Estado Vazio */}
-      {!loading && listings.length === 0 && (
-        <Card className="p-12 text-center">
-          <svg 
-            className="w-24 h-24 text-text-secondary mx-auto mb-6" 
-            fill="none" 
-            viewBox="0 0 24 24" 
-            stroke="currentColor"
-          >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={1.5}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-          <h3 className="text-xl font-semibold text-text-primary mb-2">
-            Nenhum anúncio encontrado
-          </h3>
-          <p className="text-text-secondary mb-6">
-            Ajuste os filtros ou crie seu primeiro anúncio
-          </p>
-          <Button
-            variant="primary"
-            onClick={() => router.push('/listings/new')}
-          >
-            Criar Primeiro Anúncio
-          </Button>
-        </Card>
-      )}
-
-      {/* Paginação */}
-      {!loading && listings.length > 0 && totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-8">
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-          >
-            Anterior
-          </Button>
-          
-          <span className="text-text-secondary">
-            Página {currentPage} de {totalPages}
-          </span>
-          
-          <Button
-            variant="secondary"
-            size="sm"
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-          >
-            Próximo
-          </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

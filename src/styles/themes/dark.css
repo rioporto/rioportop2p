@@ -1,0 +1,385 @@
+/* ==========================================================================
+   RIO PORTO P2P - DARK THEME
+   Sistema de Dark Mode Premium com Variáveis CSS
+   ========================================================================== */
+
+/* Dark Mode Variables */
+[data-theme="dark"] {
+  /* Import base variables for inheritance */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* ==========================================================================
+     CORES BASE - DARK MODE
+     ========================================================================== */
+  
+  /* Backgrounds Escuros Premium */
+  --color-background-primary: #0a0b0d;
+  --color-background-secondary: #121318;
+  --color-background-tertiary: #1a1b23;
+  --color-background-elevated: #1f2028;
+  --color-background-overlay: rgba(10, 11, 13, 0.95);
+  
+  /* Cards e Surfaces */
+  --color-surface-primary: #141519;
+  --color-surface-secondary: #1a1b23;
+  --color-surface-tertiary: #22232d;
+  --color-surface-hover: #26273a;
+  --color-surface-active: #2a2b3f;
+  
+  /* Textos com Opacidade */
+  --color-text-primary: rgba(255, 255, 255, 0.95);
+  --color-text-secondary: rgba(255, 255, 255, 0.80);
+  --color-text-tertiary: rgba(255, 255, 255, 0.60);
+  --color-text-disabled: rgba(255, 255, 255, 0.40);
+  --color-text-placeholder: rgba(255, 255, 255, 0.35);
+  
+  /* Bordas Sutis */
+  --color-border-primary: rgba(255, 255, 255, 0.12);
+  --color-border-secondary: rgba(255, 255, 255, 0.08);
+  --color-border-tertiary: rgba(255, 255, 255, 0.05);
+  --color-border-focus: rgba(102, 126, 234, 0.5);
+  
+  /* ==========================================================================
+     CORES VIBRANTES - NEON EFFECTS
+     ========================================================================== */
+  
+  /* Gradientes Neon Vibrantes */
+  --primary-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  --secondary-gradient: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+  --success-gradient: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  --warning-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --danger-gradient: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+  
+  /* Cores Sólidas Ajustadas */
+  --color-primary: #818cf8;
+  --color-primary-dark: #6366f1;
+  --color-primary-light: #a78bfa;
+  --color-primary-glow: rgba(129, 140, 248, 0.4);
+  
+  --color-secondary: #f472b6;
+  --color-secondary-dark: #ec4899;
+  --color-secondary-light: #f9a8d4;
+  --color-secondary-glow: rgba(244, 114, 182, 0.4);
+  
+  --color-success: #34d399;
+  --color-success-dark: #10b981;
+  --color-success-light: #6ee7b7;
+  --color-success-glow: rgba(52, 211, 153, 0.4);
+  
+  --color-warning: #fbbf24;
+  --color-warning-dark: #f59e0b;
+  --color-warning-light: #fde047;
+  --color-warning-glow: rgba(251, 191, 36, 0.4);
+  
+  --color-danger: #f87171;
+  --color-danger-dark: #ef4444;
+  --color-danger-light: #fca5a5;
+  --color-danger-glow: rgba(248, 113, 113, 0.4);
+  
+  --color-info: #60a5fa;
+  --color-info-dark: #3b82f6;
+  --color-info-light: #93bbfc;
+  --color-info-glow: rgba(96, 165, 250, 0.4);
+  
+  /* ==========================================================================
+     CORES CRYPTO AJUSTADAS
+     ========================================================================== */
+  
+  --color-bitcoin: #FFA500;
+  --color-bitcoin-dark: #FF8C00;
+  --color-bitcoin-light: #FFB84D;
+  --color-bitcoin-glow: rgba(255, 165, 0, 0.4);
+  
+  --color-ethereum: #64B5F6;
+  --color-ethereum-dark: #42A5F5;
+  --color-ethereum-light: #90CAF9;
+  --color-ethereum-glow: rgba(100, 181, 246, 0.4);
+  
+  --color-usdt: #50E3C2;
+  --color-usdt-dark: #26D0A8;
+  --color-usdt-light: #7AECD4;
+  --color-usdt-glow: rgba(80, 227, 194, 0.4);
+  
+  /* ==========================================================================
+     SOMBRAS DARK MODE
+     ========================================================================== */
+  
+  /* Sombras com Glow Sutil */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-hard: 0 8px 32px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.6), 0 8px 24px rgba(0, 0, 0, 0.5);
+  
+  /* Sombras Coloridas com Glow */
+  --shadow-primary: 0 0 24px rgba(129, 140, 248, 0.3), 0 4px 16px rgba(129, 140, 248, 0.2);
+  --shadow-secondary: 0 0 24px rgba(244, 114, 182, 0.3), 0 4px 16px rgba(244, 114, 182, 0.2);
+  --shadow-success: 0 0 24px rgba(52, 211, 153, 0.3), 0 4px 16px rgba(52, 211, 153, 0.2);
+  --shadow-warning: 0 0 24px rgba(251, 191, 36, 0.3), 0 4px 16px rgba(251, 191, 36, 0.2);
+  --shadow-danger: 0 0 24px rgba(248, 113, 113, 0.3), 0 4px 16px rgba(248, 113, 113, 0.2);
+  
+  /* Sombras Neon */
+  --shadow-neon-primary: 0 0 40px rgba(129, 140, 248, 0.5);
+  --shadow-neon-secondary: 0 0 40px rgba(244, 114, 182, 0.5);
+  --shadow-neon-success: 0 0 40px rgba(52, 211, 153, 0.5);
+  
+  /* Inner Shadows Ajustadas */
+  --shadow-inner-soft: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-inner-medium: inset 0 4px 8px rgba(0, 0, 0, 0.4);
+  --shadow-inner-hard: inset 0 6px 12px rgba(0, 0, 0, 0.5);
+  
+  /* ==========================================================================
+     ESTILOS ESPECÍFICOS
+     ========================================================================== */
+  
+  /* Scrollbar Dark */
+  --scrollbar-track: #121318;
+  --scrollbar-thumb: #2a2b3f;
+  --scrollbar-thumb-hover: #3a3b4f;
+  
+  /* Input Styles */
+  --input-background: #1a1b23;
+  --input-background-focus: #22232d;
+  --input-border: rgba(255, 255, 255, 0.12);
+  --input-border-focus: var(--color-primary);
+  
+  /* Card Glass Effects */
+  --glass-background: rgba(26, 27, 35, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: 16px;
+  
+  /* Code Block */
+  --code-background: #0d0e11;
+  --code-text: #e2e8f0;
+  --code-comment: #64748b;
+  --code-keyword: #818cf8;
+  --code-string: #34d399;
+  --code-number: #fbbf24;
+  --code-function: #60a5fa;
+  
+  /* Chart Colors */
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-axis: rgba(255, 255, 255, 0.3);
+  --chart-tooltip-bg: rgba(26, 27, 35, 0.95);
+  
+  /* ==========================================================================
+     OVERLAYS E MODALS
+     ========================================================================== */
+  
+  --overlay-backdrop: rgba(0, 0, 0, 0.8);
+  --modal-background: var(--color-surface-primary);
+  --modal-border: var(--color-border-primary);
+  
+  /* ==========================================================================
+     GRADIENTES ESPECIAIS DARK
+     ========================================================================== */
+  
+  /* Luxury Gradient Dark */
+  --luxury-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  
+  /* Metal Gradient Dark */
+  --metal-gradient: linear-gradient(135deg, #2a2b3f 0%, #3a3b4f 50%, #2a2b3f 100%);
+  
+  /* Dark Gradient */
+  --dark-gradient: linear-gradient(135deg, #0a0b0d 0%, #1a1b23 100%);
+  
+  /* Glass Gradient Dark */
+  --glass-gradient: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+  
+  /* Neon Glow Gradient */
+  --neon-glow-gradient: linear-gradient(135deg, 
+    rgba(129, 140, 248, 0.1) 0%, 
+    rgba(167, 139, 250, 0.1) 50%, 
+    rgba(244, 114, 182, 0.1) 100%
+  );
+}
+
+/* ==========================================================================
+   AJUSTES DE COMPONENTES PARA DARK MODE
+   ========================================================================== */
+
+[data-theme="dark"] {
+  /* Body Background */
+  body {
+    background-color: var(--color-background-primary);
+    color: var(--color-text-primary);
+  }
+  
+  /* Cards */
+  .card-skeuomorphic {
+    background: var(--color-surface-primary);
+    border: 1px solid var(--color-border-primary);
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .card-skeuomorphic:hover {
+    background: var(--color-surface-secondary);
+    box-shadow: var(--shadow-hard), var(--shadow-neon-primary);
+  }
+  
+  /* Buttons */
+  .btn-skeuomorphic {
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .btn-skeuomorphic:hover {
+    box-shadow: var(--shadow-hard), var(--shadow-neon-primary);
+  }
+  
+  /* Inputs */
+  .input-skeuomorphic {
+    background: var(--input-background);
+    border-color: var(--input-border);
+    color: var(--color-text-primary);
+  }
+  
+  .input-skeuomorphic:focus {
+    background: var(--input-background-focus);
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 3px var(--color-primary-glow);
+  }
+  
+  /* Glass Effects Enhanced */
+  .glass-effect {
+    background: var(--glass-background);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+  }
+  
+  /* Code Highlighting */
+  code {
+    background: var(--code-background);
+    color: var(--code-text);
+  }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 2px solid var(--scrollbar-track);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+  
+  /* Selection */
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-background-primary);
+  }
+}
+
+/* ==========================================================================
+   ANIMAÇÕES ESPECIAIS DARK MODE
+   ========================================================================== */
+
+[data-theme="dark"] {
+  /* Neon Pulse */
+  @keyframes neon-pulse {
+    0%, 100% {
+      box-shadow: 0 0 20px var(--color-primary-glow);
+    }
+    50% {
+      box-shadow: 0 0 40px var(--color-primary-glow), 0 0 60px var(--color-primary-glow);
+    }
+  }
+  
+  /* Glow Fade */
+  @keyframes glow-fade {
+    0% {
+      opacity: 0;
+      filter: blur(20px);
+    }
+    100% {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+  
+  /* Classes de Animação */
+  .animate-neon-pulse {
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+  
+  .animate-glow-fade {
+    animation: glow-fade 0.5s ease-out;
+  }
+}
+
+/* ==========================================================================
+   UTILIDADES DARK MODE
+   ========================================================================== */
+
+[data-theme="dark"] {
+  /* Neon Text */
+  .text-neon-primary {
+    color: var(--color-primary);
+    text-shadow: 0 0 10px var(--color-primary-glow);
+  }
+  
+  .text-neon-secondary {
+    color: var(--color-secondary);
+    text-shadow: 0 0 10px var(--color-secondary-glow);
+  }
+  
+  .text-neon-success {
+    color: var(--color-success);
+    text-shadow: 0 0 10px var(--color-success-glow);
+  }
+  
+  /* Glow Borders */
+  .border-glow-primary {
+    border: 1px solid var(--color-primary);
+    box-shadow: 0 0 10px var(--color-primary-glow);
+  }
+  
+  .border-glow-secondary {
+    border: 1px solid var(--color-secondary);
+    box-shadow: 0 0 10px var(--color-secondary-glow);
+  }
+  
+  /* OLED Black */
+  .bg-oled-black {
+    background: #000000;
+  }
+  
+  /* Crypto Glow Effects */
+  .crypto-glow-btc {
+    box-shadow: 0 0 30px var(--color-bitcoin-glow);
+  }
+  
+  .crypto-glow-eth {
+    box-shadow: 0 0 30px var(--color-ethereum-glow);
+  }
+  
+  .crypto-glow-usdt {
+    box-shadow: 0 0 30px var(--color-usdt-glow);
+  }
+}
+
+/* ==========================================================================
+   MEDIA QUERIES DARK MODE
+   ========================================================================== */
+
+@media (prefers-contrast: high) and (prefers-color-scheme: dark) {
+  [data-theme="dark"] {
+    --color-border-primary: rgba(255, 255, 255, 0.20);
+    --color-border-secondary: rgba(255, 255, 255, 0.15);
+    --color-text-secondary: rgba(255, 255, 255, 0.87);
+    --color-text-tertiary: rgba(255, 255, 255, 0.70);
+  }
+}
+
+/* OLED Optimization */
+@media (prefers-color-scheme: dark) and (max-width: 640px) {
+  [data-theme="dark"] {
+    --color-background-primary: #000000;
+    --color-background-secondary: #0a0a0a;
+    --color-surface-primary: #0f0f0f;
+  }
+}

@@ -1,0 +1,496 @@
+/* ==========================================================================
+   SISTEMA DE VARIÁVEIS CSS - RIO PORTO P2P
+   Design Premium Skeumórfico
+   ========================================================================== */
+
+:root {
+  /* ==========================================================================
+     CORES PRIMÁRIAS
+     ========================================================================== */
+  
+  /* Gradientes Principais */
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  
+  /* Gradientes Adicionais Premium */
+  --luxury-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  --metal-gradient: linear-gradient(135deg, #C0C5CE 0%, #E5E8ED 50%, #C0C5CE 100%);
+  --dark-gradient: linear-gradient(135deg, #434B5C 0%, #1E3A5F 100%);
+  --glass-gradient: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+  
+  /* Cores Sólidas Base */
+  --color-primary: #667eea;
+  --color-primary-dark: #5a67d8;
+  --color-primary-light: #7c8ff0;
+  
+  --color-secondary: #f093fb;
+  --color-secondary-dark: #e876f5;
+  --color-secondary-light: #f4a8fc;
+  
+  --color-success: #4facfe;
+  --color-success-dark: #2196f3;
+  --color-success-light: #6fbfff;
+  
+  --color-warning: #fa709a;
+  --color-warning-dark: #f74c7b;
+  --color-warning-light: #fb8fae;
+  
+  --color-danger: #f5576c;
+  --color-danger-dark: #e91e63;
+  --color-danger-light: #f77086;
+  
+  --color-info: #00f2fe;
+  --color-info-dark: #00bcd4;
+  --color-info-light: #4dd0e1;
+  
+  /* Neutros Premium */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-50: #fafbfc;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  
+  /* ==========================================================================
+     SOMBRAS SKEUMÓRFICAS
+     ========================================================================== */
+  
+  /* Sombras Externas */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-hard: 0 8px 32px rgba(0, 0, 0, 0.16), 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.20), 0 8px 24px rgba(0, 0, 0, 0.12);
+  
+  /* Sombras Internas (Inset) */
+  --shadow-inner-soft: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-inner-medium: inset 0 4px 8px rgba(0, 0, 0, 0.12);
+  --shadow-inner-hard: inset 0 6px 12px rgba(0, 0, 0, 0.16);
+  
+  /* Sombras Coloridas */
+  --shadow-primary: 0 4px 16px rgba(102, 126, 234, 0.25);
+  --shadow-secondary: 0 4px 16px rgba(240, 147, 251, 0.25);
+  --shadow-success: 0 4px 16px rgba(79, 172, 254, 0.25);
+  --shadow-warning: 0 4px 16px rgba(250, 112, 154, 0.25);
+  --shadow-danger: 0 4px 16px rgba(245, 87, 108, 0.25);
+  
+  /* Sombras Skeumórficas Especiais */
+  --shadow-skeuomorphic-raised: 
+    0 1px 2px rgba(0, 0, 0, 0.07),
+    0 2px 4px rgba(0, 0, 0, 0.07),
+    0 4px 8px rgba(0, 0, 0, 0.07),
+    0 8px 16px rgba(0, 0, 0, 0.07),
+    0 16px 32px rgba(0, 0, 0, 0.07),
+    0 32px 64px rgba(0, 0, 0, 0.07);
+    
+  --shadow-skeuomorphic-pressed: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 4px 8px rgba(0, 0, 0, 0.1);
+    
+  --shadow-skeuomorphic-floating:
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* ==========================================================================
+     TIPOGRAFIA
+     ========================================================================== */
+  
+  /* Famílias de Fontes */
+  --font-sans: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'Roboto Mono', 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+  --font-display: 'Bebas Neue', Impact, 'Arial Black', sans-serif;
+  
+  /* Tamanhos de Fonte */
+  --text-xs: 0.75rem;     /* 12px */
+  --text-sm: 0.875rem;    /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg: 1.125rem;    /* 18px */
+  --text-xl: 1.25rem;     /* 20px */
+  --text-2xl: 1.5rem;     /* 24px */
+  --text-3xl: 1.875rem;   /* 30px */
+  --text-4xl: 2.25rem;    /* 36px */
+  --text-5xl: 3rem;       /* 48px */
+  --text-6xl: 3.75rem;    /* 60px */
+  --text-7xl: 4.5rem;     /* 72px */
+  --text-8xl: 6rem;       /* 96px */
+  --text-9xl: 8rem;       /* 128px */
+  
+  /* Pesos de Fonte */
+  --font-thin: 100;
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+  
+  /* Altura de Linha */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+  
+  /* Espaçamento entre Letras */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+  --tracking-widest: 0.1em;
+  
+  /* ==========================================================================
+     ESPAÇAMENTO
+     ========================================================================== */
+  
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;
+  --spacing-8: 32px;
+  --spacing-9: 36px;
+  --spacing-10: 40px;
+  --spacing-11: 44px;
+  --spacing-12: 48px;
+  --spacing-14: 56px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-28: 112px;
+  --spacing-32: 128px;
+  --spacing-36: 144px;
+  --spacing-40: 160px;
+  --spacing-44: 176px;
+  --spacing-48: 192px;
+  --spacing-52: 208px;
+  --spacing-56: 224px;
+  --spacing-60: 240px;
+  --spacing-64: 256px;
+  --spacing-72: 288px;
+  --spacing-80: 320px;
+  --spacing-96: 384px;
+  
+  /* ==========================================================================
+     BORDAS E RAIOS
+     ========================================================================== */
+  
+  /* Larguras de Borda */
+  --border-0: 0px;
+  --border-1: 1px;
+  --border-2: 2px;
+  --border-4: 4px;
+  --border-8: 8px;
+  
+  /* Raios de Borda */
+  --rounded-none: 0px;
+  --rounded-sm: 4px;
+  --rounded: 6px;
+  --rounded-md: 8px;
+  --rounded-lg: 12px;
+  --rounded-xl: 16px;
+  --rounded-2xl: 24px;
+  --rounded-3xl: 32px;
+  --rounded-full: 9999px;
+  
+  /* ==========================================================================
+     TRANSIÇÕES E ANIMAÇÕES
+     ========================================================================== */
+  
+  /* Durações */
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+  
+  /* Funções de Tempo */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* ==========================================================================
+     Z-INDEX
+     ========================================================================== */
+  
+  --z-auto: auto;
+  --z-0: 0;
+  --z-10: 10;
+  --z-20: 20;
+  --z-30: 30;
+  --z-40: 40;
+  --z-50: 50;
+  --z-60: 60;
+  --z-70: 70;
+  --z-80: 80;
+  --z-90: 90;
+  --z-100: 100;
+  --z-modal: 1000;
+  --z-dropdown: 1100;
+  --z-sticky: 1200;
+  --z-fixed: 1300;
+  --z-modal-backdrop: 1400;
+  --z-tooltip: 1500;
+  --z-notification: 1600;
+  
+  /* ==========================================================================
+     OPACIDADES
+     ========================================================================== */
+  
+  --opacity-0: 0;
+  --opacity-5: 0.05;
+  --opacity-10: 0.1;
+  --opacity-20: 0.2;
+  --opacity-25: 0.25;
+  --opacity-30: 0.3;
+  --opacity-40: 0.4;
+  --opacity-50: 0.5;
+  --opacity-60: 0.6;
+  --opacity-70: 0.7;
+  --opacity-75: 0.75;
+  --opacity-80: 0.8;
+  --opacity-90: 0.9;
+  --opacity-95: 0.95;
+  --opacity-100: 1;
+  
+  /* ==========================================================================
+     GRID E LAYOUT
+     ========================================================================== */
+  
+  /* Container */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  
+  /* Grid Columns */
+  --grid-cols-1: repeat(1, minmax(0, 1fr));
+  --grid-cols-2: repeat(2, minmax(0, 1fr));
+  --grid-cols-3: repeat(3, minmax(0, 1fr));
+  --grid-cols-4: repeat(4, minmax(0, 1fr));
+  --grid-cols-5: repeat(5, minmax(0, 1fr));
+  --grid-cols-6: repeat(6, minmax(0, 1fr));
+  --grid-cols-7: repeat(7, minmax(0, 1fr));
+  --grid-cols-8: repeat(8, minmax(0, 1fr));
+  --grid-cols-9: repeat(9, minmax(0, 1fr));
+  --grid-cols-10: repeat(10, minmax(0, 1fr));
+  --grid-cols-11: repeat(11, minmax(0, 1fr));
+  --grid-cols-12: repeat(12, minmax(0, 1fr));
+  
+  /* ==========================================================================
+     EFEITOS ESPECIAIS
+     ========================================================================== */
+  
+  /* Blur */
+  --blur-sm: 4px;
+  --blur: 8px;
+  --blur-md: 12px;
+  --blur-lg: 16px;
+  --blur-xl: 24px;
+  --blur-2xl: 40px;
+  --blur-3xl: 64px;
+  
+  /* Backdrop Blur */
+  --backdrop-blur-sm: 4px;
+  --backdrop-blur: 8px;
+  --backdrop-blur-md: 12px;
+  --backdrop-blur-lg: 16px;
+  --backdrop-blur-xl: 24px;
+  --backdrop-blur-2xl: 40px;
+  
+  /* Saturação */
+  --saturate-0: 0;
+  --saturate-50: 0.5;
+  --saturate-100: 1;
+  --saturate-150: 1.5;
+  --saturate-200: 2;
+}
+
+/* ==========================================================================
+   TEMA ESCURO (Dark Mode)
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Ajustes para tema escuro */
+    --color-gray-50: #111827;
+    --color-gray-100: #1f2937;
+    --color-gray-200: #374151;
+    --color-gray-300: #4b5563;
+    --color-gray-400: #6b7280;
+    --color-gray-500: #9ca3af;
+    --color-gray-600: #d1d5db;
+    --color-gray-700: #e5e7eb;
+    --color-gray-800: #f3f4f6;
+    --color-gray-900: #fafbfc;
+    
+    /* Sombras ajustadas para dark mode */
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.25), 0 1px 4px rgba(0, 0, 0, 0.20);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.30), 0 2px 8px rgba(0, 0, 0, 0.25);
+    --shadow-hard: 0 8px 32px rgba(0, 0, 0, 0.35), 0 4px 16px rgba(0, 0, 0, 0.30);
+    --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.40), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* ==========================================================================
+   CLASSES UTILITÁRIAS
+   ========================================================================== */
+
+/* Gradientes */
+.gradient-primary { background: var(--primary-gradient); }
+.gradient-secondary { background: var(--secondary-gradient); }
+.gradient-success { background: var(--success-gradient); }
+.gradient-warning { background: var(--warning-gradient); }
+.gradient-luxury { background: var(--luxury-gradient); }
+.gradient-metal { background: var(--metal-gradient); }
+.gradient-dark { background: var(--dark-gradient); }
+.gradient-glass { background: var(--glass-gradient); }
+
+/* Sombras */
+.shadow-soft { box-shadow: var(--shadow-soft); }
+.shadow-medium { box-shadow: var(--shadow-medium); }
+.shadow-hard { box-shadow: var(--shadow-hard); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+.shadow-inner-soft { box-shadow: var(--shadow-inner-soft); }
+.shadow-inner-medium { box-shadow: var(--shadow-inner-medium); }
+.shadow-inner-hard { box-shadow: var(--shadow-inner-hard); }
+.shadow-skeuomorphic-raised { box-shadow: var(--shadow-skeuomorphic-raised); }
+.shadow-skeuomorphic-pressed { box-shadow: var(--shadow-skeuomorphic-pressed); }
+.shadow-skeuomorphic-floating { box-shadow: var(--shadow-skeuomorphic-floating); }
+
+/* Efeitos de Hover */
+.hover-lift {
+  transition: transform var(--duration-200) var(--ease-out),
+              box-shadow var(--duration-200) var(--ease-out);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hard);
+}
+
+.hover-press {
+  transition: transform var(--duration-150) var(--ease-out),
+              box-shadow var(--duration-150) var(--ease-out);
+}
+
+.hover-press:active {
+  transform: translateY(1px);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(var(--backdrop-blur-md));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur-md));
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(var(--backdrop-blur-md));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur-md));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Neumorfismo */
+.neumorphic {
+  background: var(--color-gray-100);
+  box-shadow: 
+    8px 8px 16px rgba(0, 0, 0, 0.15),
+    -8px -8px 16px rgba(255, 255, 255, 0.05);
+}
+
+.neumorphic-inset {
+  background: var(--color-gray-100);
+  box-shadow: 
+    inset 8px 8px 16px rgba(0, 0, 0, 0.15),
+    inset -8px -8px 16px rgba(255, 255, 255, 0.05);
+}
+
+/* Metal Shine */
+.metal-shine {
+  background: var(--metal-gradient);
+  position: relative;
+  overflow: hidden;
+}
+
+.metal-shine::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.5) 50%,
+    transparent 70%
+  );
+  transform: rotate(45deg);
+  transition: all 0.5s;
+  opacity: 0;
+}
+
+.metal-shine:hover::before {
+  animation: shine var(--duration-500) ease-in-out;
+}
+
+/* Texturas */
+.texture-carbon {
+  background-image: 
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.03) 10px,
+      rgba(0, 0, 0, 0.03) 20px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.03) 10px,
+      rgba(0, 0, 0, 0.03) 20px
+    );
+}
+
+.texture-dots {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.texture-lines {
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.03) 10px,
+      rgba(0, 0, 0, 0.03) 11px
+    );
+}

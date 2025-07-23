@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { IUser, KYCLevel } from '@/types/kyc';
 import { KYCBadge } from '@/components/ui/KYCBadge';
+import { ThemeToggleMini } from '@/components/ui/ThemeToggle';
 
 interface IHeaderProps {
   user: IUser;
@@ -38,6 +39,9 @@ export const Header: React.FC<IHeaderProps> = ({ user }) => {
 
           {/* Ações do Header */}
           <div className="flex items-center gap-4">
+            {/* Theme Toggle */}
+            <ThemeToggleMini />
+            
             {/* Notificações */}
             <div className="relative">
               <button

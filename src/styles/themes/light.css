@@ -1,0 +1,461 @@
+/* ==========================================================================
+   RIO PORTO P2P - LIGHT THEME
+   Sistema de Light Mode Premium com Variáveis CSS
+   ========================================================================== */
+
+/* Light Mode Variables */
+[data-theme="light"] {
+  /* Import base variables for inheritance */
+  --color-white: #ffffff;
+  --color-black: #000000;
+
+  /* ==========================================================================
+     CORES BASE - LIGHT MODE
+     ========================================================================== */
+  
+  /* Backgrounds Claros e Limpos */
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #fafbfc;
+  --color-background-tertiary: #f3f4f6;
+  --color-background-elevated: #ffffff;
+  --color-background-overlay: rgba(255, 255, 255, 0.95);
+  
+  /* Cards e Surfaces */
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #fafbfc;
+  --color-surface-tertiary: #f3f4f6;
+  --color-surface-hover: #f9fafb;
+  --color-surface-active: #f3f4f6;
+  
+  /* Textos com Alta Legibilidade */
+  --color-text-primary: #111827;
+  --color-text-secondary: #374151;
+  --color-text-tertiary: #6b7280;
+  --color-text-disabled: #9ca3af;
+  --color-text-placeholder: #d1d5db;
+  
+  /* Bordas Quase Invisíveis */
+  --color-border-primary: #e5e7eb;
+  --color-border-secondary: #f3f4f6;
+  --color-border-tertiary: #f9fafb;
+  --color-border-focus: #667eea;
+  
+  /* ==========================================================================
+     CORES VIBRANTES - PASTÉIS SUAVES
+     ========================================================================== */
+  
+  /* Gradientes Suaves e Pastéis */
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  --danger-gradient: linear-gradient(135deg, #f5576c 0%, #e91e63 100%);
+  
+  /* Cores Sólidas Standard */
+  --color-primary: #667eea;
+  --color-primary-dark: #5a67d8;
+  --color-primary-light: #7c8ff0;
+  --color-primary-glow: rgba(102, 126, 234, 0.15);
+  
+  --color-secondary: #f093fb;
+  --color-secondary-dark: #e876f5;
+  --color-secondary-light: #f4a8fc;
+  --color-secondary-glow: rgba(240, 147, 251, 0.15);
+  
+  --color-success: #4facfe;
+  --color-success-dark: #2196f3;
+  --color-success-light: #6fbfff;
+  --color-success-glow: rgba(79, 172, 254, 0.15);
+  
+  --color-warning: #fa709a;
+  --color-warning-dark: #f74c7b;
+  --color-warning-light: #fb8fae;
+  --color-warning-glow: rgba(250, 112, 154, 0.15);
+  
+  --color-danger: #f5576c;
+  --color-danger-dark: #e91e63;
+  --color-danger-light: #f77086;
+  --color-danger-glow: rgba(245, 87, 108, 0.15);
+  
+  --color-info: #00f2fe;
+  --color-info-dark: #00bcd4;
+  --color-info-light: #4dd0e1;
+  --color-info-glow: rgba(0, 242, 254, 0.15);
+  
+  /* ==========================================================================
+     CORES CRYPTO AJUSTADAS
+     ========================================================================== */
+  
+  --color-bitcoin: #F7931A;
+  --color-bitcoin-dark: #E87F0A;
+  --color-bitcoin-light: #FFA940;
+  --color-bitcoin-glow: rgba(247, 147, 26, 0.15);
+  
+  --color-ethereum: #627EEA;
+  --color-ethereum-dark: #4E5ED4;
+  --color-ethereum-light: #7B93F0;
+  --color-ethereum-glow: rgba(98, 126, 234, 0.15);
+  
+  --color-usdt: #26A17B;
+  --color-usdt-dark: #1F8E6A;
+  --color-usdt-light: #33B88D;
+  --color-usdt-glow: rgba(38, 161, 123, 0.15);
+  
+  /* ==========================================================================
+     SOMBRAS SKEUMÓRFICAS PRONUNCIADAS
+     ========================================================================== */
+  
+  /* Sombras Skeumórficas */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-hard: 0 8px 32px rgba(0, 0, 0, 0.16), 0 4px 16px rgba(0, 0, 0, 0.10);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.20), 0 8px 24px rgba(0, 0, 0, 0.12);
+  
+  /* Sombras Coloridas Suaves */
+  --shadow-primary: 0 4px 16px rgba(102, 126, 234, 0.25);
+  --shadow-secondary: 0 4px 16px rgba(240, 147, 251, 0.25);
+  --shadow-success: 0 4px 16px rgba(79, 172, 254, 0.25);
+  --shadow-warning: 0 4px 16px rgba(250, 112, 154, 0.25);
+  --shadow-danger: 0 4px 16px rgba(245, 87, 108, 0.25);
+  
+  /* Sombras Skeumórficas Multi-Camada */
+  --shadow-skeuomorphic-raised: 
+    0 1px 2px rgba(0, 0, 0, 0.07),
+    0 2px 4px rgba(0, 0, 0, 0.07),
+    0 4px 8px rgba(0, 0, 0, 0.07),
+    0 8px 16px rgba(0, 0, 0, 0.07),
+    0 16px 32px rgba(0, 0, 0, 0.07),
+    0 32px 64px rgba(0, 0, 0, 0.07);
+  
+  --shadow-skeuomorphic-pressed: 
+    inset 0 1px 2px rgba(0, 0, 0, 0.1),
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 4px 8px rgba(0, 0, 0, 0.1);
+  
+  --shadow-skeuomorphic-floating:
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Inner Shadows */
+  --shadow-inner-soft: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  --shadow-inner-medium: inset 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-inner-hard: inset 0 6px 12px rgba(0, 0, 0, 0.10);
+  
+  /* ==========================================================================
+     ESTILOS ESPECÍFICOS
+     ========================================================================== */
+  
+  /* Scrollbar Light */
+  --scrollbar-track: #f3f4f6;
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-thumb-hover: #9ca3af;
+  
+  /* Input Styles */
+  --input-background: #fafbfc;
+  --input-background-focus: #ffffff;
+  --input-border: #e5e7eb;
+  --input-border-focus: var(--color-primary);
+  
+  /* Card Glass Effects */
+  --glass-background: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-blur: 12px;
+  
+  /* Code Block */
+  --code-background: #f3f4f6;
+  --code-text: #1f2937;
+  --code-comment: #6b7280;
+  --code-keyword: #5a67d8;
+  --code-string: #059669;
+  --code-number: #dc2626;
+  --code-function: #2563eb;
+  
+  /* Chart Colors */
+  --chart-grid: #e5e7eb;
+  --chart-axis: #6b7280;
+  --chart-tooltip-bg: rgba(255, 255, 255, 0.95);
+  
+  /* ==========================================================================
+     OVERLAYS E MODALS
+     ========================================================================== */
+  
+  --overlay-backdrop: rgba(0, 0, 0, 0.5);
+  --modal-background: var(--color-surface-primary);
+  --modal-border: var(--color-border-primary);
+  
+  /* ==========================================================================
+     GRADIENTES ESPECIAIS LIGHT
+     ========================================================================== */
+  
+  /* Luxury Gradient Light */
+  --luxury-gradient: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+  
+  /* Metal Gradient Light */
+  --metal-gradient: linear-gradient(135deg, #C0C5CE 0%, #E5E8ED 50%, #C0C5CE 100%);
+  
+  /* Light Gradient */
+  --light-gradient: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+  
+  /* Glass Gradient Light */
+  --glass-gradient: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+  
+  /* Pastel Gradient */
+  --pastel-gradient: linear-gradient(135deg, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(240, 147, 251, 0.1) 50%, 
+    rgba(79, 172, 254, 0.1) 100%
+  );
+}
+
+/* ==========================================================================
+   AJUSTES DE COMPONENTES PARA LIGHT MODE
+   ========================================================================== */
+
+[data-theme="light"] {
+  /* Body Background */
+  body {
+    background-color: var(--color-background-secondary);
+    color: var(--color-text-primary);
+  }
+  
+  /* Cards */
+  .card-skeuomorphic {
+    background: var(--color-surface-primary);
+    border: 1px solid var(--color-border-tertiary);
+    box-shadow: var(--shadow-skeuomorphic-raised);
+  }
+  
+  .card-skeuomorphic:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-skeuomorphic-floating);
+  }
+  
+  /* Buttons */
+  .btn-skeuomorphic {
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .btn-skeuomorphic:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hard);
+  }
+  
+  .btn-skeuomorphic:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-skeuomorphic-pressed);
+  }
+  
+  /* Inputs */
+  .input-skeuomorphic {
+    background: var(--input-background);
+    border-color: var(--input-border);
+    color: var(--color-text-primary);
+    box-shadow: var(--shadow-inner-soft);
+  }
+  
+  .input-skeuomorphic:focus {
+    background: var(--input-background-focus);
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 3px var(--color-primary-glow);
+  }
+  
+  /* Glass Effects */
+  .glass-effect {
+    background: var(--glass-background);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-soft);
+  }
+  
+  /* Code Highlighting */
+  code {
+    background: var(--code-background);
+    color: var(--code-text);
+    border: 1px solid var(--color-border-primary);
+  }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border: 2px solid var(--scrollbar-track);
+    box-shadow: var(--shadow-inner-soft);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+  
+  /* Selection */
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-white);
+  }
+}
+
+/* ==========================================================================
+   EFEITOS SKEUMÓRFICOS ESPECIAIS
+   ========================================================================== */
+
+[data-theme="light"] {
+  /* Neumorphism Effect */
+  .neumorphic {
+    background: var(--color-background-secondary);
+    box-shadow: 
+      8px 8px 16px #d1d5db,
+      -8px -8px 16px #ffffff;
+  }
+  
+  .neumorphic-inset {
+    background: var(--color-background-secondary);
+    box-shadow: 
+      inset 8px 8px 16px #d1d5db,
+      inset -8px -8px 16px #ffffff;
+  }
+  
+  /* Embossed Text */
+  .text-embossed {
+    color: var(--color-text-secondary);
+    text-shadow: 
+      1px 1px 1px #ffffff,
+      -1px -1px 1px #d1d5db;
+  }
+  
+  /* Engraved Text */
+  .text-engraved {
+    color: var(--color-text-secondary);
+    text-shadow: 
+      -1px -1px 1px #ffffff,
+      1px 1px 1px #d1d5db;
+  }
+}
+
+/* ==========================================================================
+   UTILIDADES LIGHT MODE
+   ========================================================================== */
+
+[data-theme="light"] {
+  /* Soft Shadows */
+  .shadow-soft-primary {
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.15);
+  }
+  
+  .shadow-soft-secondary {
+    box-shadow: 0 4px 20px rgba(240, 147, 251, 0.15);
+  }
+  
+  .shadow-soft-success {
+    box-shadow: 0 4px 20px rgba(79, 172, 254, 0.15);
+  }
+  
+  /* Gradient Borders */
+  .border-gradient-primary {
+    border: 2px solid transparent;
+    background-image: 
+      linear-gradient(white, white),
+      var(--primary-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+  }
+  
+  /* Paper Effect */
+  .paper-effect {
+    background: var(--color-surface-primary);
+    box-shadow: 
+      0 1px 1px rgba(0,0,0,0.15),
+      0 10px 0 -5px #eee,
+      0 10px 1px -4px rgba(0,0,0,0.15),
+      0 20px 0 -10px #eee,
+      0 20px 1px -9px rgba(0,0,0,0.15);
+  }
+  
+  /* Crypto Cards Light */
+  .crypto-card-btc {
+    background: linear-gradient(135deg, #FFF4E6 0%, #FFE4B5 100%);
+    border: 1px solid #FFD700;
+  }
+  
+  .crypto-card-eth {
+    background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
+    border: 1px solid #627EEA;
+  }
+  
+  .crypto-card-usdt {
+    background: linear-gradient(135deg, #E6F7F1 0%, #D1F2E5 100%);
+    border: 1px solid #26A17B;
+  }
+}
+
+/* ==========================================================================
+   ANIMAÇÕES LIGHT MODE
+   ========================================================================== */
+
+[data-theme="light"] {
+  /* Soft Pulse */
+  @keyframes soft-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 10px rgba(102, 126, 234, 0);
+    }
+  }
+  
+  /* Paper Fold */
+  @keyframes paper-fold {
+    0% {
+      transform: perspective(1000px) rotateX(0deg);
+    }
+    50% {
+      transform: perspective(1000px) rotateX(-10deg);
+    }
+    100% {
+      transform: perspective(1000px) rotateX(0deg);
+    }
+  }
+  
+  /* Classes de Animação */
+  .animate-soft-pulse {
+    animation: soft-pulse 2s ease-in-out infinite;
+  }
+  
+  .animate-paper-fold {
+    animation: paper-fold 0.6s ease-in-out;
+  }
+}
+
+/* ==========================================================================
+   MEDIA QUERIES LIGHT MODE
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  [data-theme="light"] {
+    --color-border-primary: #9ca3af;
+    --color-border-secondary: #d1d5db;
+    --color-text-secondary: #1f2937;
+    --color-text-tertiary: #374151;
+    --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.20);
+  }
+}
+
+/* Print Optimization */
+@media print {
+  [data-theme="light"] {
+    --color-background-primary: #ffffff;
+    --color-text-primary: #000000;
+    --shadow-soft: none;
+    --shadow-medium: none;
+    --shadow-hard: none;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+}

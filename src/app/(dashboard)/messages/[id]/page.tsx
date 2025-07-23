@@ -3,14 +3,21 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { format } from 'date-fns';
+import { format, isToday, isYesterday, isSameDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { webSocketService, ChatMessage } from '@/services/chat/websocket.service';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/utils/cn';
+import { XIcon } from '@/components/icons';
+
+// Novos componentes de chat
+import { MessageBubble } from '@/components/chat/MessageBubble';
+import { ChatInput } from '@/components/chat/ChatInput';
+import { ChatHeader } from '@/components/chat/ChatHeader';
+import { TypingIndicator } from '@/components/chat/TypingIndicator';
+import { FloatingReaction } from '@/components/chat/MessageReactions';
 
 interface Transaction {
   id: string;
@@ -45,6 +52,12 @@ interface Message extends ChatMessage {
   readAt?: Date;
   createdAt: Date;
   fileUrl?: string;
+  status?: 'sending' | 'sent' | 'delivered' | 'read';
+  reactions?: { emoji: string; count: number; hasReacted: boolean }[];
+  replyTo?: {
+    content: string;
+    senderName: string;
+  };
 }
 
 export default function ChatPage() {
@@ -62,10 +75,12 @@ export default function ChatPage() {
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'connecting'>('connecting');
   const [error, setError] = useState<string | null>(null);
+  const [floatingReaction, setFloatingReaction] = useState<string | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   // Auto scroll para última mensagem
   const scrollToBottom = () => {
@@ -96,7 +111,21 @@ export default function ChatPage() {
         throw new Error('Erro ao carregar mensagens');
       }
       const messagesData = await messagesRes.json();
-      setMessages(messagesData.data.messages || []);
+      
+      // Formatar mensagens com status
+      const formattedMessages = (messagesData.data.messages || []).map((msg: any) => ({
+        ...msg,
+        status: 'read' as const,
+        sender: {
+          id: msg.senderId,
+          name: msg.senderName,
+          isMe: msg.senderId === session?.user?.id
+        },
+        createdAt: new Date(msg.createdAt || msg.timestamp),
+        reactions: []
+      }));
+      
+      setMessages(formattedMessages);
 
     } catch (err) {
       console.error('Erro ao carregar dados:', err);
@@ -124,7 +153,8 @@ export default function ChatPage() {
               isMe: message.senderId === session.user.id
             },
             isRead: false,
-            createdAt: new Date(message.timestamp)
+            createdAt: new Date(message.timestamp),
+            status: 'delivered'
           };
           
           setMessages(prev => [...prev, formattedMessage]);
@@ -178,7 +208,8 @@ export default function ChatPage() {
         body: JSON.stringify({
           transactionId,
           content: messageContent,
-          type: 'TEXT'
+          type: 'TEXT',
+          replyToId: replyingTo?.id
         }),
       });
 
@@ -199,11 +230,18 @@ export default function ChatPage() {
           },
           timestamp: new Date(data.data.createdAt),
           transactionId,
-          type: 'text'
+          type: 'TEXT',
+          status: 'sent',
+          replyTo: replyingTo ? {
+            content: replyingTo.content,
+            senderName: replyingTo.sender.name
+          } : undefined
         };
         setMessages(prev => [...prev, formattedMessage]);
         scrollToBottom();
       }
+
+      setReplyingTo(null);
 
     } catch (err) {
       console.error('Erro ao enviar mensagem:', err);
@@ -215,10 +253,7 @@ export default function ChatPage() {
   };
 
   // Lidar com upload de arquivo
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const handleFileSelect = async (file: File) => {
     // Validar tamanho do arquivo (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setError('Arquivo muito grande. Máximo 10MB');
@@ -268,9 +303,6 @@ export default function ChatPage() {
       setError('Erro ao enviar arquivo');
     } finally {
       setIsSending(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
@@ -285,6 +317,46 @@ export default function ChatPage() {
     typingTimeoutRef.current = setTimeout(() => {
       webSocketService.emitStopTyping(transactionId);
     }, 2000);
+  };
+
+  // Lidar com reações
+  const handleReaction = (messageId: string, emoji: string) => {
+    setMessages(prev => prev.map(msg => {
+      if (msg.id === messageId) {
+        const reactions = msg.reactions || [];
+        const existingReaction = reactions.find(r => r.emoji === emoji);
+        
+        if (existingReaction) {
+          if (existingReaction.hasReacted) {
+            // Remover reação
+            return {
+              ...msg,
+              reactions: reactions.filter(r => r.emoji !== emoji)
+            };
+          } else {
+            // Adicionar reação
+            return {
+              ...msg,
+              reactions: reactions.map(r => 
+                r.emoji === emoji 
+                  ? { ...r, count: r.count + 1, hasReacted: true }
+                  : r
+              )
+            };
+          }
+        } else {
+          // Nova reação
+          return {
+            ...msg,
+            reactions: [...reactions, { emoji, count: 1, hasReacted: true }]
+          };
+        }
+      }
+      return msg;
+    }));
+
+    // Mostrar animação de reação flutuante
+    setFloatingReaction(emoji);
   };
 
   // Formatar status da transação
@@ -311,95 +383,63 @@ export default function ChatPage() {
     return isBuyer ? transaction.seller : transaction.buyer;
   }, [transaction, session]);
 
-  // Renderizar mensagem
-  const renderMessage = (message: Message) => {
-    const isMe = message.sender.isMe;
+  // Agrupar mensagens por data
+  const groupMessagesByDate = (messages: Message[]) => {
+    const groups: { date: Date; messages: Message[] }[] = [];
+    
+    messages.forEach((message) => {
+      const messageDate = new Date(message.createdAt);
+      const lastGroup = groups[groups.length - 1];
+      
+      if (!lastGroup || !isSameDay(messageDate, lastGroup.date)) {
+        groups.push({ date: messageDate, messages: [message] });
+      } else {
+        lastGroup.messages.push(message);
+      }
+    });
+    
+    return groups;
+  };
 
+  // Renderizar separador de data
+  const renderDateSeparator = (date: Date) => {
+    let dateLabel = '';
+    
+    if (isToday(date)) {
+      dateLabel = 'Hoje';
+    } else if (isYesterday(date)) {
+      dateLabel = 'Ontem';
+    } else {
+      dateLabel = format(date, "d 'de' MMMM", { locale: ptBR });
+    }
+    
     return (
-      <div
-        key={message.id}
-        className={cn(
-          'flex',
-          isMe ? 'justify-end' : 'justify-start',
-          'mb-4'
-        )}
-      >
-        <div
-          className={cn(
-            'max-w-[70%] rounded-lg px-4 py-2',
-            isMe
-              ? 'bg-azul-bancario text-white'
-              : 'bg-gray-100 text-text-primary'
-          )}
-        >
-          {/* Nome do remetente (apenas para mensagens recebidas) */}
-          {!isMe && (
-            <p className="text-xs font-medium mb-1 opacity-70">
-              {message.sender.name}
-            </p>
-          )}
-
-          {/* Conteúdo da mensagem */}
-          {message.type === 'TEXT' && (
-            <p className="break-words">{message.content}</p>
-          )}
-
-          {message.type === 'IMAGE' && message.fileUrl && (
-            <div>
-              <img
-                src={message.fileUrl}
-                alt={message.content}
-                className="max-w-full rounded cursor-pointer hover:opacity-90"
-                onClick={() => window.open(message.fileUrl, '_blank')}
-              />
-              <p className="text-xs mt-1 opacity-70">{message.content}</p>
-            </div>
-          )}
-
-          {message.type === 'FILE' && message.fileUrl && (
-            <a
-              href={message.fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                'flex items-center gap-2 underline',
-                isMe ? 'text-white' : 'text-azul-bancario'
-              )}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              {message.content}
-            </a>
-          )}
-
-          {/* Timestamp e status */}
-          <div className={cn(
-            'flex items-center gap-2 mt-1',
-            'text-xs',
-            isMe ? 'text-white/70' : 'text-gray-500'
-          )}>
-            <span>
-              {format(new Date(message.createdAt), 'HH:mm', { locale: ptBR })}
-            </span>
-            {isMe && (
-              <span>
-                {message.isRead ? (
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </span>
-            )}
-          </div>
+      <div className="flex items-center justify-center my-6">
+        <div className="px-4 py-1 bg-gray-100 rounded-full text-sm text-text-secondary">
+          {dateLabel}
         </div>
       </div>
     );
   };
+
+  // Quick Actions
+  const quickActions = [
+    {
+      label: 'Enviar PIX',
+      icon: <span className="text-lg">💸</span>,
+      action: () => console.log('PIX')
+    },
+    {
+      label: 'Confirmar Pagamento',
+      icon: <span className="text-lg">✅</span>,
+      action: () => console.log('Confirmar')
+    },
+    {
+      label: 'Abrir Disputa',
+      icon: <span className="text-lg">🚨</span>,
+      action: () => console.log('Disputa')
+    }
+  ];
 
   // Effects
   useEffect(() => {
@@ -459,79 +499,67 @@ export default function ChatPage() {
   }
 
   const counterparty = getCounterparty();
+  const messageGroups = groupMessagesByDate(messages);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <button
-                onClick={() => router.push('/trades')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-
-              <div>
-                <h1 className="text-lg font-semibold text-text-primary">
-                  Chat - {transaction.listing.cryptocurrency}
-                </h1>
-                <div className="flex items-center gap-2 text-sm text-text-secondary">
-                  <span>
-                    {counterparty?.firstName} {counterparty?.lastName}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    {transaction.amount} {transaction.listing.cryptocurrency} por R$ {transaction.totalPrice.toLocaleString('pt-BR')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {getStatusBadge(transaction.status)}
-              
-              <div className="flex items-center gap-2">
-                <div className={cn(
-                  'w-2 h-2 rounded-full',
-                  connectionStatus === 'connected' ? 'bg-green-500' : 
-                  connectionStatus === 'connecting' ? 'bg-yellow-500 animate-pulse' : 
-                  'bg-red-500'
-                )} />
-                <span className="text-xs text-text-secondary">
-                  {connectionStatus === 'connected' ? 'Conectado' : 
-                   connectionStatus === 'connecting' ? 'Conectando...' : 
-                   'Desconectado'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ChatHeader
+        title={`${counterparty?.firstName} ${counterparty?.lastName}`}
+        subtitle={`${transaction.amount} ${transaction.listing.cryptocurrency} • R$ ${transaction.totalPrice.toLocaleString('pt-BR')}`}
+        status={isTyping ? 'typing' : 'online'}
+        badge={getStatusBadge(transaction.status)}
+        connectionStatus={connectionStatus}
+        onBack={() => router.push('/trades')}
+        onInfo={() => console.log('Info')}
+      />
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto px-4 py-6"
+        style={{ scrollbarWidth: 'thin' }}
+      >
         <div className="container mx-auto max-w-4xl">
           {messages.length === 0 ? (
             <div className="text-center text-text-secondary py-8">
-              <p>Nenhuma mensagem ainda. Inicie a conversa!</p>
+              <p className="mb-2">Nenhuma mensagem ainda</p>
+              <p className="text-sm">Inicie a conversa para negociar com segurança!</p>
             </div>
           ) : (
             <>
-              {messages.map(renderMessage)}
-              {isTyping && typingUser && (
-                <div className="flex items-center gap-2 text-sm text-text-secondary mb-4">
-                  <div className="flex gap-1">
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                  </div>
-                  <span>{counterparty?.firstName} está digitando...</span>
+              {messageGroups.map((group, groupIndex) => (
+                <div key={groupIndex}>
+                  {renderDateSeparator(group.date)}
+                  {group.messages.map((message, index) => {
+                    const prevMessage = index > 0 ? group.messages[index - 1] : null;
+                    const nextMessage = index < group.messages.length - 1 ? group.messages[index + 1] : null;
+                    
+                    const isFirstInGroup = !prevMessage || prevMessage.sender.id !== message.sender.id;
+                    const isLastInGroup = !nextMessage || nextMessage.sender.id !== message.sender.id;
+                    
+                    return (
+                      <div key={message.id} className="animate-message-appear">
+                        <MessageBubble
+                          {...message}
+                          timestamp={new Date(message.createdAt)}
+                          isFirstInGroup={isFirstInGroup}
+                          isLastInGroup={isLastInGroup}
+                          onReply={() => setReplyingTo(message)}
+                          onReact={(emoji) => handleReaction(message.id, emoji)}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
+              ))}
+              
+              {/* Typing Indicator */}
+              {isTyping && (
+                <TypingIndicator 
+                  userName={counterparty?.firstName}
+                  className="mt-2"
+                />
               )}
             </>
           )}
@@ -539,70 +567,44 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Input Area */}
-      <div className="bg-white border-t">
-        <div className="container mx-auto max-w-4xl p-4">
-          {error && (
-            <div className="mb-2 text-sm text-vermelho-alerta">
-              {error}
+      {/* Reply Preview */}
+      {replyingTo && (
+        <div className="px-4 py-2 bg-gray-100 border-t border-gray-200">
+          <div className="container mx-auto max-w-4xl flex items-center justify-between">
+            <div className="flex-1">
+              <p className="text-xs text-text-secondary">Respondendo a {replyingTo.sender.name}</p>
+              <p className="text-sm text-text-primary truncate">{replyingTo.content}</p>
             </div>
-          )}
-          
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="flex items-center gap-2"
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              className="hidden"
-              accept="image/*,.pdf,.doc,.docx,.txt"
-            />
-            
             <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isSending}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              onClick={() => setReplyingTo(null)}
+              className="p-1 hover:bg-gray-200 rounded"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-              </svg>
+              <XIcon className="w-4 h-4" />
             </button>
-
-            <Input
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                handleTyping();
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendMessage();
-                }
-              }}
-              placeholder="Digite sua mensagem..."
-              disabled={isSending}
-              className="flex-1"
-            />
-
-            <Button
-              type="submit"
-              disabled={!newMessage.trim() || isSending}
-              loading={isSending}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </Button>
-          </form>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Input Area */}
+      <ChatInput
+        value={newMessage}
+        onChange={setNewMessage}
+        onSend={handleSendMessage}
+        onFileSelect={handleFileSelect}
+        onTyping={handleTyping}
+        disabled={isSending}
+        loading={isSending}
+        showQuickActions={transaction.status === 'AWAITING_PAYMENT'}
+        quickActions={quickActions}
+      />
+
+      {/* Floating Reaction */}
+      {floatingReaction && (
+        <FloatingReaction
+          emoji={floatingReaction}
+          onComplete={() => setFloatingReaction(null)}
+        />
+      )}
     </div>
   );
 }
