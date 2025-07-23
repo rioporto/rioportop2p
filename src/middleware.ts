@@ -11,6 +11,7 @@ const publicPaths = [
   '/reset-password',
   '/showcase',
   '/api/auth',
+  '/test-login',
 ];
 
 export function middleware(request: NextRequest) {
