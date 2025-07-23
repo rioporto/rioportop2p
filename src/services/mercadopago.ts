@@ -45,7 +45,7 @@ export class MercadoPagoService {
   constructor(accessToken?: string) {
     this.accessToken = accessToken || MERCADOPAGO_ACCESS_TOKEN;
     
-    if (!this.accessToken) {
+    if (!this.accessToken && typeof window !== 'undefined') {
       console.warn('MercadoPago access token not configured');
     }
   }
@@ -188,8 +188,29 @@ export class MercadoPagoService {
   }
 }
 
-// Singleton instance
-export const mercadoPagoService = new MercadoPagoService();
+// Lazy-loaded singleton instance
+let _mercadoPagoService: MercadoPagoService | null = null;
+
+export const getMercadoPagoService = () => {
+  if (!_mercadoPagoService) {
+    _mercadoPagoService = new MercadoPagoService();
+  }
+  return _mercadoPagoService;
+};
+
+// For backward compatibility
+export const mercadoPagoService = {
+  createPixPayment: (...args: Parameters<MercadoPagoService['createPixPayment']>) => 
+    getMercadoPagoService().createPixPayment(...args),
+  getPaymentStatus: (...args: Parameters<MercadoPagoService['getPaymentStatus']>) => 
+    getMercadoPagoService().getPaymentStatus(...args),
+  cancelPayment: (...args: Parameters<MercadoPagoService['cancelPayment']>) => 
+    getMercadoPagoService().cancelPayment(...args),
+  validateWebhookSignature: (...args: Parameters<MercadoPagoService['validateWebhookSignature']>) => 
+    getMercadoPagoService().validateWebhookSignature(...args),
+  processWebhookNotification: (...args: Parameters<MercadoPagoService['processWebhookNotification']>) => 
+    getMercadoPagoService().processWebhookNotification(...args),
+};
 
 // Utility functions
 export function formatCPF(cpf: string): string {
