@@ -299,7 +299,7 @@ export const CryptoList: React.FC = () => {
                   Preços em Tempo Real
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Cotações atualizadas a cada 30 segundos diretamente das principais exchanges
+                  Cotações atualizadas a cada 30 segundos diretamente das principais corretoras
                 </p>
               </div>
             </div>

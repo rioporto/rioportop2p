@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rio Porto P2P Exchange",
-  description: "Plataforma de exchange P2P com sistema de KYC em níveis",
-  keywords: "p2p, exchange, crypto, bitcoin, brasil, kyc",
+  title: "Rio Porto P2P",
+  description: "Plataforma P2P de criptomoedas com sistema de KYC em níveis",
+  keywords: "p2p, crypto, bitcoin, criptomoedas, brasil, kyc",
   authors: [{ name: "Rio Porto Team" }],
   creator: "Rio Porto",
   publisher: "Rio Porto",
@@ -26,6 +26,23 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: "/favicon.ico",
+  },
+  openGraph: {
+    title: "Rio Porto P2P",
+    description: "Plataforma P2P de criptomoedas com sistema de KYC em níveis",
+    url: "https://rioporto.com.br",
+    siteName: "Rio Porto P2P",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Rio Porto P2P",
+    description: "Plataforma P2P de criptomoedas com sistema de KYC em níveis",
+    creator: "@rioportop2p",
+  },
+  alternates: {
+    canonical: "https://rioporto.com.br",
   },
 };
 
@@ -39,6 +56,7 @@ export default function RootLayout({
       <head>
         <ThemeScript />
         <meta name="theme-color" content="#ffffff" />
+        <link rel="manifest" href="/manifest.json" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

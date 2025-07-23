@@ -17,7 +17,7 @@ export const Footer: React.FC = () => {
                 Sobre a Rio Porto
               </h3>
               <p className="text-sm text-text-secondary">
-                Plataforma P2P de exchange com sistema de KYC em níveis, 
+                Plataforma P2P com sistema de KYC em níveis, 
                 oferecendo segurança e flexibilidade para traders brasileiros.
               </p>
             </div>
@@ -125,7 +125,7 @@ export const Footer: React.FC = () => {
           <div className="mt-8 pt-8 border-t border-background">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-sm text-text-secondary">
-                © {currentYear} Rio Porto P2P Exchange. Todos os direitos reservados.
+                © {currentYear} Rio Porto P2P. Todos os direitos reservados.
               </p>
               
               <div className="flex items-center gap-6">

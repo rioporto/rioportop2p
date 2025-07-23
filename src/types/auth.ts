@@ -1,4 +1,4 @@
-// Tipos de autenticação e KYC para o Rio Porto P2P Exchange
+// Tipos de autenticação e KYC para o Rio Porto P2P
 
 export enum KYCLevel {
   PLATFORM_ACCESS = 0,  // Email validado + Nome

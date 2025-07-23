@@ -5,7 +5,7 @@ export const metadata: Metadata = {
     template: '%s | Rio Porto P2P',
     default: 'Rio Porto P2P',
   },
-  description: 'Exchange P2P de criptomoedas segura e confiável',
+  description: 'Plataforma P2P de criptomoedas segura e confiável',
 };
 
 export default function AuthLayout({

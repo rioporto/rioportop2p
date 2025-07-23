@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Criar Conta - Rio Porto P2P',
-  description: 'Crie sua conta na Rio Porto P2P Exchange',
+  description: 'Crie sua conta na Rio Porto P2P',
 };
 
 export default function RegisterPage() {
@@ -16,7 +16,7 @@ export default function RegisterPage() {
             Crie sua conta
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Junte-se à maior exchange P2P do Brasil
+            Junte-se à maior plataforma P2P do Brasil
           </p>
         </div>
 

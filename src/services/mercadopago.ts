@@ -94,7 +94,7 @@ export class MercadoPagoService {
 
     const request: IMercadoPagoPixRequest = {
       transaction_amount: data.amount,
-      description: data.description || 'Rio Porto P2P Exchange - Compra de Criptomoeda',
+      description: data.description || 'Rio Porto P2P - Compra de Criptomoeda',
       payment_method_id: 'pix',
       payer: {
         email: userEmail,
