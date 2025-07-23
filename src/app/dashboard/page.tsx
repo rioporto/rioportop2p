@@ -10,33 +10,45 @@ import { PortfolioChart, BarChart } from '@/components/dashboard/PortfolioChart'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { KYCLevel } from '@/types/kyc';
+import { toKYCLevel } from '@/lib/utils/kyc';
 
 export default async function DashboardPage() {
-  const session = await auth();
+  try {
+    const session = await auth();
+    
+    // Log para debug
+    console.log('Dashboard - Session:', session ? 'Found' : 'Not found');
+    console.log('Dashboard - User ID:', session?.user?.id);
 
-  if (!session?.user) {
-    redirect('/login');
-  }
+    if (!session?.user) {
+      redirect('/login');
+    }
 
-  // Buscar informações completas do usuário
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    include: {
-      _count: {
-        select: {
-          buyTransactions: true,
-          sellTransactions: true,
-          listings: {
-            where: { isActive: true }
+    // Buscar informações completas do usuário
+    console.log('Dashboard - Fetching user with ID:', session.user.id);
+    
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      include: {
+        _count: {
+          select: {
+            buyTransactions: true,
+            sellTransactions: true,
+            listings: {
+              where: { isActive: true }
+            },
           },
         },
       },
-    },
-  });
+    });
+    
+    console.log('Dashboard - User found:', user ? 'Yes' : 'No');
+    console.log('Dashboard - User KYC Level:', user?.kycLevel);
 
-  if (!user) {
-    redirect('/login');
-  }
+    if (!user) {
+      console.error('Dashboard - User not found in database');
+      redirect('/login');
+    }
 
   // Buscar reputação do usuário
   const reputation = await prisma.userReputation.findUnique({
@@ -122,9 +134,9 @@ export default async function DashboardPage() {
   // Preparar dados do usuário para o Header
   const userData = {
     id: user.id,
-    name: user.name,
+    name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Usuário',
     email: user.email,
-    kycLevel: (user.kycLevel || 'PLATFORM_ACCESS') as KYCLevel,
+    kycLevel: toKYCLevel(user.kycLevel),
   };
 
   return (
@@ -272,4 +284,15 @@ export default async function DashboardPage() {
       </main>
     </div>
   );
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    
+    // Se for erro de autenticação, redireciona para login
+    if (error instanceof Error && error.message.includes('auth')) {
+      redirect('/login');
+    }
+    
+    // Para outros erros, lança para o error boundary
+    throw error;
+  }
 }

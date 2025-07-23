@@ -1284,6 +1284,48 @@
   }
 }
 
+/* Scale X Animation for progress bars */
+@keyframes scaleX {
+  from {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  to {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@keyframes drawLine {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes count {
+  from {
+    counter-increment: 0;
+  }
+  to {
+    counter-increment: var(--value);
+  }
+}
+
+/* Classes for new animations */
+.animate-scaleX {
+  animation: scaleX 1s ease-out forwards;
+}
+
+.animate-drawLine {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 1s ease-out forwards;
+}
+
+.animate-count {
+  animation: count 1s ease-out forwards;
+}
+
 /* List Stagger */
 .list-stagger > * {
   opacity: 0;
