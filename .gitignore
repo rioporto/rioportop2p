@@ -45,6 +45,7 @@ next-env.d.ts
 # Documentation (internal use only)
 /*.md
 !README.md
+*.txt
 /docs/
 /documentation/
 API_DOCUMENTATION.md
@@ -58,6 +59,7 @@ NEXT_STEPS.md
 RAILWAY_DEPLOY.md
 START_SERVER.md
 WINDOWS_WSL_GUIDE.md
+INICIAR_SERVIDOR.txt
 
 # Scripts (internal use only)
 /scripts/
