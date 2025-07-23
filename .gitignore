@@ -45,28 +45,16 @@ next-env.d.ts
 
 /src/generated/prisma
 
-# Documentation (internal use only)
-/*.md
-!README.md
-!CLAUDE.md
-!ENVIRONMENT_VARIABLES.md
-!TESTING_GUIDE.md
-!DEVELOPMENT_ORCHESTRATION.md
-*.txt
+# Documentation files - NEVER commit
+*.md
 /docs/
+CLAUDE.md
+README.md
+CHANGELOG.md
+
+# Text documentation files
+*.txt
 /documentation/
-API_DOCUMENTATION.md
-AUTH_SETUP.md
-CODE_STANDARDS.md
-DATABASE_SETUP.md
-DEVELOPMENT_STATUS.md
-MIDDLEWARE_FIX.md
-NEON_RAILWAY_SETUP.md
-NEXT_STEPS.md
-RAILWAY_DEPLOY.md
-START_SERVER.md
-WINDOWS_WSL_GUIDE.md
-INICIAR_SERVIDOR.txt
 
 # Scripts (internal use only)
 /scripts/
