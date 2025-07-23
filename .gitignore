@@ -41,3 +41,31 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Documentation (internal use only)
+/*.md
+!README.md
+/docs/
+/documentation/
+API_DOCUMENTATION.md
+AUTH_SETUP.md
+CODE_STANDARDS.md
+DATABASE_SETUP.md
+DEVELOPMENT_STATUS.md
+MIDDLEWARE_FIX.md
+NEON_RAILWAY_SETUP.md
+NEXT_STEPS.md
+RAILWAY_DEPLOY.md
+START_SERVER.md
+WINDOWS_WSL_GUIDE.md
+
+# Scripts (internal use only)
+/scripts/
+*.sh
+
+# Planning files
+/planning/
+/planejamento/
+PLANO-MESTRE.md
+TODO.md
+ROADMAP.md
