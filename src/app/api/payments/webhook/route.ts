@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
-import { getMercadoPagoService } from '@/services/mercadopago';
+import { prisma } from '@/lib/db/prisma';
 import { ApiResponse } from '@/lib/api/response';
 import { TransactionStatus } from '@prisma/client';
 import crypto from 'crypto';
@@ -108,7 +107,7 @@ async function processPaymentEvent(
     const paymentData: PaymentData = await response.json();
 
     // 2. Buscar transação pelo paymentId
-    const transaction = await db.transaction.findFirst({
+    const transaction = await prisma.transaction.findFirst({
       where: { paymentId: paymentId },
       include: {
         buyer: true,
@@ -124,7 +123,7 @@ async function processPaymentEvent(
     // 3. Processar baseado no status do pagamento
     if (paymentData.status === 'approved' && transaction.status === TransactionStatus.AWAITING_PAYMENT) {
       // Atualizar status da transação
-      await db.transaction.update({
+      await prisma.transaction.update({
         where: { id: transaction.id },
         data: {
           status: TransactionStatus.PAYMENT_CONFIRMED,
@@ -173,7 +172,7 @@ async function processPaymentEvent(
       transaction.status === TransactionStatus.AWAITING_PAYMENT
     ) {
       // Pagamento falhou
-      await db.transaction.update({
+      await prisma.transaction.update({
         where: { id: transaction.id },
         data: {
           status: TransactionStatus.CANCELLED,

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '../../auth/[...nextauth]/route';
-import { db } from '@/lib/db';
-import { pixService } from '@/services/pixService';
+import { auth } from '@/lib/auth/auth';
+import { prisma } from '@/lib/db/prisma';
+import { pixService } from '@/services/payments/pix.service';
 import { AppError, handleApiError } from '@/lib/errors';
 import { TransactionStatus } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
   try {
     // 1. Verificar autenticação
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       throw new AppError('Não autenticado', 401);
     }
@@ -23,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 3. Buscar transação e verificar se user é o buyer
-    const transaction = await db.transaction.findUnique({
+    const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
       include: {
         buyer: true,
@@ -45,15 +44,14 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Chamar pixService.createPixPayment
-    const pixPayment = await pixService.createPixPayment({
-      transactionId: transaction.id,
-      amount: transaction.amount.toNumber(),
-      buyerEmail: transaction.buyer.email!,
-      buyerName: transaction.buyer.name || 'Comprador',
-    });
+    const pixPayment = await pixService.createPixPayment(
+      transaction.id,
+      transaction.amount.toNumber(),
+      transaction.buyer.email!
+    );
 
     // 6. Salvar paymentId na transação
-    await db.transaction.update({
+    await prisma.transaction.update({
       where: { id: transactionId },
       data: {
         paymentId: pixPayment.paymentId,
@@ -80,7 +78,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // 1. Verificar autenticação
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user?.id) {
       throw new AppError('Não autenticado', 401);
     }
@@ -94,7 +92,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Buscar transação e verificar se user faz parte dela
-    const transaction = await db.transaction.findUnique({
+    const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
       include: {
         buyer: true,
@@ -125,7 +123,7 @@ export async function GET(request: NextRequest) {
 
     // 6. Se pago, atualizar status para PAYMENT_CONFIRMED
     if (paymentStatus.isPaid && transaction.status === TransactionStatus.AWAITING_PAYMENT) {
-      await db.transaction.update({
+      await prisma.transaction.update({
         where: { id: transactionId },
         data: {
           status: TransactionStatus.PAYMENT_CONFIRMED,
