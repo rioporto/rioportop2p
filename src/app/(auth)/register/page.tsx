@@ -1,9 +1,28 @@
 import { RegisterForm } from '@/components/forms/RegisterForm';
 import { Metadata } from 'next';
+import { pageMetadata, siteConfig } from '@/lib/seo-config';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
-  title: 'Criar Conta - Rio Porto P2P',
-  description: 'Crie sua conta na Rio Porto P2P',
+  title: pageMetadata.register.title,
+  description: pageMetadata.register.description,
+  keywords: pageMetadata.register.keywords,
+  openGraph: {
+    title: pageMetadata.register.title,
+    description: pageMetadata.register.description,
+    url: `${siteConfig.url}/register`,
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: pageMetadata.register.title,
+    description: pageMetadata.register.description,
+  },
+  alternates: {
+    canonical: `${siteConfig.url}/register`,
+  },
 };
 
 export default function RegisterPage() {

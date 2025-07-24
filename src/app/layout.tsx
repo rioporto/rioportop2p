@@ -1,54 +1,36 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import "../styles/variables.css";
 import "../styles/themes/light.css";
 import "../styles/themes/dark.css";
 import "../styles/animations.css";
 import { ThemeProvider, ThemeScript } from "@/contexts/ThemeContext";
+import { AnalyticsProvider } from "@/lib/analytics";
+import { 
+  defaultMetadata, 
+  organizationSchema, 
+  websiteSchema, 
+  resourceHints,
+  generateJsonLd 
+} from "@/lib/seo-config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
-export const metadata: Metadata = {
-  title: "Rio Porto P2P",
-  description: "Plataforma P2P de criptomoedas com sistema de KYC em níveis",
-  keywords: "p2p, crypto, bitcoin, criptomoedas, brasil, kyc",
-  authors: [{ name: "Rio Porto Team" }],
-  creator: "Rio Porto",
-  publisher: "Rio Porto",
-  robots: {
-    index: true,
-    follow: true,
-  },
-  icons: {
-    icon: "/favicon.ico",
-  },
-  openGraph: {
-    title: "Rio Porto P2P",
-    description: "Plataforma P2P de criptomoedas com sistema de KYC em níveis",
-    url: "https://rioporto.com.br",
-    siteName: "Rio Porto P2P",
-    locale: "pt_BR",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Rio Porto P2P",
-    description: "Plataforma P2P de criptomoedas com sistema de KYC em níveis",
-    creator: "@rioportop2p",
-  },
-  alternates: {
-    canonical: "https://rioporto.com.br",
-  },
-};
+export const metadata: Metadata = defaultMetadata;
 
 export default function RootLayout({
   children,
@@ -61,13 +43,41 @@ export default function RootLayout({
         <ThemeScript />
         <meta name="theme-color" content="#ffffff" />
         <link rel="manifest" href="/manifest.json" />
+        
+        {/* Resource hints for performance */}
+        {resourceHints.map((hint) => (
+          <link
+            key={hint.href}
+            rel={hint.rel}
+            href={hint.href}
+            crossOrigin={hint.crossOrigin}
+          />
+        ))}
+        
+        {/* Structured Data */}
+        <Script
+          id="organization-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: generateJsonLd(organizationSchema),
+          }}
+        />
+        <Script
+          id="website-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: generateJsonLd(websiteSchema),
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
         <ThemeProvider>
-          {children}
+          <AnalyticsProvider>
+            {children}
+          </AnalyticsProvider>
         </ThemeProvider>
       </body>
     </html>

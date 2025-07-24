@@ -3,8 +3,10 @@
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { HomePageStructuredData } from './page-metadata';
 
 export default function Home() {
   const [activeUsers, setActiveUsers] = useState(1247);
@@ -18,7 +20,9 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-black text-white">
+    <>
+      <HomePageStructuredData />
+      <main className="min-h-screen bg-black text-white">
       {/* Hero Section - Impacto Imediato */}
       <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
         {/* Background animado */}
@@ -325,5 +329,6 @@ export default function Home() {
         </div>
       </footer>
     </main>
+    </>
   );
 }

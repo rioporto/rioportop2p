@@ -1,9 +1,31 @@
 import { LoginForm } from '@/components/forms/LoginForm';
 import { Metadata } from 'next';
+import { pageMetadata, siteConfig } from '@/lib/seo-config';
 
 export const metadata: Metadata = {
-  title: 'Login - Rio Porto P2P',
-  description: 'Faça login em sua conta Rio Porto P2P',
+  title: pageMetadata.login.title,
+  description: pageMetadata.login.description,
+  keywords: pageMetadata.login.keywords,
+  openGraph: {
+    title: pageMetadata.login.title,
+    description: pageMetadata.login.description,
+    url: `${siteConfig.url}/login`,
+    siteName: siteConfig.name,
+    locale: siteConfig.locale,
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: pageMetadata.login.title,
+    description: pageMetadata.login.description,
+  },
+  robots: {
+    index: false,
+    follow: true,
+  },
+  alternates: {
+    canonical: `${siteConfig.url}/login`,
+  },
 };
 
 interface ILoginPageProps {

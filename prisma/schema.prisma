@@ -1348,3 +1348,67 @@ model UserReputation {
   @@index([averageScore])
   @@map("user_reputations")
 }
+// Analytics Models
+model AnalyticsEvent {
+  id                String   @id @default(uuid())
+  sessionId         String   @map("session_id")
+  eventName         String   @map("event_name")
+  eventTimestamp    DateTime @map("event_timestamp")
+  eventParameters   String   @map("event_parameters") // JSON string
+  userId            String?  @map("user_id")
+  userType          String   @default("visitor") @map("user_type")
+  ipAddress         String   @map("ip_address")
+  userAgent         String   @map("user_agent")
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  @@index([sessionId])
+  @@index([eventName])
+  @@index([eventTimestamp])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+model AnalyticsAggregate {
+  id                String   @id @default(uuid())
+  date              DateTime
+  period            String   // 'hour', 'day', 'week', 'month'
+  metric            String
+  dimension         String?
+  value             Float
+  count             Int      @default(1)
+  metadata          String?  // JSON string for additional data
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  
+  @@unique([date, period, metric, dimension])
+  @@index([date, period])
+  @@index([metric])
+  @@map("analytics_aggregates")
+}
+
+model AnalyticsSession {
+  id                String    @id @default(uuid())
+  sessionId         String    @unique @map("session_id")
+  userId            String?   @map("user_id")
+  startTime         DateTime  @map("start_time")
+  endTime           DateTime? @map("end_time")
+  duration          Int?      // in seconds
+  pageViews         Int       @default(0) @map("page_views")
+  events            Int       @default(0)
+  source            String?
+  medium            String?
+  campaign          String?
+  deviceType        String?   @map("device_type")
+  browser           String?
+  os                String?
+  country           String?
+  city              String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  
+  @@index([userId])
+  @@index([startTime])
+  @@index([source, medium])
+  @@map("analytics_sessions")
+}
