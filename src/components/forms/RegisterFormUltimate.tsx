@@ -53,9 +53,13 @@ export const RegisterFormUltimate: React.FC = () => {
       setError(null);
       vibrate();
 
-      console.log('Dados sendo enviados:', data);
+      console.log('Dados sendo enviados:', {
+        ...data,
+        password: '[REDACTED]',
+        confirmPassword: '[REDACTED]'
+      });
 
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch('/api/auth/register-test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
