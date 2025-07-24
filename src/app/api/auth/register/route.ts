@@ -4,7 +4,7 @@ import { hashPassword, generateVerificationToken } from '@/lib/auth/utils';
 import { registrationSchema } from '@/lib/api/registration';
 import { ApiResponse } from '@/lib/api/response';
 // import { withMiddleware, rateLimit } from '@/lib/api/middleware';
-import { KYCLevel } from '@/types/kyc';
+import { KYCLevel } from '@prisma/client';
 import { leadApi } from '@/lib/api/lead';
 import { LeadSource, LeadInterest } from '@/lib/api/lead';
 import { newsletterApi } from '@/lib/api/newsletter';
