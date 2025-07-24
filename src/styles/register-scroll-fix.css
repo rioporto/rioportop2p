@@ -1,74 +1,142 @@
-/* Correções de scroll para formulário de registro */
+/* Correções robustas de scroll para formulário de registro */
+
+/* Reset global para scroll behavior */
+* {
+  scroll-behavior: auto !important;
+}
+
+/* Configurações base HTML e Body */
 html {
-  scroll-behavior: smooth;
+  height: 100%;
   overflow-x: hidden;
+  overflow-y: scroll; /* Força scrollbar sempre visível */
 }
 
 body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: scroll !important;
   position: relative;
-  min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Remove overflow hidden dos containers principais */
-.register-page {
+/* Container principal do Next.js */
+#__next {
+  min-height: 100vh;
+  position: relative;
   overflow: visible !important;
+}
+
+/* Página de registro específica */
+.register-page {
+  min-height: 100vh;
   position: relative !important;
+  overflow: visible !important;
 }
 
 .register-page main {
-  overflow: visible !important;
   position: relative !important;
+  overflow: visible !important;
   min-height: 100vh;
+  padding-bottom: 150px; /* Espaço extra no bottom */
 }
 
-/* Garante que o formulário seja scrollable */
+/* Formulário de registro */
 .register-page form {
   position: relative !important;
   overflow: visible !important;
 }
 
-/* Fix para containers Next.js */
-#__next {
-  overflow: visible !important;
-  min-height: 100vh;
-}
-
-/* Melhora scroll em dispositivos touch */
-.register-page {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Previne que elementos com position fixed interfiram no scroll */
+/* Remove qualquer position fixed que possa interferir */
 .register-page .fixed,
-.register-page [class*="fixed"] {
+.register-page [class*="fixed"],
+.register-page [style*="position: fixed"] {
   position: absolute !important;
 }
 
-/* Adiciona padding extra no bottom para melhor visualização em mobile */
-@media (max-width: 768px) {
-  .register-page main {
-    padding-bottom: 100px;
+/* Específico para inputs focados */
+.register-page input:focus,
+.register-page textarea:focus,
+.register-page select:focus {
+  position: relative;
+  z-index: 9999;
+}
+
+/* Mobile e Tablets */
+@media (max-width: 1024px) {
+  html, body {
+    height: 100%;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch !important;
   }
   
-  /* Garante que o teclado virtual não bloqueie inputs */
-  .register-page input:focus,
-  .register-page textarea:focus,
-  .register-page select:focus {
-    position: relative;
-    z-index: 10;
+  .register-page main {
+    padding-bottom: 200px; /* Mais espaço para teclado virtual */
+  }
+  
+  /* Força visualização durante focus */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    position: relative !important;
+    z-index: 9999 !important;
+    transform: translateZ(0); /* Força GPU acceleration */
   }
 }
 
-/* Previne zoom automático em iOS */
-@media (max-width: 768px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="tel"],
-  input[type="password"],
-  textarea,
-  select {
-    font-size: 16px !important;
+/* Previne zoom automático em iOS/Android */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"],
+input[type="time"],
+input[type="week"],
+input[type="search"],
+input[type="url"],
+textarea,
+select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Hack específico para Safari iOS */
+@supports (-webkit-touch-callout: none) {
+  .register-page {
+    position: relative !important;
+    -webkit-transform: translate3d(0, 0, 0);
   }
+  
+  input:focus,
+  textarea:focus,
+  select:focus {
+    -webkit-transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Garantir que modais/sheets não bloqueiem scroll */
+.register-page .modal,
+.register-page .sheet,
+.register-page [role="dialog"] {
+  position: absolute !important;
+}
+
+/* Debug - remover em produção */
+.register-page:before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: red;
+  z-index: 99999;
+  display: none; /* Ativar para debug */
 }

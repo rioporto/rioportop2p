@@ -6,16 +6,24 @@ import { sendEmail } from '@/services/email';
 import { generateUUID } from '@/lib/utils/uuid';
 
 export async function POST(req: NextRequest) {
+  console.log('========== REGISTER-COMPLETE INICIO ==========');
+  
   try {
     const body = await req.json();
     console.log('Registration attempt for:', body.email);
     console.log('Request body:', JSON.stringify(body, null, 2));
     
-    // Validação básica
-    if (!body.email || !body.password || !body.name) {
+    // Validação básica com log detalhado
+    const missingFields = [];
+    if (!body.email) missingFields.push('email');
+    if (!body.password) missingFields.push('password');
+    if (!body.name) missingFields.push('name');
+    
+    if (missingFields.length > 0) {
+      console.error('Missing required fields:', missingFields);
       return NextResponse.json({
         success: false,
-        error: 'Todos os campos são obrigatórios'
+        error: 'Campos obrigatórios faltando: ' + missingFields.join(', ')
       }, { status: 400 });
     }
     
@@ -38,7 +46,16 @@ export async function POST(req: NextRequest) {
     const verificationToken = crypto.randomBytes(32).toString('hex');
     const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
     
-    // Criar usuário
+    // Criar usuário com logs detalhados
+    console.log('Creating user with data:', {
+      email: body.email.toLowerCase(),
+      firstName: body.name.split(' ')[0],
+      lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
+      phone: body.whatsapp?.replace(/\D/g, ''),
+      acceptTerms: body.acceptTerms,
+      newsletter: body.newsletter
+    });
+    
     const user = await prisma.user.create({
       data: {
         id: generateUUID(),
@@ -53,6 +70,8 @@ export async function POST(req: NextRequest) {
         marketingConsent: body.newsletter || false
       }
     });
+    
+    console.log('User created successfully:', user.id);
     
     // Criar token de verificação separadamente
     const verification = await prisma.verificationToken.create({
@@ -92,7 +111,7 @@ export async function POST(req: NextRequest) {
                   <h1>Rio Porto P2P</h1>
                 </div>
                 <div class="content">
-                  <h2>Olá ${user.name}!</h2>
+                  <h2>Olá ${user.firstName}!</h2>
                   <p>Obrigado por se cadastrar na Rio Porto P2P. Para completar seu cadastro, por favor verifique seu email clicando no botão abaixo:</p>
                   <p style="text-align: center;">
                     <a href="${verificationUrl}" class="button">Verificar Email</a>
@@ -121,18 +140,50 @@ export async function POST(req: NextRequest) {
     }, { status: 201 });
     
   } catch (error) {
+    console.error('========== REGISTER-COMPLETE ERRO ==========');
     console.error('Registration error:', error);
-    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+    console.error('Error type:', typeof error);
+    console.error('Error constructor:', error?.constructor?.name);
+    
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      
+      // Verificar se é erro do Prisma
+      if (error.message.includes('Unique constraint')) {
+        console.error('Unique constraint violation detected');
+        return NextResponse.json({
+          success: false,
+          error: 'Email ou telefone já cadastrado',
+          code: 'UNIQUE_CONSTRAINT'
+        }, { status: 409 });
+      }
+      
+      if (error.message.includes('Foreign key constraint')) {
+        console.error('Foreign key constraint error');
+        return NextResponse.json({
+          success: false,
+          error: 'Erro de integridade de dados',
+          code: 'FK_CONSTRAINT'
+        }, { status: 400 });
+      }
+    }
     
     // Retorna erro mais específico
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
     
     return NextResponse.json({
       success: false,
-      error: process.env.NODE_ENV === 'development' 
-        ? `Erro: ${errorMessage}` 
-        : 'Erro ao criar conta. Tente novamente.',
-      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+      error: 'Erro ao criar conta. Tente novamente.',
+      details: process.env.NODE_ENV === 'development' ? {
+        message: errorMessage,
+        type: error?.constructor?.name,
+        stack: error instanceof Error ? error.stack : undefined
+      } : undefined
     }, { status: 500 });
+  }
+  
+  finally {
+    console.log('========== REGISTER-COMPLETE FIM ==========');
   }
 }

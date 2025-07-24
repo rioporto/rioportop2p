@@ -498,54 +498,82 @@ export const RegisterFormUX: React.FC = () => {
   // Aplica melhorias de scroll
   useFormScroll();
   
-  // Garante que campos focados via TAB fiquem visíveis
+  // Solução robusta para garantir que campos focados fiquem visíveis
   useEffect(() => {
     const handleFocus = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
+      
+      // Verifica se é um campo de formulário
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-        // Pequeno delay para garantir que o DOM esteja atualizado
+        // Força um delay maior para garantir renderização completa
         setTimeout(() => {
-          // Usa scrollIntoView com configurações mais robustas
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest'
-          });
+          const rect = target.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
           
-          // Adiciona um offset adicional para melhor visualização no mobile
-          if (window.innerWidth < 768) {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          // Calcula se o elemento está fora da viewport
+          const elementTop = rect.top + scrollTop;
+          const elementBottom = rect.bottom + scrollTop;
+          const viewportTop = scrollTop;
+          const viewportBottom = scrollTop + viewportHeight;
+          
+          // Se o elemento estiver fora da viewport, faz o scroll
+          if (elementBottom > viewportBottom || elementTop < viewportTop) {
+            // Calcula a posição ideal (elemento no centro da tela)
+            const idealScrollTop = elementTop - (viewportHeight / 2) + (rect.height / 2);
+            
+            // Scroll suave para a posição calculada
             window.scrollTo({
-              top: scrollTop - 50,
+              top: Math.max(0, idealScrollTop),
               behavior: 'smooth'
             });
           }
-        }, 100);
+        }, 200); // Delay maior para garantir que tudo esteja renderizado
       }
     };
     
-    // Usa focusin que é mais confiável para bubbling
+    // Adiciona listeners para focus e click (mobile)
     document.addEventListener('focusin', handleFocus, true);
-    
-    // Adiciona listener para mudanças de orientação mobile
-    const handleOrientationChange = () => {
-      const activeElement = document.activeElement as HTMLElement;
-      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-        setTimeout(() => {
-          activeElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest'
-          });
-        }, 300);
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+        handleFocus(new FocusEvent('focus', { bubbles: true, relatedTarget: target }));
       }
+    }, true);
+    
+    // Para dispositivos touch, adiciona suporte específico
+    let touchTimeout: NodeJS.Timeout;
+    document.addEventListener('touchstart', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+        // Aguarda o teclado virtual aparecer
+        touchTimeout = setTimeout(() => {
+          handleFocus(new FocusEvent('focus', { bubbles: true, relatedTarget: target }));
+        }, 500);
+      }
+    }, true);
+    
+    // Adiciona listener para resize (quando teclado virtual aparece/desaparece)
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        const activeElement = document.activeElement as HTMLElement;
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+          handleFocus(new FocusEvent('focus', { bubbles: true, relatedTarget: activeElement }));
+        }
+      }, 300);
     };
     
-    window.addEventListener('orientationchange', handleOrientationChange);
+    window.addEventListener('resize', handleResize);
     
     return () => {
       document.removeEventListener('focusin', handleFocus, true);
-      window.removeEventListener('orientationchange', handleOrientationChange);
+      document.removeEventListener('click', handleFocus, true);
+      document.removeEventListener('touchstart', handleFocus, true);
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(touchTimeout);
+      clearTimeout(resizeTimeout);
     };
   }, []);
 
