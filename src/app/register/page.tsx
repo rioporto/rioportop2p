@@ -1,4 +1,4 @@
-import { RegisterForm } from '@/components/forms/RegisterForm';
+import { RegisterFormDark } from '@/components/forms/RegisterFormDark';
 import { Metadata } from 'next';
 import { pageMetadata, siteConfig } from '@/lib/seo-config';
 
@@ -41,7 +41,7 @@ export default function RegisterPage() {
         </div>
 
         <div className="bg-gray-900 py-8 px-4 shadow-2xl rounded-2xl sm:px-10 border border-gray-800">
-          <RegisterForm />
+          <RegisterFormDark />
         </div>
 
         <div className="text-center space-y-4">
