@@ -37,7 +37,7 @@ export type {
   AnalyticsSession
 } from '@prisma/client';
 
-export {
+export type {
   KYCLevel,
   UserStatus,
   TwoFactorMethod,
