@@ -59,7 +59,7 @@ export const RegisterFormUltimate: React.FC = () => {
         confirmPassword: '[REDACTED]'
       });
 
-      const response = await fetch('/api/auth/register-test', {
+      const response = await fetch('/api/auth/register-simple', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

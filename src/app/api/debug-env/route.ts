@@ -6,6 +6,7 @@ export async function GET(req: NextRequest) {
     NODE_ENV: process.env.NODE_ENV,
     DATABASE_URL_EXISTS: !!process.env.DATABASE_URL,
     AUTH_SECRET_EXISTS: !!process.env.AUTH_SECRET,
+    NEXTAUTH_SECRET_EXISTS: !!process.env.NEXTAUTH_SECRET,
     SMS_DEV_API_KEY_EXISTS: !!process.env.SMS_DEV_API_KEY,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     AUTH_URL: process.env.AUTH_URL,

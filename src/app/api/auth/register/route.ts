@@ -3,7 +3,7 @@ import { prisma } from '@/lib/db/prisma';
 import { hashPassword, generateVerificationToken } from '@/lib/auth/utils';
 import { registrationSchema } from '@/lib/api/registration';
 import { ApiResponse } from '@/lib/api/response';
-import { withMiddleware, rateLimit } from '@/lib/api/middleware';
+// import { withMiddleware, rateLimit } from '@/lib/api/middleware';
 import { KYCLevel } from '@/types/kyc';
 import { leadApi } from '@/lib/api/lead';
 import { LeadSource, LeadInterest } from '@/lib/api/lead';
@@ -16,19 +16,23 @@ const REGISTRATION_RATE_LIMIT = {
   maxRequests: 5, // 5 registration attempts per 15 minutes
 };
 
-export const POST = withMiddleware(
-  async (req: NextRequest) => {
+export async function POST(req: NextRequest) {
+    console.log('=== REGISTER ROUTE CALLED ===');
+    console.log('Method:', req.method);
+    console.log('URL:', req.url);
+    console.log('Headers:', Object.fromEntries(req.headers.entries()));
+    
     try {
       const body = await req.json();
       console.log('Received registration data:', body);
       
-      // Validate captcha if enabled
-      if (process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true' && body.captchaToken) {
-        const captchaValid = await verifyCaptcha(body.captchaToken);
-        if (!captchaValid) {
-          return ApiResponse.badRequest('Captcha inválido', 'INVALID_CAPTCHA');
-        }
-      }
+      // Skip captcha validation for now
+      // if (process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true' && body.captchaToken) {
+      //   const captchaValid = await verifyCaptcha(body.captchaToken);
+      //   if (!captchaValid) {
+      //     return ApiResponse.badRequest('Captcha inválido', 'INVALID_CAPTCHA');
+      //   }
+      // }
       
       // Validate input data
       let validatedData;
@@ -169,9 +173,4 @@ export const POST = withMiddleware(
       console.error('Registration error:', error);
       return ApiResponse.internalError('Erro ao criar conta');
     }
-  },
-  {
-    rateLimit: REGISTRATION_RATE_LIMIT,
-    logging: true,
-  }
-);
+}
