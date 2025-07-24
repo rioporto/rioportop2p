@@ -80,6 +80,44 @@ const registerPageSchema = {
 export default function RegisterPage() {
   return (
     <>
+      <style jsx global>{`
+        html {
+          scroll-behavior: auto !important;
+          overflow: visible !important;
+          height: 100% !important;
+        }
+        body {
+          overflow-x: hidden !important;
+          overflow-y: auto !important;
+          position: relative !important;
+          height: 100% !important;
+          min-height: 100vh;
+        }
+        main {
+          overflow: visible !important;
+          height: auto !important;
+          min-height: 100vh !important;
+        }
+        /* For\u00e7a todos os containers a permitir scroll */
+        #__next {
+          height: 100% !important;
+          overflow: visible !important;
+        }
+        /* Remove qualquer position fixed ou absolute que possa interferir */
+        .register-form-wrapper,
+        .register-container-premium {
+          position: relative !important;
+          overflow: visible !important;
+        }
+        /* Garante que o scroll funcione em todos os navegadores */
+        * {
+          -webkit-overflow-scrolling: touch !important;
+        }
+        /* Remove smooth scroll que pode causar conflitos */
+        html, body, * {
+          scroll-behavior: auto !important;
+        }
+      `}</style>
       <Script
         id="register-structured-data"
         type="application/ld+json"

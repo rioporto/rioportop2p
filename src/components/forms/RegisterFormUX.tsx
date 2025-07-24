@@ -488,14 +488,24 @@ export const RegisterFormUX: React.FC = () => {
     const handleFocus = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-        // Usa scrollIntoView nativo com comportamento suave
-        setTimeout(() => {
-          target.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest'
-          });
-        }, 100);
+        // Verifica se o elemento está fora da viewport
+        const rect = target.getBoundingClientRect();
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+        
+        // Só faz scroll se o elemento estiver fora da tela
+        if (rect.bottom > viewportHeight || rect.top < 0 || rect.right > viewportWidth || rect.left < 0) {
+          // Calcula a posição ideal para centralizar o elemento
+          const elementTop = target.offsetTop;
+          const elementHeight = target.offsetHeight;
+          const containerHeight = target.closest('form')?.scrollHeight || document.body.scrollHeight;
+          
+          // Ajusta o scroll da página inteira, não só do elemento
+          const scrollPosition = elementTop - (viewportHeight / 2) + (elementHeight / 2);
+          
+          // Usa scroll nativo sem smooth behavior para evitar conflitos
+          window.scrollTo(0, Math.max(0, scrollPosition));
+        }
       }
     };
     
