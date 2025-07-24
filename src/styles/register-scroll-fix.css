@@ -1,0 +1,45 @@
+/* Correções de scroll para formulário de registro */
+html.register-page {
+  scroll-behavior: auto !important;
+  overflow: visible !important;
+  height: 100% !important;
+}
+
+body.register-page {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  position: relative !important;
+  height: 100% !important;
+  min-height: 100vh;
+}
+
+.register-page main {
+  overflow: visible !important;
+  height: auto !important;
+  min-height: 100vh !important;
+}
+
+/* Força todos os containers a permitir scroll */
+.register-page #__next {
+  height: 100% !important;
+  overflow: visible !important;
+}
+
+/* Remove qualquer position fixed ou absolute que possa interferir */
+.register-page .register-form-wrapper,
+.register-page .register-container-premium {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* Garante que o scroll funcione em todos os navegadores */
+.register-page * {
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Remove smooth scroll que pode causar conflitos */
+.register-page,
+.register-page body,
+.register-page * {
+  scroll-behavior: auto !important;
+}

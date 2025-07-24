@@ -4,6 +4,7 @@ import { SecurityInfoDark } from '@/components/forms/SecurityInfoDark';
 import { Metadata } from 'next';
 import { pageMetadata, siteConfig, organizationSchema, generateJsonLd } from '@/lib/seo-config';
 import Script from 'next/script';
+import '@/styles/register-scroll-fix.css';
 
 export const metadata: Metadata = {
   title: pageMetadata.register.title,
@@ -80,44 +81,6 @@ const registerPageSchema = {
 export default function RegisterPage() {
   return (
     <>
-      <style jsx global>{`
-        html {
-          scroll-behavior: auto !important;
-          overflow: visible !important;
-          height: 100% !important;
-        }
-        body {
-          overflow-x: hidden !important;
-          overflow-y: auto !important;
-          position: relative !important;
-          height: 100% !important;
-          min-height: 100vh;
-        }
-        main {
-          overflow: visible !important;
-          height: auto !important;
-          min-height: 100vh !important;
-        }
-        /* For\u00e7a todos os containers a permitir scroll */
-        #__next {
-          height: 100% !important;
-          overflow: visible !important;
-        }
-        /* Remove qualquer position fixed ou absolute que possa interferir */
-        .register-form-wrapper,
-        .register-container-premium {
-          position: relative !important;
-          overflow: visible !important;
-        }
-        /* Garante que o scroll funcione em todos os navegadores */
-        * {
-          -webkit-overflow-scrolling: touch !important;
-        }
-        /* Remove smooth scroll que pode causar conflitos */
-        html, body, * {
-          scroll-behavior: auto !important;
-        }
-      `}</style>
       <Script
         id="register-structured-data"
         type="application/ld+json"
@@ -126,7 +89,7 @@ export default function RegisterPage() {
         }}
       />
       <main 
-        className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black px-4 sm:px-6 lg:px-8 py-12"
+        className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black px-4 sm:px-6 lg:px-8 py-12 register-page"
         role="main"
         aria-labelledby="register-heading"
       >
