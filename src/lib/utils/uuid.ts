@@ -21,7 +21,7 @@ export function generateUUID(): string {
 // Alternative using crypto.getRandomValues if available
 export function generateSecureUUID(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-    return generateSecureUUID();
+    return crypto.randomUUID();
   }
   
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {

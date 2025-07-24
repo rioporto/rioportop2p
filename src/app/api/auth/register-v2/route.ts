@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient, KYCLevel } from '@prisma/client';
-
-// Criar cliente Prisma local para evitar problemas de import
-const prisma = new PrismaClient();
+import { KYCLevel } from '@prisma/client';
+import { prisma } from '@/lib/db/prisma';
 
 export async function POST(req: NextRequest) {
   console.log('=== REGISTER V2 - MINIMAL VERSION ===');
@@ -130,7 +128,7 @@ export async function POST(req: NextRequest) {
       stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     }, { status: 500 });
   } finally {
-    // Desconectar Prisma
-    await prisma.$disconnect();
+    // Não desconectar quando usando cliente compartilhado
+    // await prisma.$disconnect();
   }
 }

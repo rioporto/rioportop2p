@@ -171,38 +171,40 @@ export async function POST(req: NextRequest) {
       
       // Asynchronous tasks (don't wait for these)
       try {
-        // Por enquanto vamos comentar os imports dinâmicos que estão causando erro
-        console.log('Skipping email/SMS services for now - need to configure');
+        console.log('Processing async tasks...');
         
-        // TODO: Configurar serviços de email e SMS corretamente
-        // await emailService.sendVerificationEmail(user.email, verificationToken);
-        
-        // Subscribe to newsletter if requested
+        // Newsletter subscription
         if (validatedData.newsletter) {
-          newsletterApi.subscribe({
-            email: validatedData.email,
-            name: validatedData.name,
-            language: 'pt',
-          }).catch((error) => {
-            console.error('Error subscribing to newsletter:', error);
-          });
+          try {
+            await newsletterApi.subscribe({
+              email: validatedData.email,
+              name: validatedData.name,
+              language: 'pt',
+            });
+            console.log('Newsletter subscription successful');
+          } catch (error) {
+            console.error('Newsletter subscription failed:', error);
+          }
         }
         
-        // Capture lead in CRM
-        leadApi.capture({
-          name: validatedData.name,
-          email: validatedData.email,
-          phone: validatedData.whatsapp,
-          source: body.source === 'landing_page' ? LeadSource.LANDING_PAGE : LeadSource.REGISTRATION_FORM,
-          interest: LeadInterest.P2P_TRADING,
-          acceptTerms: validatedData.acceptTerms,
-          acceptMarketing: validatedData.newsletter || false,
-          utm_source: body.utm_source,
-          utm_medium: body.utm_medium,
-          utm_campaign: body.utm_campaign,
-        }).catch((error) => {
-          console.error('Error capturing lead:', error);
-        });
+        // Lead capture
+        try {
+          await leadApi.capture({
+            name: validatedData.name,
+            email: validatedData.email,
+            phone: validatedData.whatsapp,
+            source: body.source === 'landing_page' ? LeadSource.LANDING_PAGE : LeadSource.REGISTRATION_FORM,
+            interest: LeadInterest.P2P_TRADING,
+            acceptTerms: validatedData.acceptTerms,
+            acceptMarketing: validatedData.newsletter || false,
+            utm_source: body.utm_source,
+            utm_medium: body.utm_medium,
+            utm_campaign: body.utm_campaign,
+          });
+          console.log('Lead capture successful');
+        } catch (error) {
+          console.error('Lead capture failed:', error);
+        }
       } catch (error) {
         console.error('Error in async tasks:', error);
         // Don't fail the registration because of these
