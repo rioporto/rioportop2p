@@ -1,142 +1,129 @@
-/* Correções robustas de scroll para formulário de registro */
-
-/* Reset global para scroll behavior */
-* {
-  scroll-behavior: auto !important;
-}
-
-/* Configurações base HTML e Body */
+/* Reset e configurações base para scroll */
 html {
+  /* Scroll padding para garantir espaço quando focando elementos */
+  scroll-padding-top: 100px;
+  scroll-padding-bottom: 100px;
+  /* Scroll suave mas não muito lento */
+  scroll-behavior: smooth;
+  /* Garantir altura total */
   height: 100%;
+  /* Prevenir scroll horizontal */
   overflow-x: hidden;
-  overflow-y: scroll; /* Força scrollbar sempre visível */
+  overflow-y: auto;
 }
 
 body {
-  height: 100%;
+  /* Garantir altura mínima */
+  min-height: 100%;
   margin: 0;
   padding: 0;
+  /* Scroll sempre disponível */
+  overflow-y: scroll;
   overflow-x: hidden;
-  overflow-y: scroll !important;
+  /* Position relative para children */
   position: relative;
+  /* Melhor scroll em dispositivos touch */
   -webkit-overflow-scrolling: touch;
 }
 
-/* Container principal do Next.js */
+/* Container Next.js */
 #__next {
   min-height: 100vh;
   position: relative;
-  overflow: visible !important;
 }
 
-/* Página de registro específica */
+/* Página de registro */
 .register-page {
   min-height: 100vh;
-  position: relative !important;
+  /* Importante: não usar overflow hidden */
   overflow: visible !important;
 }
 
+/* Main content com padding extra */
 .register-page main {
-  position: relative !important;
-  overflow: visible !important;
-  min-height: 100vh;
-  padding-bottom: 150px; /* Espaço extra no bottom */
+  padding-bottom: 200px; /* Espaço para teclado virtual */
 }
 
-/* Formulário de registro */
+/* Form específico */
 .register-page form {
-  position: relative !important;
-  overflow: visible !important;
-}
-
-/* Remove qualquer position fixed que possa interferir */
-.register-page .fixed,
-.register-page [class*="fixed"],
-.register-page [style*="position: fixed"] {
-  position: absolute !important;
-}
-
-/* Específico para inputs focados */
-.register-page input:focus,
-.register-page textarea:focus,
-.register-page select:focus {
+  /* Garantir que o form não interfira no scroll */
   position: relative;
-  z-index: 9999;
+  overflow: visible;
 }
 
-/* Mobile e Tablets */
+/* Prevenir que elementos fixos interfiram */
+.register-page [class*="fixed"] {
+  /* Não forçar position absolute, pode quebrar layout */
+  pointer-events: none;
+}
+
+.register-page [class*="fixed"] * {
+  pointer-events: auto;
+}
+
+/* Focus styles com z-index alto */
+input:focus,
+textarea:focus,
+select:focus,
+[role="textbox"]:focus {
+  position: relative;
+  z-index: 1000;
+  /* Sombra para destacar campo focado */
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+/* Mobile e tablets */
 @media (max-width: 1024px) {
-  html, body {
-    height: 100%;
-    overflow-y: scroll !important;
-    -webkit-overflow-scrolling: touch !important;
+  html {
+    /* Mais scroll padding em mobile */
+    scroll-padding-top: 150px;
+    scroll-padding-bottom: 150px;
   }
   
   .register-page main {
-    padding-bottom: 200px; /* Mais espaço para teclado virtual */
-  }
-  
-  /* Força visualização durante focus */
-  input:focus,
-  textarea:focus,
-  select:focus {
-    position: relative !important;
-    z-index: 9999 !important;
-    transform: translateZ(0); /* Força GPU acceleration */
+    /* Ainda mais espaço para teclado */
+    padding-bottom: 300px;
   }
 }
 
-/* Previne zoom automático em iOS/Android */
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="password"],
-input[type="number"],
-input[type="date"],
-input[type="datetime-local"],
-input[type="month"],
-input[type="time"],
-input[type="week"],
-input[type="search"],
-input[type="url"],
-textarea,
-select {
-  font-size: 16px !important;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
+/* Prevenir zoom em iOS/Android */
+@media (max-width: 768px) {
+  input,
+  textarea,
+  select,
+  [role="textbox"] {
+    /* Font size 16px previne zoom */
+    font-size: 16px !important;
+    /* Transform scale para manter visual se necessário */
+    transform-origin: left top;
+  }
 }
 
-/* Hack específico para Safari iOS */
+/* Suporte específico para Safari iOS */
 @supports (-webkit-touch-callout: none) {
+  /* Safari iOS tem problemas com position fixed */
   .register-page {
-    position: relative !important;
-    -webkit-transform: translate3d(0, 0, 0);
+    /* Força repaint */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
   
-  input:focus,
-  textarea:focus,
-  select:focus {
-    -webkit-transform: translate3d(0, 0, 0);
+  /* Melhora performance de scroll */
+  .register-page * {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 }
 
-/* Garantir que modais/sheets não bloqueiem scroll */
-.register-page .modal,
-.register-page .sheet,
-.register-page [role="dialog"] {
-  position: absolute !important;
-}
-
-/* Debug - remover em produção */
-.register-page:before {
-  content: "";
+/* Debug visual - remover em produção */
+.debug-scroll-area {
   position: fixed;
-  top: 0;
+  top: 50%;
   left: 0;
-  width: 100%;
+  right: 0;
   height: 2px;
-  background: red;
-  z-index: 99999;
+  background: rgba(255, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 9999;
   display: none; /* Ativar para debug */
 }

@@ -35,18 +35,7 @@ import {
   CheckIcon
 } from '@heroicons/react/24/solid';
 import '@/styles/register.css';
-
-// Hook personalizado para gerenciar scroll em formulários
-const useFormScroll = () => {
-  useEffect(() => {
-    // Adiciona atributo ao body para identificar página de registro
-    document.body.classList.add('register-page-body');
-    
-    return () => {
-      document.body.classList.remove('register-page-body');
-    };
-  }, []);
-};
+import { useScrollToFocus } from '@/hooks/useScrollToFocus';
 
 // Mensagens de erro específicas
 const errorMessages: { [key: string]: string } = {
@@ -495,87 +484,8 @@ export const RegisterFormUX: React.FC = () => {
   const router = useRouter();
   const { vibrate } = useMobileOptimizations();
   
-  // Aplica melhorias de scroll
-  useFormScroll();
-  
-  // Solução robusta para garantir que campos focados fiquem visíveis
-  useEffect(() => {
-    const handleFocus = (e: FocusEvent) => {
-      const target = e.target as HTMLElement;
-      
-      // Verifica se é um campo de formulário
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-        // Força um delay maior para garantir renderização completa
-        setTimeout(() => {
-          const rect = target.getBoundingClientRect();
-          const viewportHeight = window.innerHeight;
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          
-          // Calcula se o elemento está fora da viewport
-          const elementTop = rect.top + scrollTop;
-          const elementBottom = rect.bottom + scrollTop;
-          const viewportTop = scrollTop;
-          const viewportBottom = scrollTop + viewportHeight;
-          
-          // Se o elemento estiver fora da viewport, faz o scroll
-          if (elementBottom > viewportBottom || elementTop < viewportTop) {
-            // Calcula a posição ideal (elemento no centro da tela)
-            const idealScrollTop = elementTop - (viewportHeight / 2) + (rect.height / 2);
-            
-            // Scroll suave para a posição calculada
-            window.scrollTo({
-              top: Math.max(0, idealScrollTop),
-              behavior: 'smooth'
-            });
-          }
-        }, 200); // Delay maior para garantir que tudo esteja renderizado
-      }
-    };
-    
-    // Adiciona listeners para focus e click (mobile)
-    document.addEventListener('focusin', handleFocus, true);
-    document.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-        handleFocus(new FocusEvent('focus', { bubbles: true, relatedTarget: target }));
-      }
-    }, true);
-    
-    // Para dispositivos touch, adiciona suporte específico
-    let touchTimeout: NodeJS.Timeout;
-    document.addEventListener('touchstart', (e) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-        // Aguarda o teclado virtual aparecer
-        touchTimeout = setTimeout(() => {
-          handleFocus(new FocusEvent('focus', { bubbles: true, relatedTarget: target }));
-        }, 500);
-      }
-    }, true);
-    
-    // Adiciona listener para resize (quando teclado virtual aparece/desaparece)
-    let resizeTimeout: NodeJS.Timeout;
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(() => {
-        const activeElement = document.activeElement as HTMLElement;
-        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
-          handleFocus(new FocusEvent('focus', { bubbles: true, relatedTarget: activeElement }));
-        }
-      }, 300);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
-    return () => {
-      document.removeEventListener('focusin', handleFocus, true);
-      document.removeEventListener('click', handleFocus, true);
-      document.removeEventListener('touchstart', handleFocus, true);
-      window.removeEventListener('resize', handleResize);
-      clearTimeout(touchTimeout);
-      clearTimeout(resizeTimeout);
-    };
-  }, []);
+  // Aplica solução de scroll para campos focados
+  useScrollToFocus();
 
   const {
     register,

@@ -1,6 +1,7 @@
 import { RegisterFormUX } from '@/components/forms/RegisterFormUX';
 import { TrustBadgesDark } from '@/components/forms/TrustBadgesDark';
 import { SecurityInfoDark } from '@/components/forms/SecurityInfoDark';
+import { ScrollDebug } from '@/components/debug/ScrollDebug';
 import { Metadata } from 'next';
 import { pageMetadata, siteConfig, organizationSchema, generateJsonLd } from '@/lib/seo-config';
 import Script from 'next/script';
@@ -88,6 +89,7 @@ export default function RegisterPage() {
           __html: generateJsonLd(registerPageSchema),
         }}
       />
+      <ScrollDebug />
       <main 
         className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black px-4 sm:px-6 lg:px-8 py-12 register-page"
         role="main"
