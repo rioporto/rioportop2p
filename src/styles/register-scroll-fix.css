@@ -1,45 +1,74 @@
 /* Correções de scroll para formulário de registro */
-html.register-page {
-  scroll-behavior: auto !important;
-  overflow: visible !important;
-  height: 100% !important;
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
-body.register-page {
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  position: relative !important;
-  height: 100% !important;
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
   min-height: 100vh;
+}
+
+/* Remove overflow hidden dos containers principais */
+.register-page {
+  overflow: visible !important;
+  position: relative !important;
 }
 
 .register-page main {
   overflow: visible !important;
-  height: auto !important;
-  min-height: 100vh !important;
+  position: relative !important;
+  min-height: 100vh;
 }
 
-/* Força todos os containers a permitir scroll */
-.register-page #__next {
-  height: 100% !important;
-  overflow: visible !important;
-}
-
-/* Remove qualquer position fixed ou absolute que possa interferir */
-.register-page .register-form-wrapper,
-.register-page .register-container-premium {
+/* Garante que o formulário seja scrollable */
+.register-page form {
   position: relative !important;
   overflow: visible !important;
 }
 
-/* Garante que o scroll funcione em todos os navegadores */
-.register-page * {
-  -webkit-overflow-scrolling: touch !important;
+/* Fix para containers Next.js */
+#__next {
+  overflow: visible !important;
+  min-height: 100vh;
 }
 
-/* Remove smooth scroll que pode causar conflitos */
-.register-page,
-.register-page body,
-.register-page * {
-  scroll-behavior: auto !important;
+/* Melhora scroll em dispositivos touch */
+.register-page {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Previne que elementos com position fixed interfiram no scroll */
+.register-page .fixed,
+.register-page [class*="fixed"] {
+  position: absolute !important;
+}
+
+/* Adiciona padding extra no bottom para melhor visualização em mobile */
+@media (max-width: 768px) {
+  .register-page main {
+    padding-bottom: 100px;
+  }
+  
+  /* Garante que o teclado virtual não bloqueie inputs */
+  .register-page input:focus,
+  .register-page textarea:focus,
+  .register-page select:focus {
+    position: relative;
+    z-index: 10;
+  }
+}
+
+/* Previne zoom automático em iOS */
+@media (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }

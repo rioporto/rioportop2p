@@ -36,6 +36,18 @@ import {
 } from '@heroicons/react/24/solid';
 import '@/styles/register.css';
 
+// Hook personalizado para gerenciar scroll em formulários
+const useFormScroll = () => {
+  useEffect(() => {
+    // Adiciona atributo ao body para identificar página de registro
+    document.body.classList.add('register-page-body');
+    
+    return () => {
+      document.body.classList.remove('register-page-body');
+    };
+  }, []);
+};
+
 // Mensagens de erro específicas
 const errorMessages: { [key: string]: string } = {
   'email_already_exists': 'Este email já está cadastrado. Faça login ou use outro email.',
@@ -189,7 +201,7 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({ password })
             animate={{ scale: 1 }}
             className="flex items-center gap-1 text-green-600"
           >
-            <CheckCircle className="w-3 h-3" />
+            <CheckCircleIcon className="w-3 h-3" />
             <span className="text-xs">Senha segura</span>
           </motion.div>
         )}
@@ -419,7 +431,7 @@ const InputField: React.FC<InputFieldProps> = ({
               className="text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
               tabIndex={-1}
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
             </button>
           )}
           
@@ -433,7 +445,7 @@ const InputField: React.FC<InputFieldProps> = ({
                   exit={{ scale: 0, opacity: 0 }}
                   className="text-red-500"
                 >
-                  <X className="w-4 h-4" />
+                  <ExclamationCircleIcon className="w-4 h-4" />
                 </motion.div>
               )}
               {isValid && !error && (
@@ -444,7 +456,7 @@ const InputField: React.FC<InputFieldProps> = ({
                   exit={{ scale: 0, opacity: 0 }}
                   className="text-green-500"
                 >
-                  <Check className="w-4 h-4" />
+                  <CheckIcon className="w-4 h-4" />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -460,7 +472,7 @@ const InputField: React.FC<InputFieldProps> = ({
             exit={{ opacity: 0, height: 0 }}
             className="mt-1 text-sm text-red-600 flex items-center gap-1"
           >
-            <AlertCircle className="w-3 h-3" />
+            <ExclamationCircleIcon className="w-3 h-3" />
             {error}
           </motion.p>
         )}
@@ -483,34 +495,58 @@ export const RegisterFormUX: React.FC = () => {
   const router = useRouter();
   const { vibrate } = useMobileOptimizations();
   
+  // Aplica melhorias de scroll
+  useFormScroll();
+  
   // Garante que campos focados via TAB fiquem visíveis
   useEffect(() => {
     const handleFocus = (e: FocusEvent) => {
       const target = e.target as HTMLElement;
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
-        // Verifica se o elemento está fora da viewport
-        const rect = target.getBoundingClientRect();
-        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-        const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-        
-        // Só faz scroll se o elemento estiver fora da tela
-        if (rect.bottom > viewportHeight || rect.top < 0 || rect.right > viewportWidth || rect.left < 0) {
-          // Calcula a posição ideal para centralizar o elemento
-          const elementTop = target.offsetTop;
-          const elementHeight = target.offsetHeight;
-          const containerHeight = target.closest('form')?.scrollHeight || document.body.scrollHeight;
+        // Pequeno delay para garantir que o DOM esteja atualizado
+        setTimeout(() => {
+          // Usa scrollIntoView com configurações mais robustas
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+          });
           
-          // Ajusta o scroll da página inteira, não só do elemento
-          const scrollPosition = elementTop - (viewportHeight / 2) + (elementHeight / 2);
-          
-          // Usa scroll nativo sem smooth behavior para evitar conflitos
-          window.scrollTo(0, Math.max(0, scrollPosition));
-        }
+          // Adiciona um offset adicional para melhor visualização no mobile
+          if (window.innerWidth < 768) {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            window.scrollTo({
+              top: scrollTop - 50,
+              behavior: 'smooth'
+            });
+          }
+        }, 100);
       }
     };
     
-    document.addEventListener('focusin', handleFocus);
-    return () => document.removeEventListener('focusin', handleFocus);
+    // Usa focusin que é mais confiável para bubbling
+    document.addEventListener('focusin', handleFocus, true);
+    
+    // Adiciona listener para mudanças de orientação mobile
+    const handleOrientationChange = () => {
+      const activeElement = document.activeElement as HTMLElement;
+      if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+        setTimeout(() => {
+          activeElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+          });
+        }, 300);
+      }
+    };
+    
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    return () => {
+      document.removeEventListener('focusin', handleFocus, true);
+      window.removeEventListener('orientationchange', handleOrientationChange);
+    };
   }, []);
 
   const {
