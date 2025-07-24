@@ -196,7 +196,7 @@ model User {
   emailVerified      Boolean   @default(false) @map("email_verified")
   emailVerifiedAt    DateTime? @map("email_verified_at")
   passwordHash       String    @map("password_hash")
-  cpf                String    @unique
+  cpf                String?   @unique
   cpfVerified        Boolean   @default(false) @map("cpf_verified")
   cpfVerifiedAt      DateTime? @map("cpf_verified_at")
   phone              String?
@@ -204,7 +204,7 @@ model User {
   phoneVerifiedAt    DateTime? @map("phone_verified_at")
   firstName          String    @map("first_name")
   lastName           String    @map("last_name")
-  birthDate          DateTime  @map("birth_date") @db.Date
+  birthDate          DateTime? @map("birth_date") @db.Date
   
   // KYC
   kycLevel           KYCLevel  @default(PLATFORM_ACCESS) @map("kyc_level")

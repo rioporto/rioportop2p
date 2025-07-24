@@ -84,8 +84,6 @@ export async function POST(req: NextRequest) {
           passwordHash: hashedPassword,
           firstName,
           lastName,
-          cpf: '00000000000', // Temporary CPF - will be updated in KYC process
-          birthDate: new Date('2000-01-01'), // Temporary birthdate - will be updated in KYC process
           phone: validatedData.whatsapp?.replace(/\D/g, ''),
           kycLevel: KYCLevel.PLATFORM_ACCESS,
         },
