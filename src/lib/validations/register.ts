@@ -12,37 +12,14 @@ import { z } from 'zod';
 const whatsAppRegex = /^(?:(?:\+|00)?(55)\s?)?(?:\(?([1-9][0-9])\)?\s?)?(?:((?:9\d|[2-9])\d{3})\-?(\d{4}))$/;
 
 /**
- * Lista de domínios de email comuns e confiáveis
+ * Validação de email sem restrição de domínio
+ * Aceita qualquer email válido (corporativo, educacional, pessoal, etc.)
  */
-const commonEmailDomains = [
-  'gmail.com',
-  'hotmail.com',
-  'outlook.com',
-  'yahoo.com',
-  'yahoo.com.br',
-  'icloud.com',
-  'protonmail.com',
-  'uol.com.br',
-  'bol.com.br',
-  'terra.com.br',
-  'globo.com',
-  'ig.com.br',
-  'rioporto.com',
-  'rioporto.com.br'
-];
-
-/**
- * Validação customizada para domínios de email
- */
-const emailWithDomainValidation = z
+const emailValidation = z
   .string()
   .email('Email inválido')
-  .refine((email) => {
-    const domain = email.split('@')[1]?.toLowerCase();
-    return commonEmailDomains.includes(domain);
-  }, {
-    message: 'Por favor, use um email de um provedor conhecido (Gmail, Outlook, Yahoo, etc.)'
-  });
+  .min(5, 'Email muito curto')
+  .max(254, 'Email muito longo'); // RFC 5321
 
 /**
  * Schema de validação para o formulário de registro
@@ -55,8 +32,8 @@ export const registerFormSchema = z.object({
     .max(100, 'Nome deve ter no máximo 100 caracteres')
     .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, 'Nome deve conter apenas letras, espaços, hífens e apóstrofos'),
 
-  // Email com validação de domínio
-  email: emailWithDomainValidation,
+  // Email com validação básica (aceita qualquer domínio válido)
+  email: emailValidation,
 
   // WhatsApp com validação completa
   whatsapp: z
@@ -101,7 +78,7 @@ export const partialRegisterSchema = registerFormSchema.partial();
  * Schema apenas para validação de email (útil para verificação de disponibilidade)
  */
 export const emailValidationSchema = z.object({
-  email: emailWithDomainValidation
+  email: emailValidation
 });
 
 /**

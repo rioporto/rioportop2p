@@ -198,13 +198,14 @@ export const useHapticFeedback = () => {
  * Hook principal que combina todas as otimizações mobile
  */
 export const useMobileOptimizations = () => {
-  const { scrollToElement } = useAutoScroll();
+  // Desabilitado useAutoScroll pois estava causando problemas de scroll indesejado
+  // const { scrollToElement } = useAutoScroll();
   useKeyboardOptimization();
   useTouchTargets();
   const { vibrate, addHapticToElement } = useHapticFeedback();
 
   return {
-    scrollToElement,
+    scrollToElement: () => {}, // Função vazia para manter compatibilidade
     vibrate,
     addHapticToElement,
   };
