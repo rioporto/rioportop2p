@@ -13,6 +13,9 @@
 @import '../styles/themes/light.css';
 @import '../styles/themes/dark.css';
 
+/* Importar animações */
+@import '../styles/animations.css';
+
 /* Tailwind */
 @tailwind base;
 @tailwind components;
