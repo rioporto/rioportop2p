@@ -5,17 +5,17 @@ import { motion } from 'framer-motion'
 
 const securityFeatures = [
   {
-    title: "Sistema de Custódia Segura",
-    description: "Seus fundos ficam protegidos em custódia até ambas as partes confirmarem a transação",
+    title: "Sua Chave, Seu Bitcoin",
+    description: "Você mantém total controle dos seus fundos. Ensinamos você a criar e gerenciar sua própria carteira com segurança.",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+        <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd" />
       </svg>
     )
   },
   {
-    title: "Verificação KYC em Níveis",
-    description: "Sistema progressivo de verificação que aumenta seus limites conforme comprova identidade",
+    title: "Verificação KYC Progressiva",
+    description: "Sistema de verificação que respeita sua privacidade. Aumente seus limites conforme necessário, sem expor dados desnecessários.",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
@@ -23,8 +23,8 @@ const securityFeatures = [
     )
   },
   {
-    title: "Reputação Transparente",
-    description: "Sistema de avaliações que mostra histórico completo de cada usuário na plataforma",
+    title: "Privacidade Garantida",
+    description: "Seu histórico é público para segurança, mas sua identidade e valores são sempre protegidos. Transparência com privacidade.",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -32,18 +32,17 @@ const securityFeatures = [
     )
   },
   {
-    title: "Chat Criptografado",
-    description: "Comunicação segura e privada entre compradores e vendedores com histórico auditável",
+    title: "Claudia - Sua IA Assistente",
+    description: "Nossa inteligência artificial está sempre disponível para responder suas dúvidas e guiar você em cada passo.",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
-        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+        <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 100 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2 1 1 0 000-2zm2 0a1 1 0 100 2 1 1 0 000-2zm2 0a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
       </svg>
     )
   },
   {
-    title: "Proteção Anti-Fraude",
-    description: "Algoritmos que detectam comportamentos suspeitos e protegem contra golpes comuns",
+    title: "Proteção Regulamentada",
+    description: "Em conformidade com a Lei 9.613/98 e normas do COAF. Operamos dentro de todas as regulamentações anti-fraude brasileiras.",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
         <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -51,11 +50,11 @@ const securityFeatures = [
     )
   },
   {
-    title: "Suporte de Disputas",
-    description: "Equipe especializada para resolver conflitos de forma justa e transparente",
+    title: "Suporte Sempre Disponível",
+    description: "Nossa equipe está pronta para ajudar você em qualquer etapa. Do primeiro acesso às operações mais complexas.",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-        <path fillRule="evenodd" d="M10 2a1 1 0 00-1 1v1a1 1 0 002 0V3a1 1 0 00-1-1zM4 4h3a3 3 0 006 0h3a2 2 0 012 2v9a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm2.45 4a2.5 2.5 0 10-4.9 0h4.9zM12 9a1 1 0 100 2h3a1 1 0 100-2h-3zm-1 4a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clipRule="evenodd" />
+        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
       </svg>
     )
   }
@@ -64,23 +63,23 @@ const securityFeatures = [
 const steps = [
   {
     number: "01",
-    title: "Acordo de Negociação",
-    description: "Comprador e vendedor definem os termos da transação"
+    title: "Crie Sua Carteira",
+    description: "Aprenda a criar uma carteira segura"
   },
   {
     number: "02",
-    title: "Custódia Ativada",
-    description: "Bitcoin fica travado em nosso sistema de custódia segura"
+    title: "Faça Backup",
+    description: "Guarde suas chaves com segurança"
   },
   {
     number: "03",
-    title: "Pagamento Confirmado",
-    description: "Comprador realiza o PIX e vendedor confirma recebimento"
+    title: "Negocie com a Rio Porto",
+    description: "Compre ou venda diretamente conosco"
   },
   {
     number: "04",
-    title: "Liberação Segura",
-    description: "Bitcoin é liberado automaticamente para o comprador"
+    title: "Receba em Sua Wallet",
+    description: "Bitcoin direto na sua custódia"
   }
 ]
 
@@ -103,17 +102,12 @@ export function SecuritySection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white">
-            <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-          </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
             Segurança de <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">banco digital</span>
-            <br />com liberdade P2P
+            <br />com liberdade do Bitcoin
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Nosso sistema de custódia elimina o risco de golpes. Você negocia diretamente, mas com proteção total.
+            Você terá sua própria custódia. Você negocia diretamente com proteção total.
           </p>
         </motion.div>
 
@@ -151,7 +145,7 @@ export function SecuritySection() {
           transition={{ duration: 0.8 }}
           className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 md:p-12 mb-16"
         >
-          <h3 className="text-3xl font-bold text-center mb-12">Como funciona a custódia segura?</h3>
+          <h3 className="text-3xl font-bold text-center mb-12">Como funciona a auto-custódia?</h3>
           
           {/* Steps */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
@@ -196,12 +190,12 @@ export function SecuritySection() {
           transition={{ duration: 0.8 }}
           className="text-center"
         >
-          <div className="inline-flex items-center gap-4 px-8 py-4 rounded-full bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
-            <svg className="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          <div className="inline-flex items-center gap-4 px-8 py-4 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20">
+            <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clipRule="evenodd" />
             </svg>
-            <span className="text-lg font-medium text-green-400">
-              Mais de R$ 50 milhões protegidos mensalmente
+            <span className="text-lg font-medium text-blue-400">
+              Sua liberdade financeira começa aqui
             </span>
           </div>
         </motion.div>

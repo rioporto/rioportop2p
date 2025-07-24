@@ -6,14 +6,14 @@ import { motion } from 'framer-motion'
 
 export function HeroSection() {
   const router = useRouter()
-  const [activeUsers, setActiveUsers] = useState(1247)
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveUsers(prev => prev + Math.floor(Math.random() * 3))
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [])
+  // const [activeUsers, setActiveUsers] = useState(1247)
+  // 
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     setActiveUsers(prev => prev + Math.floor(Math.random() * 3))
+  //   }, 5000)
+  //   return () => clearInterval(interval)
+  // }, [])
 
   const handleCTAClick = () => {
     router.push('/register')
@@ -46,11 +46,11 @@ export function HeroSection() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
             <span className="text-sm font-medium text-red-400">
-              {activeUsers.toLocaleString('pt-BR')} pessoas online agora
+              4 pessoas fazendo P2P nesta plataforma
             </span>
           </motion.div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             <span className="block text-white mb-2">APRENDA</span>
             <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">
               COMPRAR OU VENDER
@@ -58,12 +58,8 @@ export function HeroSection() {
             <span className="block text-white">BITCOIN VIA P2P</span>
           </h1>
           
-          <p className="text-xl md:text-2xl text-gray-300 mb-4 max-w-3xl mx-auto">
-            Domine tudo sobre P2P com nosso <span className="text-white font-semibold">treinamento grátis</span>.
-          </p>
-          
-          <p className="text-lg text-gray-400 mb-8">
-            A forma mais <span className="text-green-400 font-semibold">segura</span> e <span className="text-green-400 font-semibold">econômica</span> de negociar Bitcoin.
+          <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+            Aprenda a forma mais segura e econômica de negociar Bitcoin
           </p>
 
           <motion.div
@@ -77,7 +73,7 @@ export function HeroSection() {
               className="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <span className="absolute inset-0 w-full h-full -mt-1 rounded-full opacity-30 bg-gradient-to-r from-blue-600 to-purple-600 blur-lg animate-pulse"></span>
-              <span className="relative">EU QUERO APRENDER P2P</span>
+              <span className="relative">Quero começar agora</span>
               <svg className="w-5 h-5 ml-2 -mr-1 transition-transform group-hover:translate-x-1" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
               </svg>
@@ -88,19 +84,19 @@ export function HeroSection() {
                 <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span>Sem pegadinhas</span>
+                <span>Seguro</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span>Comece Agora</span>
+                <span>Rápido</span>
               </div>
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                <span>2 minutos para começar</span>
+                <span>Suporte Personalizado</span>
               </div>
             </div>
           </motion.div>
@@ -121,16 +117,15 @@ export function HeroSection() {
           </div>
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
             </svg>
-            <span className="font-medium">Taxa Zero (30 dias)</span>
+            <span className="font-medium">Transações em menos de 5 min</span>
           </div>
           <div className="flex items-center gap-2 text-gray-400">
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
             </svg>
-            <span className="font-medium">+15.000 Usuários</span>
+            <span className="font-medium">4 Usuários Ativos</span>
           </div>
         </motion.div>
       </div>

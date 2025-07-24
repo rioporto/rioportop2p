@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
+import { REAL_STATS } from '@/lib/stats'
 
 const testimonials = [
   {
@@ -35,8 +36,8 @@ const testimonials = [
 
 const stats = [
   {
-    value: "R$ 50M+",
-    label: "Volume Mensal",
+    value: `R$ ${REAL_STATS.totalVolume.toLocaleString('pt-BR')}`,
+    label: "Volume Total",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
         <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
@@ -45,7 +46,7 @@ const stats = [
     )
   },
   {
-    value: "15.000+",
+    value: REAL_STATS.totalUsers.toString(),
     label: "Usuários Ativos",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -54,7 +55,7 @@ const stats = [
     )
   },
   {
-    value: "4.9/5.0",
+    value: `${REAL_STATS.averageRating}/5.0`,
     label: "Avaliação Média",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -63,7 +64,7 @@ const stats = [
     )
   },
   {
-    value: "< 2min",
+    value: REAL_STATS.averageTime,
     label: "Tempo Médio",
     icon: (
       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -118,8 +119,8 @@ export function SocialProofSection() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-            Mais de <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">15.000 brasileiros</span>
-            <br />já descobriram o P2P
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-400">4 brasileiros</span>
+            <br />já descobriram a Rio Porto P2P
           </h2>
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
             Veja o que nossos usuários dizem sobre a experiência de negociar Bitcoin com segurança e economia
