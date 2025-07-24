@@ -508,21 +508,8 @@ export const RegisterFormUX: React.FC = () => {
   // Detecta se está em dispositivo móvel
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
-  // Atualiza o step atual baseado no progresso
-  useEffect(() => {
-    if (name && name.length >= 3) {
-      setCurrentStep(2);
-    }
-    if (emailValid) {
-      setCurrentStep(3);
-    }
-    if (whatsapp && !errors.whatsapp) {
-      setCurrentStep(4);
-    }
-    if (passwordRequirementsMet) {
-      setCurrentStep(5);
-    }
-  }, [name, emailValid, whatsapp, errors.whatsapp, passwordRequirementsMet]);
+  // Removido a lógica de atualização do step que causava scroll
+  // Agora usamos indicadores inline em cada campo
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
@@ -598,18 +585,15 @@ export const RegisterFormUX: React.FC = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Header com indicador de progresso visual */}
-        <div className="text-center">
-          <StepIndicator currentStep={currentStep} />
-          <motion.div 
-            className="flex items-center justify-center space-x-2 text-sm text-gray-400"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            <SparklesIcon className="w-4 h-4 text-blue-400" />
-            <span>Cadastro rápido e seguro</span>
-          </motion.div>
-        </div>
+        {/* Header simplificado sem StepIndicator que causa scroll */}
+        <motion.div 
+          className="text-center flex items-center justify-center space-x-2 text-sm text-gray-400"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <SparklesIcon className="w-4 h-4 text-blue-400" />
+          <span>Cadastro rápido e seguro</span>
+        </motion.div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             {/* Mensagens de feedback */}
@@ -665,6 +649,16 @@ export const RegisterFormUX: React.FC = () => {
                   aria-label="Digite seu nome completo"
                   autoComplete="name"
                 />
+                {/* Indicador de validação inline */}
+                {name && name.length >= 3 && !errors.name && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                  </motion.div>
+                )}
               </div>
             </motion.div>
 
@@ -694,6 +688,16 @@ export const RegisterFormUX: React.FC = () => {
                   onValidate={setEmailValid}
                   required
                 />
+                {/* Indicador de validação inline */}
+                {emailValid && !errors.email && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute right-3 top-[38px]"
+                  >
+                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                  </motion.div>
+                )}
               </div>
             </motion.div>
 
@@ -727,6 +731,16 @@ export const RegisterFormUX: React.FC = () => {
                   id="whatsapp"
                   name="whatsapp"
                 />
+                {/* Indicador de validação inline */}
+                {whatsapp && !errors.whatsapp && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="absolute right-3 top-[38px]"
+                  >
+                    <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                  </motion.div>
+                )}
               </div>
             </motion.div>
 

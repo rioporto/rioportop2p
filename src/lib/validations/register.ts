@@ -26,7 +26,9 @@ const commonEmailDomains = [
   'bol.com.br',
   'terra.com.br',
   'globo.com',
-  'ig.com.br'
+  'ig.com.br',
+  'rioporto.com',
+  'rioporto.com.br'
 ];
 
 /**
