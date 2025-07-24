@@ -4,5 +4,3 @@
 
 [deploy]
   startCommand = "npm start"
-  restartPolicyType = "on-failure"
-  restartPolicyMaxRetries = 3
