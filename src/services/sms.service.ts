@@ -17,18 +17,18 @@ export class SMSService {
   private baseUrl: string;
 
   constructor() {
-    this.apiKey = process.env.SMS_DEV_API_KEY || '';
+    this.apiKey = process.env.SMSDEV_API_KEY || '';
     this.baseUrl = 'https://api.smsdev.com.br/v1';
     
     if (!this.apiKey) {
-      console.warn('SMS_DEV_API_KEY not configured - SMS will not be sent');
+      console.warn('SMSDEV_API_KEY not configured - SMS will not be sent');
     }
   }
 
   async sendSMS({ to, message }: ISendSMSParams): Promise<boolean> {
     try {
       if (!this.apiKey) {
-        console.log('SMS_DEV_API_KEY não configurada. SMS simulado:', { to, message });
+        console.log('SMSDEV_API_KEY não configurada. SMS simulado:', { to, message });
         return true; // Simula sucesso em desenvolvimento
       }
 
