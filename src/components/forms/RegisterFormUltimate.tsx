@@ -53,19 +53,30 @@ export const RegisterFormUltimate: React.FC = () => {
       setError(null);
       vibrate();
 
+      console.log('Dados sendo enviados:', data);
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
 
-      const result = await response.json();
-
-      if (!result.success) {
-        setError(result.error.message);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro da API:', response.status, errorText);
+        
+        try {
+          const errorJson = JSON.parse(errorText);
+          setError(errorJson.error?.message || 'Erro ao criar conta');
+        } catch {
+          setError('Erro ao criar conta. Tente novamente.');
+        }
+        
         vibrate([100, 50, 100]); // Vibração de erro
         return;
       }
+
+      const result = await response.json();
 
       setSuccess(true);
       vibrate([50, 100, 50, 100]); // Vibração de sucesso

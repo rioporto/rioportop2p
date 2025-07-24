@@ -20,6 +20,7 @@ export const POST = withMiddleware(
   async (req: NextRequest) => {
     try {
       const body = await req.json();
+      console.log('Received registration data:', body);
       
       // Validate captcha if enabled
       if (process.env.NEXT_PUBLIC_RECAPTCHA_ENABLED === 'true' && body.captchaToken) {
@@ -30,7 +31,13 @@ export const POST = withMiddleware(
       }
       
       // Validate input data
-      const validatedData = registrationSchema.parse(body);
+      let validatedData;
+      try {
+        validatedData = registrationSchema.parse(body);
+      } catch (validationError) {
+        console.error('Validation error:', validationError);
+        throw validationError;
+      }
       
       // Check if email already exists
       const existingUser = await prisma.user.findUnique({
