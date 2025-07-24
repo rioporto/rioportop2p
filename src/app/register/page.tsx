@@ -2,10 +2,12 @@ import { RegisterFormUX } from '@/components/forms/RegisterFormUX';
 import { TrustBadgesDark } from '@/components/forms/TrustBadgesDark';
 import { SecurityInfoDark } from '@/components/forms/SecurityInfoDark';
 import { ScrollDebug } from '@/components/debug/ScrollDebug';
+import { ScrollForceFix } from '@/components/ScrollForceFix';
 import { Metadata } from 'next';
 import { pageMetadata, siteConfig, organizationSchema, generateJsonLd } from '@/lib/seo-config';
 import Script from 'next/script';
 import '@/styles/register-scroll-fix.css';
+import '@/styles/register-page-scroll.css';
 
 export const metadata: Metadata = {
   title: pageMetadata.register.title,
@@ -82,11 +84,82 @@ const registerPageSchema = {
 export default function RegisterPage() {
   return (
     <>
+      <ScrollForceFix />
       <Script
         id="register-structured-data"
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: generateJsonLd(registerPageSchema),
+        }}
+      />
+      <Script
+        id="register-scroll-fix"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `
+            // Solução definitiva para scroll em formulários
+            (function() {
+              // Aguarda DOM carregar
+              function initScrollFix() {
+                let scrollTimer = null;
+                
+                // Função que força scroll para elemento focado
+                function scrollToFocused(element) {
+                  if (!element) return;
+                  
+                  clearTimeout(scrollTimer);
+                  scrollTimer = setTimeout(function() {
+                    const rect = element.getBoundingClientRect();
+                    const viewHeight = window.innerHeight;
+                    
+                    // Se elemento está fora da tela
+                    if (rect.top < 0 || rect.bottom > viewHeight) {
+                      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                      const targetY = scrollTop + rect.top - (viewHeight / 2) + (rect.height / 2);
+                      
+                      // Tenta scroll suave primeiro
+                      try {
+                        window.scrollTo({
+                          top: Math.max(0, targetY),
+                          behavior: 'smooth'
+                        });
+                      } catch(e) {
+                        // Fallback para scroll direto
+                        window.scrollTo(0, Math.max(0, targetY));
+                      }
+                    }
+                  }, 200);
+                }
+                
+                // Listener para focus
+                document.addEventListener('focusin', function(e) {
+                  const el = e.target;
+                  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+                    scrollToFocused(el);
+                  }
+                }, true);
+                
+                // Listener para click (mobile)
+                document.addEventListener('click', function(e) {
+                  const el = e.target;
+                  if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
+                    setTimeout(function() {
+                      if (document.activeElement === el) {
+                        scrollToFocused(el);
+                      }
+                    }, 300);
+                  }
+                }, true);
+              }
+              
+              // Inicializa
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initScrollFix);
+              } else {
+                initScrollFix();
+              }
+            })();
+          `
         }}
       />
       {process.env.NODE_ENV === 'development' && <ScrollDebug />}

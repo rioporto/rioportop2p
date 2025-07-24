@@ -35,7 +35,7 @@ import {
   CheckIcon
 } from '@heroicons/react/24/solid';
 import '@/styles/register.css';
-import { useScrollToFocus } from '@/hooks/useScrollToFocus';
+import { useFocusScroll } from '@/hooks/useFocusScroll';
 
 // Mensagens de erro específicas
 const errorMessages: { [key: string]: string } = {
@@ -501,8 +501,8 @@ export const RegisterFormUX: React.FC = () => {
   const router = useRouter();
   const { vibrate } = useMobileOptimizations();
   
-  // Aplica solução de scroll para campos focados
-  useScrollToFocus();
+  // Aplica solução definitiva de scroll para campos focados
+  useFocusScroll();
 
   const {
     register,
