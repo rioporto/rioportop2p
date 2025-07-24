@@ -1,334 +1,240 @@
-'use client';
+'use client'
 
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { HomePageStructuredData } from './page-metadata';
+import React from 'react'
+import { HeroSection } from '@/components/landing/HeroSection'
+import { BenefitsSection } from '@/components/landing/BenefitsSection'
+import { SocialProofSection } from '@/components/landing/SocialProofSection'
+import { FloatingCTA } from '@/components/landing/FloatingCTA'
+import { ExitIntentPopup } from '@/components/landing/ExitIntentPopup'
+import { ConversionAnalytics } from '@/components/analytics/ConversionAnalytics'
+import { useRouter } from 'next/navigation'
+import { HomePageStructuredData } from './page-metadata'
 
 export default function Home() {
-  const [activeUsers, setActiveUsers] = useState(1247);
+  const router = useRouter()
   
-  // Simular usuários ativos aumentando
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveUsers(prev => prev + Math.floor(Math.random() * 3));
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const handleCTAClick = () => {
+    router.push('/register')
+  }
 
   return (
     <>
       <HomePageStructuredData />
-      <main className="min-h-screen bg-black text-white">
-      {/* Hero Section - Impacto Imediato */}
-      <section className="min-h-screen flex items-center justify-center relative overflow-hidden">
-        {/* Background animado */}
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20" />
-          <div className="absolute top-1/4 -left-48 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 -right-48 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
-        </div>
-
-        <div className="relative z-10 container-premium text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            {/* Badge de urgência */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full bg-red-500/10 border border-red-500/20">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-              </span>
-              <span className="text-sm font-medium text-red-400">
-                {activeUsers} pessoas online agora
-              </span>
+      <main className="min-h-screen bg-white text-gray-900">
+        <ConversionAnalytics />
+        
+        <HeroSection
+          onCtaClick={handleCTAClick}
+          backgroundVariant="animated"
+        />
+        
+        {/* Como Funciona Section */}
+        <section id="how-it-works" className="py-16 md:py-24 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Como Funciona
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Três passos simples para começar sua jornada no P2P com segurança
+              </p>
             </div>
-
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">
-              Ganhe <span className="text-gradient bg-gradient-to-r from-green-400 to-emerald-400">R$ 500</span>
-              <br />
-              na sua primeira transação
-            </h1>
             
-            <p className="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
-              Apenas hoje. Cadastre-se e receba bônus instantâneo para começar a comprar Bitcoin.
-            </p>
-
-            <Link href="/register">
-              <Button
-                variant="gradient"
-                gradient="luxury"
-                size="xl"
-                className="text-xl px-12 py-6 animate-pulse"
-                glow
-              >
-                QUERO MEU BÔNUS
-              </Button>
-            </Link>
-
-            <p className="text-sm text-gray-500 mt-4">
-              Sem pegadinhas • Saque imediato • 2 minutos para começar
-            </p>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Seção 2: Segurança - Principal Argumento */}
-      <section className="py-32 relative">
-        <div className="container-premium">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <div className="mb-8">
-              <div className="w-24 h-24 mx-auto bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                Seu dinheiro 100% protegido
-              </h2>
-              <p className="text-xl text-gray-400 mb-8">
-                Sistema de custódia que <span className="text-white font-semibold">impede golpes</span>. 
-                Fundos liberados apenas após confirmação de ambas as partes.
-              </p>
-            </div>
-
-            <Link href="/register">
-              <Button
-                variant="neon"
-                size="lg"
-                className="min-w-[300px]"
-                glow
-                glowColor="primary"
-              >
-                Criar conta segura agora
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Seção 3: Velocidade */}
-      <section className="py-32 bg-gradient-to-b from-gray-900/50 to-black relative">
-        <div className="container-premium">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <div className="mb-8">
-              <div className="w-24 h-24 mx-auto bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-6 animate-bounce">
-                <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                PIX em <span className="text-green-400">30 segundos</span>
-              </h2>
-              <p className="text-xl text-gray-400 mb-8">
-                Compre Bitcoin instantaneamente. Sem burocracia, sem espera.
-                <br />
-                <span className="text-white font-semibold">24 horas por dia, 7 dias por semana.</span>
-              </p>
-            </div>
-
-            <Link href="/register">
-              <Button
-                variant="gradient"
-                gradient="success"
-                size="lg"
-                className="min-w-[300px]"
-                glow
-              >
-                Começar a comprar agora
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Seção 4: Taxas */}
-      <section className="py-32 relative">
-        <div className="container-premium">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <div className="mb-8">
-              <div className="relative">
-                <div className="text-8xl font-bold text-gradient bg-gradient-to-r from-yellow-400 to-orange-400 mb-4">
-                  0%
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+              <div className="relative bg-white rounded-lg shadow-lg p-8 text-center">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl">
+                  1
                 </div>
-                <h2 className="text-4xl md:text-5xl font-bold mb-6">
-                  Taxa ZERO no primeiro mês
-                </h2>
+                <h3 className="text-xl font-semibold mb-4 mt-2">Aprenda em 30 minutos</h3>
+                <p className="text-gray-600">
+                  Acesse nosso treinamento gratuito e domine os conceitos essenciais do P2P. 
+                  Material didático criado especialmente para iniciantes.
+                </p>
               </div>
-              <p className="text-xl text-gray-400 mb-8">
-                Depois, apenas 1% por transação. 
-                <span className="text-white font-semibold"> Metade do preço</span> dos concorrentes.
+              
+              <div className="relative bg-white rounded-lg shadow-lg p-8 text-center">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl">
+                  2
+                </div>
+                <h3 className="text-xl font-semibold mb-4 mt-2">Configure com nosso suporte</h3>
+                <p className="text-gray-600">
+                  Nossa equipe te ajuda a configurar sua carteira e fazer as primeiras operações. 
+                  Suporte personalizado via WhatsApp.
+                </p>
+              </div>
+              
+              <div className="relative bg-white rounded-lg shadow-lg p-8 text-center">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-xl">
+                  3
+                </div>
+                <h3 className="text-xl font-semibold mb-4 mt-2">Opere com confiança</h3>
+                <p className="text-gray-600">
+                  Compre e venda Bitcoin com segurança. Você no controle total dos seus fundos, 
+                  com nossa comunidade sempre disponível.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <BenefitsSection />
+        
+        {/* Segurança e Conformidade Section */}
+        <section className="py-16 md:py-24 bg-gradient-to-br from-blue-600 to-blue-800 text-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Segurança e Conformidade
+              </h2>
+              <p className="text-lg opacity-90 max-w-2xl mx-auto">
+                Opere com tranquilidade em uma plataforma 100% regulamentada
               </p>
             </div>
-
-            <Link href="/register">
-              <Button
-                variant="gradient"
-                gradient="warning"
-                size="lg"
-                className="min-w-[300px]"
-                glow
-              >
-                Aproveitar taxa zero
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Seção 5: Social Proof */}
-      <section className="py-32 bg-gradient-to-b from-gray-900/50 to-black relative">
-        <div className="container-premium">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-12">
-              Por que <span className="text-gradient bg-gradient-to-r from-blue-400 to-purple-400">15.000+ brasileiros</span>
-              <br />
-              escolheram a Rio Porto?
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Conformidade com legislação brasileira</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Relatórios automáticos para Imposto de Renda</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Sistema anti-fraude com IA</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Verificação KYC em níveis</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Custódia 100% do usuário</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <svg className="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+                <span>Transparência total nas operações</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <SocialProofSection />
+        
+        {/* FAQ Section */}
+        <section className="py-16 md:py-24 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Perguntas Frequentes
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Tire suas dúvidas sobre P2P e nossa plataforma
+              </p>
+            </div>
+            
+            <div className="max-w-3xl mx-auto space-y-4">
+              <details className="bg-white rounded-lg shadow-md p-6 cursor-pointer group">
+                <summary className="font-semibold text-lg flex justify-between items-center list-none">
+                  Preciso ter experiência para começar?
+                  <span className="text-2xl text-blue-600 group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="mt-4 text-gray-600">
+                  Não! Nossa plataforma foi criada pensando em iniciantes. 
+                  Com nosso treinamento gratuito e suporte personalizado, 
+                  você aprende tudo do zero em menos de 30 minutos.
+                </p>
+              </details>
+              
+              <details className="bg-white rounded-lg shadow-md p-6 cursor-pointer group">
+                <summary className="font-semibold text-lg flex justify-between items-center list-none">
+                  Qual o valor mínimo para começar?
+                  <span className="text-2xl text-blue-600 group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="mt-4 text-gray-600">
+                  Você pode começar com apenas R$ 50. Não existe valor máximo - 
+                  atendemos desde pequenos investidores até operações OTC de alto valor, 
+                  como clientes que vendem imóveis para comprar Bitcoin.
+                </p>
+              </details>
+              
+              <details className="bg-white rounded-lg shadow-md p-6 cursor-pointer group">
+                <summary className="font-semibold text-lg flex justify-between items-center list-none">
+                  É realmente seguro?
+                  <span className="text-2xl text-blue-600 group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="mt-4 text-gray-600">
+                  Sim! Utilizamos um sistema de reputação transparente, verificação de identidade 
+                  em níveis e, o mais importante: seus fundos ficam sempre sob seu controle, 
+                  nunca em nossa custódia. Além disso, temos suporte 24/7 para qualquer necessidade.
+                </p>
+              </details>
+              
+              <details className="bg-white rounded-lg shadow-md p-6 cursor-pointer group">
+                <summary className="font-semibold text-lg flex justify-between items-center list-none">
+                  Como funciona o suporte?
+                  <span className="text-2xl text-blue-600 group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="mt-4 text-gray-600">
+                  Oferecemos múltiplos canais: chat com IA para dúvidas rápidas, 
+                  comunidade ativa no WhatsApp/Telegram para trocar experiências, 
+                  e consultoria personalizada para operações complexas ou aprendizado avançado.
+                </p>
+              </details>
+              
+              <details className="bg-white rounded-lg shadow-md p-6 cursor-pointer group">
+                <summary className="font-semibold text-lg flex justify-between items-center list-none">
+                  Quais as vantagens sobre exchanges tradicionais?
+                  <span className="text-2xl text-blue-600 group-open:rotate-45 transition-transform">+</span>
+                </summary>
+                <p className="mt-4 text-gray-600">
+                  No P2P você tem: menores taxas (economia de até 70%), privacidade aumentada, 
+                  múltiplas formas de pagamento (PIX, TED, dinheiro), sem limites artificiais 
+                  de saque, e principalmente - você possui suas chaves privadas.
+                </p>
+              </details>
+            </div>
+          </div>
+        </section>
+        
+        {/* Final CTA Section */}
+        <section className="py-16 md:py-24 bg-white text-center">
+          <div className="max-w-4xl mx-auto px-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Pronto para começar sua jornada P2P?
             </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <Card variant="glass" className="p-6" theme="dark">
-                <div className="text-3xl font-bold text-green-400 mb-2">R$ 50M+</div>
-                <p className="text-gray-400">negociados por mês</p>
-              </Card>
-              
-              <Card variant="glass" className="p-6" theme="dark">
-                <div className="text-3xl font-bold text-blue-400 mb-2">4.9/5.0</div>
-                <p className="text-gray-400">avaliação média</p>
-              </Card>
-              
-              <Card variant="glass" className="p-6" theme="dark">
-                <div className="text-3xl font-bold text-purple-400 mb-2">2 min</div>
-                <p className="text-gray-400">tempo médio de transação</p>
-              </Card>
-            </div>
-
-            <Link href="/register">
-              <Button
-                variant="neon"
-                size="lg"
-                className="min-w-[300px]"
-                glow
-                glowColor="secondary"
-              >
-                Fazer parte da comunidade
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Seção Final: Urgência */}
-      <section className="py-32 relative">
-        <div className="container-premium">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="max-w-4xl mx-auto text-center"
-          >
-            <Card
-              variant="glass"
-              className="p-12 border-2 border-red-500/50"
-              theme="dark"
+            <p className="text-lg text-gray-600 mb-8">
+              Junte-se aos brasileiros que já descobriram a liberdade financeira através do P2P. 
+              Cadastro gratuito, sem pegadinhas.
+            </p>
+            <button
+              onClick={handleCTAClick}
+              className="bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold px-8 py-4 rounded-full text-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 mb-6 rounded-full bg-red-500/10 border border-red-500/20">
-                <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                </svg>
-                <span className="text-sm font-medium text-red-400">
-                  Oferta limitada
-                </span>
-              </div>
-
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">
-                Últimas <span className="text-red-400">24 horas</span> com bônus de R$ 500
-              </h2>
-              
-              <p className="text-xl text-gray-400 mb-8">
-                Após isso, o bônus cai para R$ 100. 
-                <br />
-                <span className="text-white font-semibold">Não perca essa oportunidade única.</span>
-              </p>
-
-              <Link href="/register">
-                <Button
-                  variant="gradient"
-                  gradient="luxury"
-                  size="xl"
-                  className="text-xl px-12 py-6 animate-pulse"
-                  glow
-                >
-                  GARANTIR MEU BÔNUS DE R$ 500
-                </Button>
-              </Link>
-
-              <div className="flex items-center justify-center gap-6 mt-8 text-sm text-gray-400">
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Cadastro em 2 minutos</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Sem documentos agora</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span>Cancele quando quiser</span>
-                </div>
-              </div>
-            </Card>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Footer Minimalista */}
-      <footer className="py-8 border-t border-gray-900">
-        <div className="container-premium text-center text-sm text-gray-500">
-          <p>© 2025 Rio Porto P2P. CNPJ: 00.000.000/0001-00</p>
-          <p className="mt-2">
-            <Link href="/terms" className="hover:text-white">Termos</Link>
-            {' • '}
-            <Link href="/privacy" className="hover:text-white">Privacidade</Link>
-            {' • '}
-            <Link href="/support" className="hover:text-white">Suporte</Link>
-          </p>
-        </div>
-      </footer>
-    </main>
+              QUERO COMEÇAR AGORA
+            </button>
+            <p className="mt-4 text-sm text-gray-500">
+              🔒 Cadastro seguro • 📚 Curso grátis incluso • ⚡ Comece em 2 minutos
+            </p>
+          </div>
+        </section>
+        
+        <FloatingCTA />
+        <ExitIntentPopup />
+      </main>
     </>
-  );
+  )
 }
