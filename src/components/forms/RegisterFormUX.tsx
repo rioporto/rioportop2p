@@ -623,7 +623,7 @@ export const RegisterFormUX: React.FC = () => {
           <span>Cadastro rápido e seguro</span>
         </motion.div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             {/* Mensagens de feedback */}
             <AnimatePresence mode="wait">
               {error && (
@@ -880,40 +880,14 @@ export const RegisterFormUX: React.FC = () => {
               className="bg-gradient-to-br from-gray-800/50 to-gray-900/50 p-4 rounded-lg border border-gray-700 hover:border-gray-600 transition-colors"
             >
               <label className="flex items-start cursor-pointer group">
-                <div className="relative mt-0.5">
-                  <input
-                    {...register('acceptTerms')}
-                    type="checkbox"
-                    className="sr-only"
-                    disabled={isLoading}
-                    aria-describedby="terms-description"
-                  />
-                  <motion.div 
-                    className={`
-                      w-5 h-5 border-2 rounded transition-all duration-200
-                      ${acceptTerms 
-                        ? 'bg-blue-500 border-blue-500' 
-                        : 'border-gray-500 group-hover:border-gray-400'}
-                    `}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    <AnimatePresence>
-                      {acceptTerms && (
-                        <motion.svg
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          exit={{ scale: 0, rotate: 180 }}
-                          className="w-full h-full text-white p-0.5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                        </motion.svg>
-                      )}
-                    </AnimatePresence>
-                  </motion.div>
-                </div>
+                <input
+                  {...register('acceptTerms')}
+                  type="checkbox"
+                  checked={acceptTerms}
+                  className="mt-1 w-4 h-4 text-blue-600 border-gray-500 rounded focus:ring-blue-500 focus:ring-2 bg-gray-800"
+                  disabled={isLoading}
+                  aria-describedby="terms-description"
+                />
                 <span id="terms-description" className="ml-3 text-sm text-gray-300">
                   Li e aceito os{' '}
                   <button
@@ -949,7 +923,7 @@ export const RegisterFormUX: React.FC = () => {
               </label>
               {errors.acceptTerms && (
                 <motion.p 
-                  className="text-xs text-red-400 mt-2 ml-8 flex items-center gap-1"
+                  className="text-xs text-red-400 mt-2 ml-7 flex items-center gap-1"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                 >
@@ -996,21 +970,14 @@ export const RegisterFormUX: React.FC = () => {
                       <span>Criando sua conta...</span>
                     </motion.div>
                   ) : (
-                    <motion.div
+                    <motion.span
                       key="idle"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="flex items-center justify-center space-x-2"
                     >
-                      <span>Criar conta</span>
-                      <motion.div
-                        animate={{ x: [0, 5, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity }}
-                      >
-                        →
-                      </motion.div>
-                    </motion.div>
+                      Criar conta
+                    </motion.span>
                   )}
                 </AnimatePresence>
               </Button>

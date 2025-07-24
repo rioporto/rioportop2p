@@ -48,8 +48,8 @@ body > div#__next {
 main.register-page {
   overflow: visible !important;
   position: relative !important;
-  /* Padding extra no bottom para mobile */
-  padding-bottom: 250px !important;
+  /* Padding moderado no bottom */
+  padding-bottom: 100px !important;
 }
 
 /* Form não pode ter overflow hidden */
@@ -97,8 +97,8 @@ select:focus,
   
   .register-page main,
   main.register-page {
-    /* Muito espaço para teclado virtual */
-    padding-bottom: 350px !important;
+    /* Espaço moderado para teclado virtual */
+    padding-bottom: 150px !important;
   }
   
   /* Prevenir zoom automático no iOS */
@@ -123,7 +123,7 @@ select:focus,
 @media (min-width: 769px) and (max-width: 1024px) {
   .register-page main,
   main.register-page {
-    padding-bottom: 300px !important;
+    padding-bottom: 120px !important;
   }
 }
 
@@ -166,9 +166,8 @@ select:focus,
 }
 
 /* Override de qualquer estilo que possa interferir */
-.register-page * {
-  /* Não usar position fixed ou sticky em elementos do form */
-  position: static !important;
+.register-page form * {
+  /* Elementos do form devem ter position relative */
   position: relative !important;
 }
 
