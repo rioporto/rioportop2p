@@ -7,7 +7,6 @@ import "../styles/themes/light.css";
 import "../styles/themes/dark.css";
 import "../styles/animations.css";
 import { ThemeProvider, ThemeScript } from "@/contexts/ThemeContext";
-import { AnalyticsProvider } from "@/lib/analytics";
 import { 
   defaultMetadata, 
   organizationSchema, 
@@ -75,9 +74,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <AnalyticsProvider>
-            {children}
-          </AnalyticsProvider>
+          {children}
         </ThemeProvider>
       </body>
     </html>
