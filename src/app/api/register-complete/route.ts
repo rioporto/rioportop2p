@@ -9,6 +9,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     console.log('Registration attempt for:', body.email);
+    console.log('Request body:', JSON.stringify(body, null, 2));
     
     // Validação básica
     if (!body.email || !body.password || !body.name) {
@@ -42,17 +43,24 @@ export async function POST(req: NextRequest) {
       data: {
         id: generateUUID(),
         email: body.email.toLowerCase(),
-        name: body.name,
-        username: body.email.split('@')[0] + '_' + Date.now(),
+        firstName: body.name.split(' ')[0],
+        lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
         passwordHash,
-        emailVerificationToken: verificationToken,
-        emailVerificationExpires: verificationExpires,
-        whatsapp: body.whatsapp || null,
-        cpf: null,
-        birthDate: null,
-        kycLevel: 'NONE',
-        isActive: true,
-        termsAcceptedAt: body.acceptTerms ? new Date() : null
+        phone: body.whatsapp?.replace(/\D/g, ''), // Remove caracteres não numéricos
+        kycLevel: 'PLATFORM_ACCESS',
+        status: 'ACTIVE',
+        termsAcceptedAt: body.acceptTerms ? new Date() : null,
+        marketingConsent: body.newsletter || false
+      }
+    });
+    
+    // Criar token de verificação separadamente
+    const verification = await prisma.verificationToken.create({
+      data: {
+        userId: user.id,
+        token: verificationToken,
+        type: 'email',
+        expiresAt: verificationExpires
       }
     });
     
@@ -114,9 +122,17 @@ export async function POST(req: NextRequest) {
     
   } catch (error) {
     console.error('Registration error:', error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
+    
+    // Retorna erro mais específico
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    
     return NextResponse.json({
       success: false,
-      error: 'Erro ao criar conta. Tente novamente.'
+      error: process.env.NODE_ENV === 'development' 
+        ? `Erro: ${errorMessage}` 
+        : 'Erro ao criar conta. Tente novamente.',
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
     }, { status: 500 });
   }
 }
