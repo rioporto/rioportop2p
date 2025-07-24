@@ -1,0 +1,224 @@
+/* Otimizações Mobile para Formulários */
+
+/* Previne zoom em iOS ao focar inputs */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="time"],
+  input[type="week"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Touch targets mínimos de 44px */
+input,
+select,
+textarea,
+button,
+a {
+  min-height: 44px;
+  touch-action: manipulation; /* Remove delay de 300ms */
+}
+
+/* Ajustes para checkboxes e radio buttons */
+input[type="checkbox"],
+input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+/* Label clicável para checkboxes */
+input[type="checkbox"] + label,
+input[type="radio"] + label {
+  padding: 12px 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove highlight azul no tap (iOS) */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ajustes quando o teclado está aberto */
+body.keyboard-open {
+  position: fixed;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Safe areas para dispositivos com notch */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .fixed-bottom-button {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Animações suaves para transições */
+.mobile-transition {
+  transition: all 0.3s ease-out;
+}
+
+/* Scroll suave */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Melhora legibilidade em telas pequenas */
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  
+  /* Espaçamento entre elementos do formulário */
+  form > * + * {
+    margin-top: 1.25rem;
+  }
+  
+  /* Inputs com bordas mais visíveis */
+  input,
+  select,
+  textarea {
+    border-width: 1.5px;
+  }
+  
+  /* Estados de foco mais visíveis */
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  /* Mensagens de erro mais destacadas */
+  .text-red-600 {
+    font-weight: 500;
+    padding: 0.25rem 0;
+  }
+}
+
+/* Botão fixo no bottom */
+@media (max-width: 768px) {
+  .fixed-bottom-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    z-index: 40;
+  }
+  
+  /* Adiciona padding ao conteúdo para não ficar atrás do botão fixo */
+  .pb-mobile-cta {
+    padding-bottom: 5rem !important;
+  }
+}
+
+/* Bottom sheet animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Melhora performance de scroll */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
+
+/* Desabilita seleção de texto em elementos não editáveis */
+button,
+label {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Feedback visual para toque */
+button:active,
+a:active {
+  opacity: 0.8;
+  transform: scale(0.98);
+}
+
+/* Previne problemas de layout em landscape */
+@media (max-height: 500px) and (orientation: landscape) {
+  .fixed-bottom-cta {
+    position: relative;
+    box-shadow: none;
+    border-top: none;
+    padding: 0.75rem 0;
+  }
+}
+
+/* Ajustes específicos para iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  /* iOS specific styles */
+  input,
+  textarea,
+  select {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+  
+  /* Fix para o bug de posição fixa no iOS */
+  .ios-fixed-wrapper {
+    position: -webkit-sticky;
+    position: sticky;
+  }
+}
+
+/* Ajustes para Android Chrome */
+@media screen and (max-width: 768px) {
+  /* Previne overflow horizontal */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+  
+  /* Melhora scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}

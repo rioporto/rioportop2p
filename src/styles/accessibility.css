@@ -1,0 +1,265 @@
+/* Estilos de acessibilidade globais - WCAG AAA */
+
+/* Estados de foco customizados */
+*:focus-visible {
+  outline: 3px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Foco específico para elementos escuros */
+.dark *:focus-visible,
+[data-theme="dark"] *:focus-visible {
+  outline: 3px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* Remover outline padrão do navegador */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Skip links */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 999;
+}
+
+.skip-link:focus {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  background-color: #1e40af;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  text-decoration: none;
+  border-radius: 0.375rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  left: auto;
+}
+
+/* Contraste WCAG AAA (7:1) para texto */
+.high-contrast-text {
+  color: #111827; /* gray-900 */
+}
+
+.dark .high-contrast-text {
+  color: #f9fafb; /* gray-50 */
+}
+
+/* Links com contraste AAA */
+a {
+  color: #1d4ed8; /* blue-700 para contraste 7:1 com branco */
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: #1e3a8a; /* blue-900 */
+  text-decoration-thickness: 3px;
+}
+
+.dark a {
+  color: #60a5fa; /* blue-400 para contraste 7:1 com preto */
+}
+
+.dark a:hover {
+  color: #93bbfc; /* blue-300 */
+}
+
+/* Botões com contraste AAA */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Estados de erro com contraste AAA */
+.error-text {
+  color: #b91c1c; /* red-700 */
+  font-weight: 500;
+}
+
+.dark .error-text {
+  color: #fca5a5; /* red-300 */
+}
+
+/* Indicadores de campos obrigatórios */
+.required-field::after {
+  content: " *";
+  color: #dc2626; /* red-600 */
+  font-weight: bold;
+  font-size: 1.1em;
+}
+
+/* Estados de validação */
+input[aria-invalid="true"],
+select[aria-invalid="true"],
+textarea[aria-invalid="true"] {
+  border-color: #dc2626;
+  border-width: 2px;
+}
+
+input[aria-invalid="false"]:valid,
+select[aria-invalid="false"]:valid,
+textarea[aria-invalid="false"]:valid {
+  border-color: #16a34a;
+  border-width: 2px;
+}
+
+/* Indicadores visuais para screen readers */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.not-sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: inherit;
+  margin: inherit;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* Indicadores de loading acessíveis */
+.loading-spinner {
+  border: 3px solid rgba(59, 130, 246, 0.1);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Focus trap container */
+[data-focus-trap="active"] {
+  position: relative;
+}
+
+/* Melhorias para navegação por teclado */
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Estados interativos com feedback visual claro */
+.interactive-element {
+  transition: all 0.2s ease-in-out;
+}
+
+.interactive-element:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.interactive-element:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Tooltips acessíveis */
+[role="tooltip"] {
+  position: absolute;
+  background-color: #1f2937;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+}
+
+/* Indicadores de progresso */
+[role="progressbar"] {
+  position: relative;
+  background-color: #e5e7eb;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+[role="progressbar"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #3b82f6;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Melhorias para formulários */
+fieldset {
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+legend {
+  font-weight: 600;
+  padding: 0 0.5rem;
+  color: #374151;
+}
+
+/* Estados de foco para grupos de radio/checkbox */
+input[type="radio"]:focus-visible,
+input[type="checkbox"]:focus-visible {
+  outline-offset: 4px;
+}
+
+/* Indicadores de seleção mais visíveis */
+input[type="radio"]:checked,
+input[type="checkbox"]:checked {
+  background-color: #3b82f6;
+  border-color: #3b82f6;
+}
+
+/* Melhor visibilidade para placeholders */
+::placeholder {
+  color: #6b7280;
+  opacity: 1;
+}
+
+.dark ::placeholder {
+  color: #9ca3af;
+}
+
+/* Animações respeitando preferências do usuário */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Alto contraste para modo Windows */
+@media (prefers-contrast: high) {
+  * {
+    border-width: 2px !important;
+  }
+  
+  button,
+  input,
+  select,
+  textarea {
+    border: 2px solid currentColor !important;
+  }
+}

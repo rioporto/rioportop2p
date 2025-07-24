@@ -38,6 +38,16 @@ export interface IRegisterCredentials extends ILoginCredentials {
   acceptTerms: boolean;
 }
 
+// Novo tipo para o formulário de registro com WhatsApp
+export interface IRegisterFormCredentials {
+  name: string;
+  email: string;
+  whatsapp: string;
+  password: string;
+  confirmPassword: string;
+  acceptTerms: boolean;
+}
+
 export interface IKYCLimits {
   [KYCLevel.PLATFORM_ACCESS]: {
     monthlyLimit: 0;

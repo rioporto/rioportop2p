@@ -6,6 +6,7 @@ import "../styles/variables.css";
 import "../styles/themes/light.css";
 import "../styles/themes/dark.css";
 import "../styles/animations.css";
+import "../styles/accessibility.css";
 import { ThemeProvider, ThemeScript } from "@/contexts/ThemeContext";
 import { 
   defaultMetadata, 
