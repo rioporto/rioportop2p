@@ -73,61 +73,37 @@ export async function POST(req: NextRequest) {
       // Hash password
       const hashedPassword = await hashPassword(validatedData.password);
       
-      // Create user transaction
-      const result = await prisma.$transaction(async (tx) => {
-        // Create user
-        const user = await tx.user.create({
-          data: {
-            name: validatedData.name,
-            email: validatedData.email,
-            password: hashedPassword,
-            phone: validatedData.whatsapp?.replace(/\D/g, ''),
-            kycLevel: KYCLevel.PLATFORM_ACCESS,
-            acceptedTermsAt: validatedData.acceptTerms ? new Date() : null,
-            newsletterSubscribed: validatedData.newsletter || false,
-          },
-        });
-        
-        // Generate verification token
-        const verificationToken = generateVerificationToken();
-        const expires = new Date();
-        expires.setHours(expires.getHours() + 24); // Expires in 24 hours
-        
-        await tx.verificationToken.create({
-          data: {
-            identifier: user.email,
-            token: verificationToken,
-            expires,
-          },
-        });
-        
-        // Create activity log
-        await tx.activityLog.create({
-          data: {
-            userId: user.id,
-            action: 'USER_REGISTERED',
-            ipAddress: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
-            userAgent: req.headers.get('user-agent') || 'unknown',
-            metadata: {
-              source: body.source || 'landing_page',
-              referrer: body.referrer,
-            },
-          },
-        });
-        
-        return { user, verificationToken };
+      // Create user
+      const nameParts = validatedData.name.trim().split(' ');
+      const firstName = nameParts[0];
+      const lastName = nameParts.slice(1).join(' ') || nameParts[0]; // Use first name if no last name
+      
+      const user = await prisma.user.create({
+        data: {
+          email: validatedData.email,
+          passwordHash: hashedPassword,
+          firstName,
+          lastName,
+          cpf: '00000000000', // Temporary CPF - will be updated in KYC process
+          birthDate: new Date('2000-01-01'), // Temporary birthdate - will be updated in KYC process
+          phone: validatedData.whatsapp?.replace(/\D/g, ''),
+          kycLevel: KYCLevel.PLATFORM_ACCESS,
+        },
       });
+      
+      // Generate verification token for future use
+      const verificationToken = generateVerificationToken();
       
       // Asynchronous tasks (don't wait for these)
       Promise.all([
         // Send verification SMS
         validatedData.whatsapp && import('@/services/sms.service').then(({ smsService }) =>
-          smsService.sendVerificationSMS(validatedData.whatsapp, result.verificationToken)
+          smsService.sendVerificationSMS(validatedData.whatsapp, verificationToken)
         ).catch(console.error),
         
         // Send verification email as backup
         import('@/services/email.service').then(({ emailService }) =>
-          emailService.sendVerificationEmail(result.user.email, result.verificationToken)
+          emailService.sendVerificationEmail(user.email, verificationToken)
         ).catch(console.error),
         
         // Subscribe to newsletter if requested
@@ -153,10 +129,10 @@ export async function POST(req: NextRequest) {
       ]);
       
       return ApiResponse.created({
-        id: result.user.id,
-        email: result.user.email,
-        name: result.user.name,
-        kycLevel: result.user.kycLevel,
+        id: user.id,
+        email: user.email,
+        name: `${user.firstName} ${user.lastName}`,
+        kycLevel: user.kycLevel,
         requiresEmailVerification: true,
         verificationEmailSent: true,
       });
