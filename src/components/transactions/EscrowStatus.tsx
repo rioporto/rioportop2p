@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { cn } from '@/lib/utils/cn';
-import { EscrowStatus as EscrowStatusType } from '@prisma/client';
+import { EscrowStatus as EscrowStatusType } from '@/types/database';
 import { Shield, Lock, Unlock, RotateCcw, CheckCircle } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 

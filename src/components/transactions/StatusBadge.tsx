@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/Badge';
-import { TransactionStatus, EscrowStatus } from '@prisma/client';
+import { TransactionStatus, EscrowStatus } from '@/types/database';
 import { 
   Clock, 
   CreditCard, 

@@ -22,7 +22,19 @@ export type {
   TaxReport,
   OperationalLimits,
   AuditLog,
-  SystemEvent
+  SystemEvent,
+  PaymentMethodType,
+  Listing,
+  ListingPaymentMethod,
+  Transaction,
+  Escrow,
+  Conversation,
+  Message,
+  Rating,
+  UserReputation,
+  AnalyticsEvent,
+  AnalyticsAggregate,
+  AnalyticsSession
 } from '@prisma/client';
 
 export {
@@ -34,7 +46,7 @@ export {
   WalletType,
   WalletStatus,
   TransactionType,
-  TransactionStatus,
+  BlockchainTransactionStatus,
   OrderType,
   OrderSide,
   TimeInForce,
@@ -45,7 +57,11 @@ export {
   P2PAdType,
   PriceType,
   P2PAdStatus,
+  ListingType,
   P2PTradeStatus,
+  TransactionStatus,
+  EscrowStatus,
+  MessageType,
   AnalysisType,
   RiskLevel
 } from '@prisma/client';

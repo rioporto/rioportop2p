@@ -15,7 +15,7 @@ import {
   TrendingUp,
   TrendingDown
 } from 'lucide-react';
-import { TransactionStatus, ListingType, EscrowStatus as EscrowStatusType } from '@prisma/client';
+import { TransactionStatus, ListingType, EscrowStatus as EscrowStatusType } from '@/types/database';
 
 interface ITransactionUser {
   id: string;
