@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { registerFormSchema, type RegisterFormData } from '@/lib/validations/register';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { WhatsAppInput } from '@/components/forms/inputs/WhatsAppInput';
+import { WhatsAppInputCustom } from '@/components/forms/inputs/WhatsAppInputCustom';
 import { PasswordStrength } from '@/components/forms/inputs/PasswordStrength';
 import { EmailAutocomplete } from '@/components/forms/inputs/EmailAutocomplete';
 import { Button } from '@/components/ui/Button';
@@ -20,7 +20,6 @@ export const RegisterFormUltimate: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [showTermsSheet, setShowTermsSheet] = useState(false);
-  const [whatsappValid, setWhatsappValid] = useState(false);
   const [emailValid, setEmailValid] = useState(false);
   const [passwordRequirementsMet, setPasswordRequirementsMet] = useState(false);
   
@@ -119,7 +118,7 @@ export const RegisterFormUltimate: React.FC = () => {
                   className={`h-2 rounded-full transition-all duration-300 ${
                     step === 1 ? 'w-8 bg-blue-500' :
                     step === 2 && (emailValid || errors.email) ? 'w-8 bg-blue-500' :
-                    step === 3 && (whatsappValid || errors.whatsapp) ? 'w-8 bg-blue-500' :
+                    step === 3 && (!errors.whatsapp && watch('whatsapp')) ? 'w-8 bg-blue-500' :
                     step === 4 && (passwordRequirementsMet || errors.password) ? 'w-8 bg-blue-500' :
                     'w-2 bg-gray-600'
                   }`}
@@ -196,14 +195,18 @@ export const RegisterFormUltimate: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <WhatsAppInput
+            <WhatsAppInputCustom
               value={watch('whatsapp')}
               onChange={(value) => setValue('whatsapp', value)}
+              onBlur={() => trigger('whatsapp')}
               error={errors.whatsapp?.message}
               disabled={isLoading}
-              theme="dark"
-              onValidate={setWhatsappValid}
+              label="WhatsApp"
               required
+              showPreview
+              size="md"
+              id="whatsapp"
+              name="whatsapp"
             />
           </motion.div>
 
