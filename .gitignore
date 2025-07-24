@@ -52,6 +52,14 @@ CLAUDE.md
 README.md
 CHANGELOG.md
 
+# Screenshots and prints - NEVER commit
+/prints/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
 # Text documentation files
 *.txt
 /documentation/
