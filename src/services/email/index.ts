@@ -9,8 +9,10 @@ interface SendEmailOptions {
 
 export async function sendEmail({ to, subject, html, from = 'Rio Porto P2P <noreply@rioporto.com.br>' }: SendEmailOptions) {
   try {
-    console.log('Sending email to:', to);
-    console.log('Subject:', subject);
+    console.log('📧 Iniciando envio de email...');
+    console.log('Para:', to);
+    console.log('Assunto:', subject);
+    console.log('RESEND_API_KEY configurada:', !!process.env.RESEND_API_KEY);
     
     if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === '') {
       console.error('⚠️ RESEND_API_KEY não configurada - Email não será enviado!');
