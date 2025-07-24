@@ -482,6 +482,26 @@ export const RegisterFormUX: React.FC = () => {
   
   const router = useRouter();
   const { vibrate } = useMobileOptimizations();
+  
+  // Garante que campos focados via TAB fiquem visíveis
+  useEffect(() => {
+    const handleFocus = (e: FocusEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT') {
+        // Usa scrollIntoView nativo com comportamento suave
+        setTimeout(() => {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+          });
+        }, 100);
+      }
+    };
+    
+    document.addEventListener('focusin', handleFocus);
+    return () => document.removeEventListener('focusin', handleFocus);
+  }, []);
 
   const {
     register,
@@ -595,7 +615,7 @@ export const RegisterFormUX: React.FC = () => {
           <span>Cadastro rápido e seguro</span>
         </motion.div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate onFocus={(e) => e.preventDefault()}>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
             {/* Mensagens de feedback */}
             <AnimatePresence mode="wait">
               {error && (

@@ -3,7 +3,7 @@
   @apply min-h-screen flex items-center justify-center p-4;
   background: #0a0a0a;
   position: relative;
-  overflow: hidden;
+  /* Removido overflow: hidden para permitir scroll natural */
 }
 
 /* Wrapper do formulário com glassmorphism */
@@ -18,7 +18,7 @@
     0 25px 50px -12px rgba(0, 0, 0, 0.5),
     0 0 0 1px rgba(255, 255, 255, 0.05),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
-  overflow: hidden;
+  /* Removido overflow: hidden para permitir scroll natural */
 }
 
 /* Gradiente de fundo */
@@ -290,10 +290,21 @@
   scroll-behavior: auto !important;
 }
 
-/* Previne scroll ao focar elementos */
-.no-smooth-scroll *:focus {
-  scroll-margin: 0 !important;
-  scroll-padding: 0 !important;
+/* Garante que campos fiquem visíveis ao receber foco */
+input:focus,
+textarea:focus,
+select:focus,
+button:focus {
+  scroll-margin-top: 100px;
+  scroll-margin-bottom: 100px;
+}
+
+/* Força scroll automático para campos focados */
+.register-form-wrapper input:focus,
+.register-form-wrapper textarea:focus,
+.register-form-wrapper select:focus {
+  scroll-behavior: smooth;
+  scroll-margin-block: 150px;
 }
 
 /* Animações */

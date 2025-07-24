@@ -88,11 +88,11 @@ export default function RegisterPage() {
         }}
       />
       <main 
-        className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12"
+        className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black px-4 sm:px-6 lg:px-8 py-12"
         role="main"
         aria-labelledby="register-heading"
       >
-        <div className="max-w-6xl w-full">
+        <div className="max-w-6xl w-full mx-auto">
           <header className="text-center mb-8">
             <h1 className="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2">
               Rio Porto P2P
@@ -127,7 +127,7 @@ export default function RegisterPage() {
               </div>
 
               {/* Security Info para tema escuro */}
-              <div className="bg-gray-900/50 p-6 rounded-2xl border border-gray-800 lg:sticky lg:top-4">
+              <div className="bg-gray-900/50 p-6 rounded-2xl border border-gray-800">
                 <SecurityInfoDark />
               </div>
             </aside>
