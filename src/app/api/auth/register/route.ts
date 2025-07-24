@@ -86,6 +86,8 @@ export async function POST(req: NextRequest) {
           lastName,
           phone: validatedData.whatsapp?.replace(/\D/g, ''),
           kycLevel: KYCLevel.PLATFORM_ACCESS,
+          termsAcceptedAt: validatedData.acceptTerms ? new Date() : null,
+          marketingConsent: validatedData.newsletter || false,
         },
       });
       

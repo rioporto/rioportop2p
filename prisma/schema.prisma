@@ -233,8 +233,8 @@ model User {
   referredById       String?  @map("referred_by")
   referredBy         User?    @relation("Referrals", fields: [referredById], references: [id])
   referrals          User[]   @relation("Referrals")
-  termsAcceptedAt    DateTime @map("terms_accepted_at")
-  privacyAcceptedAt  DateTime @map("privacy_accepted_at")
+  termsAcceptedAt    DateTime? @map("terms_accepted_at")
+  privacyAcceptedAt  DateTime? @map("privacy_accepted_at")
   marketingConsent   Boolean  @default(false) @map("marketing_consent")
   
   // Timestamps
