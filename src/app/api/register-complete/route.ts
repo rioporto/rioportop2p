@@ -131,13 +131,29 @@ export async function POST(req: NextRequest) {
     } catch (emailError) {
       console.error('Failed to send verification email:', emailError);
       // Não falhar o registro se o email falhar
+      
+      // Em desenvolvimento, mostrar link de verificação no console
+      if (process.env.NODE_ENV === 'development' || !process.env.RESEND_API_KEY) {
+        console.log('');
+        console.log('🔗 LINK DE VERIFICAÇÃO (copie e cole no navegador):');
+        console.log(verificationUrl);
+        console.log('');
+      }
     }
     
-    return NextResponse.json({
+    // Se não há API key, incluir link de verificação na resposta
+    const response: any = {
       success: true,
       message: 'Conta criada com sucesso! Verifique seu email para ativar sua conta.',
       requiresVerification: true
-    }, { status: 201 });
+    };
+    
+    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === '') {
+      response.verificationUrl = verificationUrl;
+      response.message = 'Conta criada! Use o link abaixo para verificar (email não configurado):';
+    }
+    
+    return NextResponse.json(response, { status: 201 });
     
   } catch (error) {
     console.error('========== REGISTER-COMPLETE ERRO ==========');

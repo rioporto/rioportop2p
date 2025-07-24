@@ -200,7 +200,7 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({ password })
 };
 
 // Componente de animação de sucesso
-const SuccessAnimation: React.FC<{ email: string; onContinue: () => void }> = ({ email, onContinue }) => {
+const SuccessAnimation: React.FC<{ email: string; onContinue: () => void; verificationUrl?: string }> = ({ email, onContinue, verificationUrl }) => {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.8 }}
@@ -282,9 +282,25 @@ const SuccessAnimation: React.FC<{ email: string; onContinue: () => void }> = ({
           <div className="flex items-start space-x-3">
             <EnvelopeIcon className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
             <div className="text-left">
-              <p className="text-sm font-semibold text-green-400">Email de verificação enviado!</p>
+              <p className="text-sm font-semibold text-green-400">
+                {verificationUrl ? 'Conta criada! Verifique seu email:' : 'Email de verificação enviado!'}
+              </p>
               <p className="text-xs text-gray-400 mt-1">
-                Verifique sua caixa de entrada em <span className="font-mono text-green-400">{email}</span>
+                {verificationUrl ? (
+                  <>
+                    <span className="block mb-2">Email não configurado no servidor.</span>
+                    <a 
+                      href={verificationUrl} 
+                      className="text-blue-400 hover:text-blue-300 underline break-all"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Clique aqui para verificar sua conta
+                    </a>
+                  </>
+                ) : (
+                  <>Verifique sua caixa de entrada em <span className="font-mono text-green-400">{email}</span></>
+                )}
               </p>
             </div>
           </div>
@@ -480,6 +496,7 @@ export const RegisterFormUX: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [verificationUrl, setVerificationUrl] = useState<string | null>(null);
   
   const router = useRouter();
   const { vibrate } = useMobileOptimizations();
@@ -554,13 +571,20 @@ export const RegisterFormUX: React.FC = () => {
 
       const result = await response.json();
 
+      // Se houver URL de verificação, salva no estado
+      if (result.verificationUrl) {
+        setVerificationUrl(result.verificationUrl);
+      }
+
       setSuccess(true);
       vibrate([50, 100, 50, 100]); // Vibração de sucesso
       
-      // Aguarda 3 segundos antes de redirecionar
+      // Aguarda mais tempo se não há email configurado
       setTimeout(() => {
-        router.push('/verify?email=' + encodeURIComponent(data.email));
-      }, 3000);
+        if (!result.verificationUrl) {
+          router.push('/verify?email=' + encodeURIComponent(data.email));
+        }
+      }, result.verificationUrl ? 10000 : 3000);
     } catch (error) {
       console.error('Erro ao registrar:', error);
       
@@ -583,7 +607,7 @@ export const RegisterFormUX: React.FC = () => {
 
   // Tela de sucesso
   if (success) {
-    return <SuccessAnimation email={email} onContinue={handleContinue} />;
+    return <SuccessAnimation email={email} onContinue={handleContinue} verificationUrl={verificationUrl || undefined} />;
   }
 
   return (
