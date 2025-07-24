@@ -321,6 +321,28 @@
   .animation-delay-100 { animation-delay: 100ms; }
   .animation-delay-200 { animation-delay: 200ms; }
   .animation-delay-300 { animation-delay: 300ms; }
+  
+  /* Container Premium */
+  .container-premium {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+    max-width: 1280px;
+  }
+  
+  /* Texturas de Background */
+  .texture-dots {
+    background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  .texture-carbon {
+    background-image: 
+      linear-gradient(27deg, #151515 5px, transparent 5px),
+      linear-gradient(207deg, #151515 5px, transparent 5px),
+      linear-gradient(27deg, #222 5px, transparent 5px),
+      linear-gradient(207deg, #222 5px, transparent 5px);
+    background-size: 20px 20px;
+    background-position: 0 5px, 10px 0, 10px 6px, 0 1px;
+  }
 
   /* Efeitos de Brilho */
   .shine-hover {

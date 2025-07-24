@@ -1391,3 +1391,12 @@
 .parallax-fast {
   transform: translateY(calc(var(--scroll-y) * 1.25));
 }
+/* Bounce Soft animation */
+@keyframes bounce-soft {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
