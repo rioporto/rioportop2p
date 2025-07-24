@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { registerSchema, type RegisterInput } from '@/lib/validations/auth';
 import { useRouter } from 'next/navigation';
-import { formatCPF, formatPhone } from '@/lib/auth/utils';
+import { formatCPF, formatPhone } from '@/lib/auth/client-utils';
 
 export const RegisterFormDark: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
