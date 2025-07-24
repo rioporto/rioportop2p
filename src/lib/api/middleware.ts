@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { ApiResponse } from './response';
@@ -92,7 +93,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>) {
 // Logging middleware
 export function logger(req: NextRequest, context: { params?: any }) {
   const start = Date.now();
-  const requestId = crypto.randomUUID();
+  const requestId = generateSecureUUID();
   
   console.log({
     type: 'API_REQUEST',

@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { IPixPayment, ICreatePixPaymentDto } from '@/types/api';
 
 // Mercado Pago configuration
@@ -62,7 +63,7 @@ export class MercadoPagoService {
         headers: {
           'Authorization': `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
-          'X-Idempotency-Key': crypto.randomUUID(),
+          'X-Idempotency-Key': generateSecureUUID(),
           ...options.headers,
         },
       });

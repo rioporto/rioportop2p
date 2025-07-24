@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { ApiResponse } from '@/lib/api/response';
@@ -83,7 +84,7 @@ export const POST = withMiddleware(
 
       // Create KYC document record
       const kycDocument: IKYCDocument = {
-        id: crypto.randomUUID(),
+        id: generateSecureUUID(),
         userId,
         type: validatedData.type,
         status: 'PENDING',

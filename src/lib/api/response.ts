@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { NextResponse } from 'next/server';
 import { IApiResponse, ApiErrorCode } from '@/types/api';
 
@@ -15,7 +16,7 @@ export class ApiResponse {
       metadata: {
         timestamp: new Date().toISOString(),
         version: API_VERSION,
-        requestId: crypto.randomUUID(),
+        requestId: generateSecureUUID(),
       },
     };
 

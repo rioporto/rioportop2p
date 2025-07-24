@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { createApiClient, ApiClient } from './client';
 import { IApiResponse } from '@/types/api';
 import { z } from 'zod';
@@ -403,7 +404,7 @@ export class LeadApiClient {
     // Get or create session ID
     let sessionId = sessionStorage.getItem('rioporto_session_id');
     if (!sessionId) {
-      sessionId = crypto.randomUUID();
+      sessionId = generateSecureUUID();
       sessionStorage.setItem('rioporto_session_id', sessionId);
     }
     return sessionId;

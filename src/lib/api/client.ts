@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { IApiResponse } from '@/types/api';
 
 // Types
@@ -77,7 +78,7 @@ export class ApiClient {
     options: RequestOptions = {}
   ): Promise<IApiResponse<T>> {
     const url = this.buildURL(endpoint);
-    const requestId = crypto.randomUUID();
+    const requestId = generateSecureUUID();
     
     // Merge options with defaults
     const timeout = options.timeout ?? this.config.timeout;
@@ -368,7 +369,7 @@ export class ApiClient {
 
   private queueOfflineRequest(url: string, options: RequestOptions): void {
     const queuedRequest: QueuedRequest = {
-      id: crypto.randomUUID(),
+      id: generateSecureUUID(),
       url,
       options,
       timestamp: Date.now(),

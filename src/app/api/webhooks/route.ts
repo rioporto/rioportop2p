@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { NextRequest } from 'next/server';
 import { ApiResponse } from '@/lib/api/response';
 import { withMiddleware } from '@/lib/api/middleware';
@@ -443,7 +444,7 @@ export const GET = withMiddleware(
         timestamp: new Date().toISOString(),
       },
       timestamp: new Date().toISOString(),
-      id: crypto.randomUUID(),
+      id: generateSecureUUID(),
     };
     
     // Sign payload

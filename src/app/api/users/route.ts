@@ -1,3 +1,4 @@
+import { generateSecureUUID } from '@/lib/utils/uuid';
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { ApiResponse } from '@/lib/api/response';
@@ -93,7 +94,7 @@ export const POST = withMiddleware(
 
     // Create user
     const newUser: IUser = {
-      id: crypto.randomUUID(),
+      id: generateSecureUUID(),
       email,
       name,
       kycLevel: KYCLevel.PLATFORM_ACCESS,
