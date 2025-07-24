@@ -584,7 +584,7 @@ export const RegisterFormUX: React.FC = () => {
 
   return (
     <>
-      <div className="space-y-6">
+      <div className="space-y-6 no-smooth-scroll">
         {/* Header simplificado sem StepIndicator que causa scroll */}
         <motion.div 
           className="text-center flex items-center justify-center space-x-2 text-sm text-gray-400"
@@ -595,7 +595,7 @@ export const RegisterFormUX: React.FC = () => {
           <span>Cadastro rápido e seguro</span>
         </motion.div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate onFocus={(e) => e.preventDefault()}>
             {/* Mensagens de feedback */}
             <AnimatePresence mode="wait">
               {error && (

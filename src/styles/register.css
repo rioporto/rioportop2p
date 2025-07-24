@@ -277,6 +277,25 @@
     0 0 40px rgba(147, 51, 234, 0.3);
 }
 
+/* Desabilita scroll smooth no formulário para evitar problemas de navegação */
+.no-smooth-scroll,
+.no-smooth-scroll * {
+  scroll-behavior: auto !important;
+}
+
+/* Previne scroll automático em focus */
+.no-smooth-scroll input:focus,
+.no-smooth-scroll textarea:focus,
+.no-smooth-scroll select:focus {
+  scroll-behavior: auto !important;
+}
+
+/* Previne scroll ao focar elementos */
+.no-smooth-scroll *:focus {
+  scroll-margin: 0 !important;
+  scroll-padding: 0 !important;
+}
+
 /* Animações */
 @keyframes float {
   0%, 100% {
