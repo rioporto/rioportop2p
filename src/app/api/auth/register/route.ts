@@ -44,17 +44,17 @@ export const POST = withMiddleware(
         );
       }
       
-      // Check if CPF already exists (if provided)
-      if (validatedData.cpf) {
-        const cleanCPF = validatedData.cpf.replace(/\D/g, '');
-        const existingCPF = await prisma.user.findUnique({
-          where: { cpf: cleanCPF },
+      // Check if WhatsApp already exists
+      if (validatedData.whatsapp) {
+        const cleanPhone = validatedData.whatsapp.replace(/\D/g, '');
+        const existingPhone = await prisma.user.findFirst({
+          where: { phone: cleanPhone },
         });
         
-        if (existingCPF) {
+        if (existingPhone) {
           return ApiResponse.conflict(
-            'Este CPF já está cadastrado',
-            'CPF_ALREADY_EXISTS'
+            'Este WhatsApp já está cadastrado',
+            'PHONE_ALREADY_EXISTS'
           );
         }
       }
@@ -70,9 +70,8 @@ export const POST = withMiddleware(
             name: validatedData.name,
             email: validatedData.email,
             password: hashedPassword,
-            cpf: validatedData.cpf?.replace(/\D/g, ''),
-            phone: validatedData.phone?.replace(/\D/g, ''),
-            kycLevel: validatedData.cpf ? KYCLevel.BASIC : KYCLevel.PLATFORM_ACCESS,
+            phone: validatedData.whatsapp?.replace(/\D/g, ''),
+            kycLevel: KYCLevel.PLATFORM_ACCESS,
             acceptedTermsAt: validatedData.acceptTerms ? new Date() : null,
             newsletterSubscribed: validatedData.newsletter || false,
           },
@@ -110,7 +109,12 @@ export const POST = withMiddleware(
       
       // Asynchronous tasks (don't wait for these)
       Promise.all([
-        // Send verification email
+        // Send verification SMS
+        validatedData.whatsapp && import('@/services/sms.service').then(({ smsService }) =>
+          smsService.sendVerificationSMS(validatedData.whatsapp, result.verificationToken)
+        ).catch(console.error),
+        
+        // Send verification email as backup
         import('@/services/email.service').then(({ emailService }) =>
           emailService.sendVerificationEmail(result.user.email, result.verificationToken)
         ).catch(console.error),
@@ -126,6 +130,7 @@ export const POST = withMiddleware(
         leadApi.capture({
           name: validatedData.name,
           email: validatedData.email,
+          phone: validatedData.whatsapp,
           source: body.source === 'landing_page' ? LeadSource.LANDING_PAGE : LeadSource.REGISTRATION_FORM,
           interest: LeadInterest.P2P_TRADING,
           acceptTerms: validatedData.acceptTerms,

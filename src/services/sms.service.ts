@@ -1,30 +1,60 @@
-// Serviço de SMS preparado para integração com SMSDev
+// Serviço de SMS integrado com SMSDev
 
 interface ISendSMSParams {
   to: string;
   message: string;
 }
 
+interface SMSDevResponse {
+  success: boolean;
+  message?: string;
+  id?: string;
+  error?: string;
+}
+
 export class SMSService {
   private apiKey: string;
-  private from: string;
+  private baseUrl: string;
 
   constructor() {
-    this.apiKey = process.env.SMSDEV_API_KEY || '';
-    this.from = process.env.SMSDEV_FROM || 'RioPorto';
+    this.apiKey = process.env.SMS_DEV_API_KEY || '';
+    this.baseUrl = 'https://api.smsdev.com.br/v1';
+    
+    if (!this.apiKey) {
+      console.warn('SMS_DEV_API_KEY not configured - SMS will not be sent');
+    }
   }
 
   async sendSMS({ to, message }: ISendSMSParams): Promise<boolean> {
     try {
-      // TODO: Implementar integração com SMSDev
-      console.log('SMS seria enviado:', {
-        from: this.from,
-        to,
-        message,
+      if (!this.apiKey) {
+        console.log('SMS_DEV_API_KEY não configurada. SMS simulado:', { to, message });
+        return true; // Simula sucesso em desenvolvimento
+      }
+
+      const formattedPhone = this.formatPhoneForSMS(to);
+      
+      const response = await fetch(`${this.baseUrl}/send`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          number: formattedPhone,
+          message: message,
+        }),
       });
 
-      // Simulação de envio bem-sucedido
-      return true;
+      const data: SMSDevResponse = await response.json();
+
+      if (data.success) {
+        console.log(`SMS enviado com sucesso para ${formattedPhone}`);
+        return true;
+      } else {
+        console.error('Falha ao enviar SMS:', data.error || data.message);
+        return false;
+      }
     } catch (error) {
       console.error('Erro ao enviar SMS:', error);
       return false;

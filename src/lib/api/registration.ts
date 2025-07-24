@@ -6,6 +6,7 @@ import { z } from 'zod';
 export const registrationSchema = z.object({
   name: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   email: z.string().email('Email inválido'),
+  whatsapp: z.string().min(10, 'WhatsApp inválido'),
   password: z.string()
     .min(8, 'Senha deve ter no mínimo 8 caracteres')
     .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
