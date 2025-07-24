@@ -1,98 +1,158 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { verifyEmailSchema } from '@/lib/validations/auth';
+import { ApiResponse } from '@/lib/api/response';
 
-export async function POST(request: Request) {
+export async function GET(req: NextRequest) {
+  console.log('=== EMAIL VERIFICATION ROUTE CALLED ===');
+  
   try {
-    const body = await request.json();
+    // Get token from query parameters
+    const { searchParams } = new URL(req.url);
+    const token = searchParams.get('token');
     
-    // Valida os dados de entrada
-    const { token } = verifyEmailSchema.parse(body);
+    if (!token) {
+      return ApiResponse.badRequest('Token de verificação não fornecido', 'MISSING_TOKEN');
+    }
     
-    // Busca o token de verificação
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
+    // Find verification token in database
+    const verificationToken = await prisma.verificationToken.findFirst({
+      where: {
+        token,
+        type: 'email',
+        usedAt: null, // Not used yet
+      },
+      include: {
+        user: true,
+      },
     });
     
     if (!verificationToken) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'INVALID_TOKEN',
-            message: 'Token de verificação inválido',
-          },
-        },
-        { status: 400 }
-      );
+      return ApiResponse.notFound('Token de verificação inválido ou já utilizado', 'INVALID_TOKEN');
     }
     
-    // Verifica se o token expirou
-    if (verificationToken.expires < new Date()) {
-      // Remove o token expirado
-      await prisma.verificationToken.delete({
-        where: { token },
+    // Check if token has expired
+    if (new Date() > verificationToken.expiresAt) {
+      return ApiResponse.badRequest('Token de verificação expirado', 'TOKEN_EXPIRED');
+    }
+    
+    // Update user and token in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Mark user email as verified
+      await tx.user.update({
+        where: { id: verificationToken.userId },
+        data: {
+          emailVerified: true,
+          emailVerifiedAt: new Date(),
+        },
       });
       
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'EXPIRED_TOKEN',
-            message: 'Token de verificação expirado',
-          },
+      // Mark token as used
+      await tx.verificationToken.update({
+        where: { id: verificationToken.id },
+        data: {
+          usedAt: new Date(),
         },
-        { status: 400 }
+      });
+    });
+    
+    console.log('Email verified successfully for user:', verificationToken.userId);
+    
+    // Redirect to login page with success message
+    const redirectUrl = new URL('/login', process.env.NEXTAUTH_URL || 'http://localhost:3000');
+    redirectUrl.searchParams.set('verified', 'true');
+    redirectUrl.searchParams.set('email', verificationToken.user.email);
+    
+    return NextResponse.redirect(redirectUrl);
+    
+  } catch (error) {
+    console.error('Email verification error:', error);
+    
+    // Redirect to login page with error
+    const redirectUrl = new URL('/login', process.env.NEXTAUTH_URL || 'http://localhost:3000');
+    redirectUrl.searchParams.set('error', 'verification_failed');
+    
+    return NextResponse.redirect(redirectUrl);
+  }
+}
+
+export async function POST(req: NextRequest) {
+  console.log('=== RESEND EMAIL VERIFICATION ROUTE CALLED ===');
+  
+  try {
+    const body = await req.json();
+    const { email } = body;
+    
+    if (!email) {
+      return ApiResponse.badRequest('Email não fornecido', 'MISSING_EMAIL');
+    }
+    
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+    });
+    
+    if (!user) {
+      return ApiResponse.notFound('Usuário não encontrado', 'USER_NOT_FOUND');
+    }
+    
+    // Check if already verified
+    if (user.emailVerified) {
+      return ApiResponse.badRequest('Email já verificado', 'ALREADY_VERIFIED');
+    }
+    
+    // Check for rate limiting - only allow resend every 5 minutes
+    const recentToken = await prisma.verificationToken.findFirst({
+      where: {
+        userId: user.id,
+        type: 'email',
+        createdAt: {
+          gte: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    
+    if (recentToken) {
+      const waitTime = Math.ceil((5 * 60 * 1000 - (Date.now() - recentToken.createdAt.getTime())) / 1000);
+      return ApiResponse.tooManyRequests(
+        `Por favor, aguarde ${waitTime} segundos antes de solicitar outro email de verificação`,
+        'RATE_LIMITED'
       );
     }
     
-    // Atualiza o usuário como verificado
-    const user = await prisma.user.update({
-      where: { email: verificationToken.identifier },
-      data: { emailVerified: new Date() },
-    });
+    // Generate new verification token
+    const { generateVerificationToken } = await import('@/lib/auth/utils');
+    const verificationToken = generateVerificationToken();
+    const tokenExpiry = new Date();
+    tokenExpiry.setHours(tokenExpiry.getHours() + 24); // 24 hours expiry
     
-    // Remove o token usado
-    await prisma.verificationToken.delete({
-      where: { token },
-    });
-    
-    return NextResponse.json({
-      success: true,
+    // Create new verification token
+    await prisma.verificationToken.create({
       data: {
-        message: 'Email verificado com sucesso',
-        user: {
-          id: user.id,
-          email: user.email,
-          emailVerified: user.emailVerified,
-        },
+        userId: user.id,
+        token: verificationToken,
+        type: 'email',
+        expiresAt: tokenExpiry,
       },
     });
-  } catch (error: any) {
-    if (error.name === 'ZodError') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'VALIDATION_ERROR',
-            message: 'Dados inválidos',
-            details: error.errors,
-          },
-        },
-        { status: 400 }
-      );
+    
+    // Send verification email
+    const { emailService } = await import('@/services/email.service');
+    const emailSent = await emailService.sendVerificationEmail(user.email, verificationToken);
+    
+    if (!emailSent) {
+      return ApiResponse.internalError('Erro ao enviar email de verificação');
     }
     
-    console.error('Verify email error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: 'Erro ao verificar email',
-        },
-      },
-      { status: 500 }
-    );
+    return ApiResponse.success({
+      message: 'Email de verificação enviado com sucesso',
+      email: user.email,
+    });
+    
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    return ApiResponse.internalError('Erro ao reenviar email de verificação');
   }
 }

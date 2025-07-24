@@ -49,7 +49,7 @@ export const registerFormSchema = z.object({
   // Nome completo com validação de comprimento
   name: z
     .string()
-    .min(3, 'Nome deve ter no mínimo 3 caracteres')
+    .min(2, 'Nome deve ter no mínimo 2 caracteres')
     .max(100, 'Nome deve ter no máximo 100 caracteres')
     .regex(/^[a-zA-ZÀ-ÿ\s'-]+$/, 'Nome deve conter apenas letras, espaços, hífens e apóstrofos'),
 

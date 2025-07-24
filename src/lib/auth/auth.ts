@@ -40,6 +40,14 @@ const authConfig: NextAuthConfig = {
           return null;
         }
 
+        // Check if email is verified
+        if (!user.emailVerified) {
+          // You might want to throw a specific error here instead of returning null
+          // to show a specific message to the user
+          console.log('User email not verified:', user.email);
+          return null;
+        }
+
         return {
           id: user.id,
           email: user.email,

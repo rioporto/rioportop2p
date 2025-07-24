@@ -15,9 +15,17 @@ export async function comparePasswords(
 }
 
 export function generateVerificationToken(): string {
-  const token = Math.random().toString(36).substring(2, 15) + 
-    Math.random().toString(36).substring(2, 15);
-  return token.toUpperCase();
+  // Usar crypto para gerar token mais seguro
+  if (typeof window === 'undefined' && typeof global !== 'undefined') {
+    // Node.js environment
+    const crypto = require('crypto');
+    return crypto.randomBytes(32).toString('hex');
+  } else {
+    // Browser environment (fallback)
+    const token = Math.random().toString(36).substring(2, 15) + 
+      Math.random().toString(36).substring(2, 15);
+    return token.toUpperCase();
+  }
 }
 
 export function getKYCLimitForLevel(level: KYCLevel) {

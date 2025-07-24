@@ -1,6 +1,7 @@
 import { LoginForm } from '@/components/forms/LoginForm';
 import { Metadata } from 'next';
 import { pageMetadata, siteConfig } from '@/lib/seo-config';
+import { Alert } from '@/components/ui/Alert';
 
 export const metadata: Metadata = {
   title: pageMetadata.login.title,
@@ -24,7 +25,11 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: { verified?: string; email?: string; error?: string };
+}) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-md w-full space-y-8">
@@ -39,6 +44,22 @@ export default function LoginPage() {
             Entre com sua conta para continuar
           </p>
         </div>
+
+        {searchParams.verified === 'true' && (
+          <Alert variant="success" className="mb-4">
+            <p className="text-sm">
+              Email verificado com sucesso! Agora você pode fazer login.
+            </p>
+          </Alert>
+        )}
+
+        {searchParams.error === 'verification_failed' && (
+          <Alert variant="error" className="mb-4">
+            <p className="text-sm">
+              Erro ao verificar email. Por favor, tente novamente ou solicite um novo link.
+            </p>
+          </Alert>
+        )}
 
         <div className="bg-gray-900 py-8 px-4 shadow-2xl rounded-2xl sm:px-10 border border-gray-800">
           <LoginForm />

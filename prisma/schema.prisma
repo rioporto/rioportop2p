@@ -199,7 +199,7 @@ model User {
   cpf                String?   @unique
   cpfVerified        Boolean   @default(false) @map("cpf_verified")
   cpfVerifiedAt      DateTime? @map("cpf_verified_at")
-  phone              String?
+  phone              String?   @unique
   phoneVerified      Boolean   @default(false) @map("phone_verified")
   phoneVerifiedAt    DateTime? @map("phone_verified_at")
   firstName          String    @map("first_name")
@@ -272,6 +272,7 @@ model User {
   raterRatings       Rating[]         @relation("RaterRatings")
   ratedRatings       Rating[]         @relation("RatedRatings")
   reputation         UserReputation?
+  verificationTokens VerificationToken[]
   
   @@index([email])
   @@index([cpf])
@@ -1348,6 +1349,39 @@ model UserReputation {
   @@index([averageScore])
   @@map("user_reputations")
 }
+
+model VerificationToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  type      String    // email, phone, password_reset, 2fa
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  
+  @@index([userId])
+  @@index([type])
+  @@index([expiresAt])
+  @@index([token, type])
+  @@map("verification_tokens")
+}
+
+model EmailVerificationAttempt {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  ipAddress      String?   @map("ip_address")
+  userAgent      String?   @map("user_agent")
+  attemptCount   Int       @default(1) @map("attempt_count")
+  lastAttemptAt  DateTime  @default(now()) @map("last_attempt_at")
+  blockedUntil   DateTime? @map("blocked_until")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  
+  @@index([ipAddress])
+  @@index([blockedUntil])
+  @@map("email_verification_attempts")
+}
+
 // Analytics Models
 model AnalyticsEvent {
   id                String   @id @default(uuid())
@@ -1411,4 +1445,19 @@ model AnalyticsSession {
   @@index([startTime])
   @@index([source, medium])
   @@map("analytics_sessions")
+}
+
+
+model PasswordResetToken {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  token      String   @unique
+  expires    DateTime
+  used       Boolean  @default(false)
+  createdAt  DateTime @default(now()) @map("created_at")
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expires])
+  @@map("password_reset_tokens")
 }

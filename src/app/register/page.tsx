@@ -1,4 +1,4 @@
-import { RegisterFormUltimate } from '@/components/forms/RegisterFormUltimate';
+import { RegisterFormUX } from '@/components/forms/RegisterFormUX';
 import { TrustBadgesDark } from '@/components/forms/TrustBadgesDark';
 import { SecurityInfoDark } from '@/components/forms/SecurityInfoDark';
 import { Metadata } from 'next';
@@ -112,7 +112,7 @@ export default function RegisterPage() {
               aria-label="Formulário de cadastro"
             >
               <div className="bg-gray-900 py-8 px-4 shadow-2xl rounded-2xl sm:px-10 border border-gray-800">
-                <RegisterFormUltimate />
+                <RegisterFormUX />
               </div>
             </section>
 
