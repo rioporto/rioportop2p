@@ -530,7 +530,7 @@ export const RegisterFormUX: React.FC = () => {
       setError(null);
       vibrate();
 
-      const response = await fetch('/api/auth/register-final', {
+      const response = await fetch('/api/auth/register-minimal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
