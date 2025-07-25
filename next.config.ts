@@ -82,8 +82,6 @@ const nextConfig: NextConfig = {
   experimental: {
     // Otimizações de performance
     optimizePackageImports: ['lucide-react', 'react-icons', '@heroicons/react'],
-    // Melhora o carregamento de fontes
-    optimizeCss: true,
   },
 
   // Configuração de output para diferentes tipos de deploy
