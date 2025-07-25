@@ -1,5 +1,3 @@
-import { withSentryConfig } from '@sentry/nextjs';
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -32,16 +30,4 @@ const nextConfig = {
   ],
 };
 
-// Configuração do Sentry
-const sentryWebpackPluginOptions = {
-  org: "rioporto",
-  project: "rioporto-p2p",
-  silent: true,
-  widenClientFileUpload: true,
-  transpileClientSDK: true,
-  tunnelRoute: "/monitoring",
-  hideSourceMaps: true,
-  disableLogger: true,
-};
-
-export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);
+export default nextConfig;

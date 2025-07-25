@@ -1,4 +1,4 @@
-import * as Sentry from "@sentry/nextjs";
+// Versão temporária sem Sentry até configurar DSN
 
 /**
  * Captura um erro no Sentry com contexto adicional
@@ -8,14 +8,8 @@ export function captureError(
   context?: Record<string, any>
 ) {
   console.error("Error captured:", error);
-  
   if (context) {
-    Sentry.withScope((scope) => {
-      scope.setContext("additional", context);
-      Sentry.captureException(error);
-    });
-  } else {
-    Sentry.captureException(error);
+    console.error("Context:", context);
   }
 }
 
@@ -26,25 +20,21 @@ export function captureMessage(
   message: string,
   level: "debug" | "info" | "warning" | "error" = "info"
 ) {
-  Sentry.captureMessage(message, level);
+  console.log(`[${level.toUpperCase()}]`, message);
 }
 
 /**
  * Define o usuário atual para rastreamento
  */
 export function setUser(user: { id: string; email?: string; name?: string }) {
-  Sentry.setUser({
-    id: user.id,
-    email: user.email,
-    username: user.name,
-  });
+  console.log("User set:", user);
 }
 
 /**
  * Limpa o usuário (logout)
  */
 export function clearUser() {
-  Sentry.setUser(null);
+  console.log("User cleared");
 }
 
 /**
@@ -55,11 +45,5 @@ export function addBreadcrumb(
   category: string,
   data?: Record<string, any>
 ) {
-  Sentry.addBreadcrumb({
-    message,
-    category,
-    level: "info",
-    data,
-    timestamp: Date.now() / 1000,
-  });
+  console.log(`[${category}] ${message}`, data);
 }

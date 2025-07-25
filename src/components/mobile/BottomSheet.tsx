@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useKeyboardHeight, useHaptic } from '@/hooks/useResponsive';
 import { XMarkIcon } from '@heroicons/react/24/outline';
@@ -41,6 +41,21 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   const sheetRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
+  // Motion values
+  const y = useMotionValue(0);
+  const dragProgress = useTransform(
+    y,
+    [0, window.innerHeight],
+    [0, 100]
+  );
+  
+  // Spring animation for smoother drag
+  const springY = useSpring(y, {
+    stiffness: 400,
+    damping: 40,
+    mass: 0.5,
+  });
+
   // Calculate sheet height based on snap point
   useEffect(() => {
     const calculateHeight = () => {
@@ -64,44 +79,60 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     }
   }, [isOpen, preventScroll]);
 
-  const handleDragEnd = (_: any, info: PanInfo) => {
-    const velocity = info.velocity.y;
-    const offset = info.offset.y;
-    
-    // Determine snap behavior based on velocity and offset
-    if (velocity > 500 || offset > 100) {
-      // Swipe down
-      if (currentSnap > 0) {
-        const newSnap = currentSnap - 1;
-        setCurrentSnap(newSnap);
-        onSnapChange?.(newSnap);
-        haptic.light();
-      } else {
-        // Close if already at lowest snap
-        onClose();
-        haptic.medium();
-      }
-    } else if (velocity < -500 || offset < -100) {
-      // Swipe up
-      if (currentSnap < snapPoints.length - 1) {
-        const newSnap = currentSnap + 1;
-        setCurrentSnap(newSnap);
-        onSnapChange?.(newSnap);
-        haptic.light();
-      }
-    }
-  };
-
-  const handleBackdropClick = () => {
+  // Handle backdrop click
+  const handleBackdropClick = useCallback(() => {
     haptic.light();
     onClose();
-  };
+  }, [onClose, haptic]);
+
+  // Handle drag end with velocity and distance checks
+  const handleDragEnd = useCallback((_: any, info: PanInfo) => {
+    const velocity = info.velocity.y;
+    const distance = info.offset.y;
+    const windowHeight = window.innerHeight;
+    
+    // Fechar se arrastar rápido para baixo ou mais de 40% da altura
+    if (velocity > 500 || distance > windowHeight * 0.4) {
+      haptic.medium();
+      onClose();
+      return;
+    }
+
+    // Encontrar o snap point mais próximo
+    const currentY = info.point.y;
+    const snapHeights = snapPoints.map(point => windowHeight * (1 - point));
+    const closestSnap = snapHeights.reduce((prev, curr) => {
+      return Math.abs(curr - currentY) < Math.abs(prev - currentY) ? curr : prev;
+    });
+    
+    const newSnapIndex = snapHeights.indexOf(closestSnap);
+    
+    // Feedback tátil ao mudar de snap
+    if (newSnapIndex !== currentSnap) {
+      haptic.light();
+    }
+    
+    setCurrentSnap(newSnapIndex);
+    onSnapChange?.(newSnapIndex);
+  }, [snapPoints, currentSnap, onClose, haptic, onSnapChange]);
+
+  // Monitorar progresso do drag para feedback
+  useEffect(() => {
+    const unsubscribe = dragProgress.onChange(value => {
+      // Feedback tátil em pontos específicos do drag
+      if (value > 25 && value < 30) haptic.light();
+      if (value > 50 && value < 55) haptic.light();
+      if (value > 75 && value < 80) haptic.medium();
+    });
+
+    return () => unsubscribe();
+  }, [dragProgress, haptic]);
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop com blur e opacidade dinâmica */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: backdropOpacity }}
@@ -110,59 +141,83 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             className="
               fixed inset-0 z-40
               bg-black backdrop-blur-sm
+              transition-opacity duration-300
             "
+            style={{
+              opacity: useTransform(dragProgress, [0, 100], [backdropOpacity, 0])
+            }}
           />
 
-          {/* Sheet */}
+          {/* Sheet com animações suaves */}
           <motion.div
             ref={sheetRef}
+            style={{
+              y: springY,
+              maxHeight,
+              touchAction: 'none',
+            }}
             initial={{ y: '100%' }}
             animate={{ y: 0, height: sheetHeight }}
             exit={{ y: '100%' }}
             transition={{
               type: 'spring',
-              damping: 30,
-              stiffness: 300,
+              damping: 40,
+              stiffness: 400,
+              mass: 1,
             }}
             drag="y"
             dragElastic={0.2}
             dragConstraints={{ top: 0, bottom: 0 }}
+            dragTransition={{ bounceStiffness: 400, bounceDamping: 40 }}
             onDragEnd={handleDragEnd}
             className={`
               fixed bottom-0 left-0 right-0 z-50
               rounded-t-3xl overflow-hidden
               ${theme === 'dark' ? 'bg-gray-900' : 'bg-white'}
               shadow-2xl
+              transition-shadow duration-300
+              ${dragProgress.get() > 50 ? 'shadow-xl' : 'shadow-2xl'}
             `}
-            style={{
-              maxHeight,
-              touchAction: 'none',
-            }}
           >
-            {/* Handle */}
+            {/* Handle com feedback visual */}
             {showHandle && (
-              <div className="flex justify-center p-3 cursor-grab active:cursor-grabbing">
-                <div
+              <motion.div 
+                className="flex justify-center p-3 cursor-grab active:cursor-grabbing"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <motion.div
                   className={`
                     w-12 h-1 rounded-full
                     ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}
                   `}
+                  animate={{
+                    scale: [1, 1.1, 1],
+                    transition: { duration: 2, repeat: Infinity }
+                  }}
                 />
-              </div>
+              </motion.div>
             )}
 
-            {/* Header */}
+            {/* Header com animação */}
             {(title || showCloseButton) && (
-              <div className="flex items-center justify-between px-6 pb-4">
+              <motion.div 
+                className="flex items-center justify-between px-6 pb-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
                 <h3 className="text-lg font-semibold">
                   {title}
                 </h3>
                 {showCloseButton && (
-                  <button
+                  <motion.button
                     onClick={() => {
                       haptic.light();
                       onClose();
                     }}
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     className={`
                       p-2 rounded-lg transition-colors
                       ${theme === 'dark'
@@ -172,25 +227,32 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                     `}
                   >
                     <XMarkIcon className="w-5 h-5" />
-                  </button>
+                  </motion.button>
                 )}
-              </div>
+              </motion.div>
             )}
 
-            {/* Content */}
-            <div
+            {/* Content com scroll suave */}
+            <motion.div
               ref={contentRef}
               className="px-6 pb-6 overflow-y-auto"
               style={{
                 maxHeight: `calc(${sheetHeight}px - ${showHandle ? '48px' : '0px'} - ${title || showCloseButton ? '60px' : '0px'})`,
               }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.1 }}
             >
               {children}
-            </div>
+            </motion.div>
 
-            {/* Keyboard spacer */}
+            {/* Keyboard spacer com animação */}
             {keyboardHeight > 0 && (
-              <div style={{ height: keyboardHeight }} />
+              <motion.div
+                initial={{ height: 0 }}
+                animate={{ height: keyboardHeight }}
+                transition={{ type: 'spring', stiffness: 400, damping: 40 }}
+              />
             )}
           </motion.div>
         </>
