@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '@/lib/api/response';
+import { ApiResponse } from '@/lib/api/response';
 import { captureError } from '@/lib/monitoring/sentry';
 
 export async function GET(req: NextRequest) {
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const isTest = req.headers.get('X-Test-Sentry') === 'true';
   
   if (!isTest) {
-    return apiResponse.unauthorized('Endpoint apenas para testes');
+    return ApiResponse.unauthorized('Endpoint apenas para testes');
   }
 
   try {
@@ -49,9 +49,9 @@ export async function GET(req: NextRequest) {
     });
 
     // Retornar erro 500 para o teste
-    return apiResponse.error('Erro gerado intencionalmente para teste do Sentry');
+    return ApiResponse.error('Erro gerado intencionalmente para teste do Sentry');
   }
 
   // Não deve chegar aqui
-  return apiResponse.success({ message: 'Nenhum erro gerado' });
+  return ApiResponse.success({ message: 'Nenhum erro gerado' });
 }
