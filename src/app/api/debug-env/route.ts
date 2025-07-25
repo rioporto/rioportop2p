@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth/auth-config';
 
 export async function GET(req: NextRequest) {
+  // Verificar autenticação
+  const session = await auth();
+  
+  if (!session || session.user?.email !== 'johnny@rioporto.com.br') {
+    return new NextResponse('Unauthorized', { status: 401 });
+  }
   // Lista de variáveis de ambiente importantes (sem expor valores sensíveis)
   const envVars = {
     NODE_ENV: process.env.NODE_ENV,

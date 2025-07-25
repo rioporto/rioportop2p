@@ -11,11 +11,27 @@ const publicPaths = [
   '/reset-password',
   '/showcase',
   '/api/auth',
+  '/api/register',
+  '/api/register-complete',
+  '/api/listings',
+  '/api/crypto/prices',
   '/test-login',
+  '/_next',
+  '/favicon.ico',
 ];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  
+  // Ignora recursos estáticos e arquivos do Next.js
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/static') ||
+    pathname.includes('.') || // arquivos com extensão
+    pathname.startsWith('/api/auth') // rotas de autenticação
+  ) {
+    return NextResponse.next();
+  }
   
   // Permite acesso a rotas públicas
   const isPublicPath = publicPaths.some(path => 
@@ -27,7 +43,8 @@ export function middleware(request: NextRequest) {
   }
   
   // Verificar se o usuário está autenticado
-  const token = request.cookies.get('next-auth.session-token');
+  const token = request.cookies.get('next-auth.session-token') || 
+                request.cookies.get('__Secure-next-auth.session-token');
   
   if (!token) {
     // Se for uma rota de API, retorna 401
