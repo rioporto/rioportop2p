@@ -1,0 +1,78 @@
+name: PR Quality Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  quality-check:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check commit messages
+        run: |
+          # Check if commits follow conventional commits
+          echo "Checking commit messages..."
+          git log --format='%s' origin/main..HEAD | while read commit; do
+            if ! echo "$commit" | grep -qE '^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+'; then
+              echo "❌ Invalid commit message: $commit"
+              echo "Please use conventional commits: https://www.conventionalcommits.org/"
+              exit 1
+            fi
+          done
+          echo "✅ All commit messages are valid"
+
+      - name: Check file sizes
+        run: |
+          # Prevent large files from being committed
+          find . -type f -not -path "./node_modules/*" -not -path "./.git/*" -size +1M -exec ls -lh {} \; | while read line; do
+            echo "❌ Large file detected: $line"
+            echo "Please use Git LFS for files larger than 1MB"
+            exit 1
+          done
+          echo "✅ No large files detected"
+
+      - name: Check for console logs
+        run: |
+          # Warn about console.log in production code
+          if grep -r "console\.\(log\|debug\|info\)" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next src/; then
+            echo "⚠️ console.log statements found in code"
+            echo "Consider removing or using a proper logging service"
+          fi
+
+      - name: Check for TODO comments
+        run: |
+          # List all TODO comments
+          if grep -r "TODO\|FIXME\|HACK" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next src/; then
+            echo "📝 TODO/FIXME/HACK comments found"
+            echo "Please address these before merging to main"
+          fi
+
+      - name: Bundle size check
+        run: |
+          npm run build
+          # Check .next folder size
+          SIZE=$(du -sh .next | cut -f1)
+          echo "📦 Bundle size: $SIZE"
+          
+          # Optional: fail if bundle is too large
+          # SIZE_MB=$(du -sm .next | cut -f1)
+          # if [ $SIZE_MB -gt 50 ]; then
+          #   echo "❌ Bundle size exceeds 50MB limit"
+          #   exit 1
+          # fi

@@ -7,6 +7,8 @@ import {
   IKYCDocument,
   API_ERROR_CODES 
 } from '@/types/api';
+import { prisma } from '@/lib/db/prisma';
+import { checkAuth } from '@/lib/auth/utils';
 
 // File upload limits
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -15,6 +17,7 @@ const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'application
 // Validation schemas
 const uploadSchema = z.object({
   type: z.enum(['RG', 'CNH', 'PASSPORT', 'SELFIE', 'PROOF_OF_ADDRESS']),
+  file: z.any() // TODO: Implementar validação de arquivo
 });
 
 // Temporary storage
@@ -23,94 +26,61 @@ const kycDocuments: Map<string, IKYCDocument> = new Map();
 // GET /api/kyc - Get user's KYC documents
 export const GET = withMiddleware(
   async (req: NextRequest) => {
-    // TODO: Get user ID from auth token
-    const userId = 'temp-user-id';
+    // Verificar autenticação
+    const authResult = await checkAuth(req);
+    if ('status' in authResult) {
+      return authResult;
+    }
+    const { userId } = authResult;
 
-    const userDocuments = Array.from(kycDocuments.values())
-      .filter(doc => doc.userId === userId);
+    try {
+      // Buscar documentos do usuário
+      const documents = await prisma.kycDocument.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' }
+      });
 
-    return ApiResponse.success(userDocuments);
+      return ApiResponse.success(documents);
+    } catch (error) {
+      console.error('Error fetching KYC documents:', error);
+      return ApiResponse.internalError('Erro ao buscar documentos');
+    }
   }
 );
 
 // POST /api/kyc - Upload KYC document
-export const POST = withMiddleware(
-  async (req: NextRequest) => {
-    try {
-      // Parse multipart form data
-      const formData = await req.formData();
-      const file = formData.get('file') as File | null;
-      const type = formData.get('type') as string;
-
-      if (!file) {
-        return ApiResponse.badRequest('File is required');
-      }
-
-      // Validate file type
-      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-        return ApiResponse.badRequest(
-          'Invalid file type. Only JPEG, PNG, and PDF are allowed',
-          API_ERROR_CODES.INVALID_FILE_FORMAT
-        );
-      }
-
-      // Validate file size
-      if (file.size > MAX_FILE_SIZE) {
-        return ApiResponse.badRequest(
-          'File size exceeds 5MB limit',
-          API_ERROR_CODES.FILE_TOO_LARGE
-        );
-      }
-
-      // Validate document type
-      const validatedData = uploadSchema.parse({ type });
-
-      // TODO: Get user ID from auth token
-      const userId = 'temp-user-id';
-
-      // Check if document type already submitted
-      const existingDoc = Array.from(kycDocuments.values())
-        .find(doc => doc.userId === userId && doc.type === validatedData.type);
-
-      if (existingDoc && existingDoc.status === 'PENDING') {
-        return ApiResponse.conflict(
-          'Document of this type is already pending review',
-          API_ERROR_CODES.DOCUMENT_ALREADY_SUBMITTED
-        );
-      }
-
-      // TODO: Upload file to storage service (S3, Cloudinary, etc.)
-      const fileUrl = `https://storage.example.com/kyc/${userId}/${file.name}`;
-
-      // Create KYC document record
-      const kycDocument: IKYCDocument = {
-        id: generateSecureUUID(),
-        userId,
-        type: validatedData.type,
-        status: 'PENDING',
-        url: fileUrl,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      kycDocuments.set(kycDocument.id, kycDocument);
-
-      // Update user's KYC level based on documents
-      // TODO: Update user KYC level in database
-
-      return ApiResponse.created(kycDocument);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return ApiResponse.badRequest(
-          'Invalid document type',
-          API_ERROR_CODES.INVALID_DOCUMENT_TYPE,
-          error.errors
-        );
-      }
-      throw error;
-    }
+export async function POST(req: NextRequest) {
+  // Verificar autenticação
+  const authResult = await checkAuth(req);
+  if ('status' in authResult) {
+    return authResult;
   }
-);
+  const { userId } = authResult;
+
+  try {
+    const formData = await req.formData();
+    const file = formData.get('file');
+    const type = formData.get('type');
+
+    // Validar dados
+    const validation = uploadSchema.safeParse({ type, file });
+    if (!validation.success) {
+      return ApiResponse.badRequest(
+        'Dados inválidos',
+        'VALIDATION_ERROR',
+        validation.error.errors
+      );
+    }
+
+    // TODO: Processar upload do arquivo
+    // TODO: Salvar documento no banco
+
+    return ApiResponse.success({ message: 'Documento enviado com sucesso' });
+  } catch (error) {
+    console.error('Error uploading KYC document:', error);
+    return ApiResponse.internalError('Erro ao enviar documento');
+  }
+}
 
 // PATCH /api/kyc/:id - Update KYC document status (admin only)
 export const PATCH = withMiddleware(

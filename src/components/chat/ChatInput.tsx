@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils/cn';
 import { Button } from '@/components/ui/Button';
+import { useChat } from '@/hooks/useChat';
 import { 
   SendIcon, 
   AttachmentIcon, 
@@ -13,11 +14,8 @@ import {
 } from '@/components/icons';
 
 interface ChatInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSend: () => void;
-  onFileSelect: (file: File) => void;
-  onTyping?: () => void;
+  transactionId: string;
+  userId: string;
   disabled?: boolean;
   loading?: boolean;
   placeholder?: string;
@@ -32,21 +30,30 @@ interface ChatInputProps {
 const popularEmojis = ['😊', '👍', '❤️', '😂', '🎉', '🔥', '✅', '🙏', '😎', '🤝'];
 
 export function ChatInput({
-  value,
-  onChange,
-  onSend,
-  onFileSelect,
-  onTyping,
+  transactionId,
+  userId,
   disabled = false,
   loading = false,
   placeholder = 'Digite sua mensagem...',
   showQuickActions = false,
   quickActions = [],
 }: ChatInputProps) {
+  const [value, setValue] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const {
+    sendMessage,
+    startTyping,
+    isTyping,
+    typingUser,
+    error
+  } = useChat({
+    transactionId,
+    userId
+  });
 
   // Auto-resize textarea
   useEffect(() => {
@@ -56,12 +63,21 @@ export function ChatInput({
     }
   }, [value]);
 
+  const handleSend = async () => {
+    if (value.trim() && !disabled && !loading) {
+      try {
+        await sendMessage(value.trim());
+        setValue('');
+      } catch (error) {
+        console.error('Erro ao enviar mensagem:', error);
+      }
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (value.trim() && !disabled && !loading) {
-        onSend();
-      }
+      handleSend();
     }
   };
 
@@ -71,7 +87,7 @@ export function ChatInput({
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
       const newValue = value.substring(0, start) + emoji + value.substring(end);
-      onChange(newValue);
+      setValue(newValue);
       
       // Restore cursor position
       setTimeout(() => {
@@ -82,12 +98,22 @@ export function ChatInput({
     setShowEmojiPicker(false);
   };
 
-  const handleFileSelect = (accept?: string) => {
+  const handleFileSelect = async (accept?: string) => {
     if (fileInputRef.current) {
       fileInputRef.current.accept = accept || '*';
       fileInputRef.current.click();
     }
     setShowAttachmentMenu(false);
+  };
+
+  const handleFileUpload = async (file: File) => {
+    try {
+      // TODO: Implementar upload de arquivo
+      const fileUrl = 'https://example.com/file.pdf';
+      await sendMessage(fileUrl, 'FILE');
+    } catch (error) {
+      console.error('Erro ao enviar arquivo:', error);
+    }
   };
 
   return (
@@ -107,6 +133,13 @@ export function ChatInput({
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Typing Indicator */}
+      {isTyping && typingUser && (
+        <div className="absolute -top-6 left-4 text-sm text-gray-500">
+          {typingUser} está digitando...
         </div>
       )}
 
@@ -153,8 +186,8 @@ export function ChatInput({
               ref={textareaRef}
               value={value}
               onChange={(e) => {
-                onChange(e.target.value);
-                onTyping?.();
+                setValue(e.target.value);
+                startTyping();
               }}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
@@ -205,7 +238,7 @@ export function ChatInput({
           {/* Send Button */}
           {value.trim() ? (
             <Button
-              onClick={onSend}
+              onClick={handleSend}
               disabled={disabled || loading || !value.trim()}
               loading={loading}
               className="rounded-full p-2 min-w-[40px] h-[40px]"
@@ -234,12 +267,19 @@ export function ChatInput({
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) {
-            onFileSelect(file);
+            handleFileUpload(file);
             e.target.value = '';
           }
         }}
         className="hidden"
       />
+
+      {/* Error Message */}
+      {error && (
+        <div className="px-4 py-2 text-sm text-red-600 bg-red-50">
+          {error.message}
+        </div>
+      )}
     </div>
   );
 }

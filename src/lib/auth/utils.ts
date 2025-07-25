@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import { KYCLevel, KYC_LIMITS } from '@/types/auth';
 import { auth } from './auth';
+import { NextRequest } from 'next/server';
+import { ApiResponse } from '@/lib/api/response';
 
 export async function hashPassword(password: string): Promise<string> {
   const salt = await bcrypt.genSalt(12);
@@ -82,4 +84,17 @@ export function formatPhone(phone: string): string {
   }
   
   return phone;
+}
+
+export async function checkAuth(req: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return ApiResponse.unauthorized('Não autenticado');
+    }
+    return { userId: session.user.id };
+  } catch (error) {
+    console.error('Error checking auth:', error);
+    return ApiResponse.unauthorized('Erro ao verificar autenticação');
+  }
 }

@@ -1,13 +1,8 @@
 import Pusher from 'pusher';
+import { PUSHER_CONFIG } from '@/config/pusher';
 
 // Cliente Pusher para o servidor
-export const pusherServer = new Pusher({
-  appId: process.env.PUSHER_APP_ID!,
-  key: process.env.PUSHER_KEY!,
-  secret: process.env.PUSHER_SECRET!,
-  cluster: process.env.PUSHER_CLUSTER!,
-  useTLS: true,
-});
+export const pusherServer = new Pusher(PUSHER_CONFIG.server);
 
 // Função helper para enviar eventos
 export const triggerPusherEvent = async (

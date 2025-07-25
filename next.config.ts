@@ -1,42 +1,57 @@
-import type { NextConfig } from "next";
-import { securityHeaders } from "./src/lib/seo-config";
+import { withSentryConfig } from '@sentry/nextjs';
+import './src/env.mjs';
 
-const nextConfig: NextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
   experimental: {
-    serverActions: {
-      bodySizeLimit: '2mb',
-    },
+    serverActions: true,
   },
   images: {
-    domains: ['rioporto.com.br'],
-    formats: ['image/avif', 'image/webp'],
+    domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
   },
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: securityHeaders,
-      },
-    ];
+  // Configuração do middleware
+  middleware: {
+    // Habilitar Edge Runtime para melhor performance
+    runtime: 'edge',
+    // Matcher configurado no middleware.ts
   },
-  async redirects() {
-    return [
-      {
-        source: '/home',
-        destination: '/',
-        permanent: true,
-      },
-    ];
-  },
-  poweredByHeader: false,
-  compress: true,
-  reactStrictMode: true,
+  // Configurações de segurança
+  headers: async () => [
+    {
+      source: '/:path*',
+      headers: [
+        {
+          key: 'X-Frame-Options',
+          value: 'DENY',
+        },
+        {
+          key: 'X-Content-Type-Options',
+          value: 'nosniff',
+        },
+        {
+          key: 'X-XSS-Protection',
+          value: '1; mode=block',
+        },
+        {
+          key: 'Referrer-Policy',
+          value: 'strict-origin-when-cross-origin',
+        },
+      ],
+    },
+  ],
 };
 
-export default nextConfig;
+// Configuração do Sentry
+const sentryWebpackPluginOptions = {
+  org: "rioporto",
+  project: "rioporto-p2p",
+  silent: true,
+  widenClientFileUpload: true,
+  transpileClientSDK: true,
+  tunnelRoute: "/monitoring",
+  hideSourceMaps: true,
+  disableLogger: true,
+};
+
+export default withSentryConfig(nextConfig, sentryWebpackPluginOptions);

@@ -39,3 +39,33 @@ Banco de Dados:
 - Sempre usar findUnique quando possível
 - Soft deletes com deletedAt
 - Índices otimizados para queries frequentes
+
+Cursor PRO - Comandos Avançados:
+- Cmd+K: Editar código com IA inline
+- Cmd+L: Chat lateral para dúvidas
+- Cmd+Shift+I: Composer para múltiplos arquivos
+- Cmd+Shift+K: Gerar código do zero
+- @codebase: Buscar em todo projeto
+- @docs: Buscar documentação
+- Tab: Aceitar sugestão completa
+- Cmd+→: Aceitar palavra por palavra
+
+Workflows Otimizados:
+1. REFATORAÇÃO: Selecione código → Cmd+K → "refatorar para..."
+2. TESTES: Arquivo aberto → Cmd+Shift+I → "criar testes para este arquivo"
+3. DOCS: Função selecionada → Cmd+K → "adicionar JSDoc"
+4. DEBUG: Erro selecionado → Cmd+L → colar erro → "como resolver?"
+
+Prompts Úteis:
+- "adicionar tipos TypeScript nesta função"
+- "otimizar esta query Prisma"
+- "converter para Tailwind CSS"
+- "adicionar tratamento de erros"
+- "criar teste unitário com Vitest"
+
+Features PRO Ativas:
+- Claude 3.5 Sonnet (ilimitado)
+- GPT-4 (ilimitado)
+- Múltiplos modelos simultâneos
+- Contexto estendido (32k tokens)
+- Preview de mudanças antes de aplicar

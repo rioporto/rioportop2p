@@ -1,11 +1,12 @@
 import PusherClient from 'pusher-js';
+import { PUSHER_CONFIG } from '@/config/pusher';
 
 // Cliente Pusher para o frontend
-export const pusherClient = new PusherClient(
-  process.env.NEXT_PUBLIC_PUSHER_KEY!,
+const pusherClient = new PusherClient(
+  PUSHER_CONFIG.client.key,
   {
-    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-    authEndpoint: '/api/pusher/auth',
+    cluster: PUSHER_CONFIG.client.cluster,
+    authEndpoint: PUSHER_CONFIG.client.authEndpoint,
     auth: {
       headers: {
         'Content-Type': 'application/json',

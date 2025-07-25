@@ -1,154 +1,139 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/auth';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
-import { pixService } from '@/services/payments/pix.service';
-import { AppError, handleApiError } from '@/lib/errors';
+import { ApiResponse } from '@/lib/api/response';
+import { checkAuth } from '@/lib/auth/utils';
+import { z } from 'zod';
 import { TransactionStatus } from '@prisma/client';
+import { pixService } from '@/services/payments/pix.service';
 
-export async function POST(request: NextRequest) {
+// Schema de validação para criar pagamento PIX
+const createPixSchema = z.object({
+  transactionId: z.string().uuid('ID da transação inválido'),
+  amount: z.number().positive('Valor deve ser positivo'),
+  description: z.string().optional()
+});
+
+export async function POST(req: NextRequest) {
+  // Verificar autenticação
+  const authResult = await checkAuth(req);
+  if ('status' in authResult) {
+    return authResult;
+  }
+  const { userId } = authResult;
+
   try {
-    // 1. Verificar autenticação
-    const session = await auth();
-    if (!session?.user?.id) {
-      throw new AppError('Não autenticado', 401);
+    const body = await req.json();
+    
+    // Validar dados
+    const validation = createPixSchema.safeParse(body);
+    if (!validation.success) {
+      return ApiResponse.badRequest(
+        'Dados inválidos',
+        'VALIDATION_ERROR',
+        validation.error.errors
+      );
     }
 
-    // 2. Validar dados da requisição
-    const body = await request.json();
-    const { transactionId } = body;
+    const { transactionId, amount, description } = validation.data;
 
-    if (!transactionId) {
-      throw new AppError('ID da transação é obrigatório', 400);
-    }
-
-    // 3. Buscar transação e verificar se user é o buyer
+    // Verificar se transação existe e usuário é o comprador
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
       include: {
         buyer: true,
-        seller: true,
-      },
+        seller: true
+      }
     });
 
     if (!transaction) {
-      throw new AppError('Transação não encontrada', 404);
+      return ApiResponse.notFound('Transação não encontrada');
     }
 
-    if (transaction.buyerId !== session.user.id) {
-      throw new AppError('Apenas o comprador pode criar o pagamento', 403);
+    if (transaction.buyerId !== userId) {
+      return ApiResponse.forbidden('Apenas o comprador pode gerar pagamento');
     }
 
-    // 4. Verificar se status é AWAITING_PAYMENT
     if (transaction.status !== TransactionStatus.AWAITING_PAYMENT) {
-      throw new AppError('Transação não está aguardando pagamento', 400);
+      return ApiResponse.badRequest('Transação não está aguardando pagamento');
     }
 
-    // 5. Chamar pixService.createPixPayment
-    const pixPayment = await pixService.createPixPayment(
-      transaction.id,
-      transaction.amount.toNumber(),
-      transaction.buyer.email!
-    );
+    // Gerar pagamento PIX
+    const pixPayment = await pixService.createPayment({
+      amount,
+      description: description || `Pagamento para transação ${transactionId}`,
+      buyerId: userId,
+      sellerId: transaction.sellerId
+    });
 
-    // 6. Salvar paymentId na transação
+    // Atualizar transação com ID do pagamento
     await prisma.transaction.update({
       where: { id: transactionId },
       data: {
-        paymentId: pixPayment.paymentId,
-        paymentMethod: 'PIX',
-      },
+        paymentId: pixPayment.id
+      }
     });
 
-    // 7. Retornar QR code e dados do PIX
-    return NextResponse.json({
-      success: true,
-      data: {
-        paymentId: pixPayment.paymentId,
-        qrCode: pixPayment.qrCode,
-        qrCodeBase64: pixPayment.qrCodeBase64,
-        pixKey: pixPayment.pixKey,
-        expiresAt: pixPayment.expiresAt,
-      },
-    });
+    return ApiResponse.success(pixPayment);
   } catch (error) {
-    return handleApiError(error);
+    console.error('Error creating PIX payment:', error);
+    return ApiResponse.internalError('Erro ao gerar pagamento PIX');
   }
 }
 
-export async function GET(request: NextRequest) {
-  try {
-    // 1. Verificar autenticação
-    const session = await auth();
-    if (!session?.user?.id) {
-      throw new AppError('Não autenticado', 401);
-    }
+export async function GET(req: NextRequest) {
+  // Verificar autenticação
+  const authResult = await checkAuth(req);
+  if ('status' in authResult) {
+    return authResult;
+  }
+  const { userId } = authResult;
 
-    // 2. Receber transactionId como query param
-    const searchParams = request.nextUrl.searchParams;
+  try {
+    const { searchParams } = new URL(req.url);
     const transactionId = searchParams.get('transactionId');
 
     if (!transactionId) {
-      throw new AppError('ID da transação é obrigatório', 400);
+      return ApiResponse.badRequest('ID da transação é obrigatório');
     }
 
-    // 3. Buscar transação e verificar se user faz parte dela
+    // Verificar se transação existe e usuário faz parte dela
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
       include: {
         buyer: true,
-        seller: true,
-      },
+        seller: true
+      }
     });
 
     if (!transaction) {
-      throw new AppError('Transação não encontrada', 404);
+      return ApiResponse.notFound('Transação não encontrada');
     }
 
-    if (
-      transaction.buyerId !== session.user.id &&
-      transaction.sellerId !== session.user.id
-    ) {
-      throw new AppError('Acesso negado', 403);
+    if (transaction.buyerId !== userId && transaction.sellerId !== userId) {
+      return ApiResponse.forbidden('Você não faz parte desta transação');
     }
 
-    // 4. Buscar paymentId da transação
     if (!transaction.paymentId) {
-      throw new AppError('Pagamento não iniciado', 400);
+      return ApiResponse.badRequest('Pagamento não iniciado');
     }
 
-    // 5. Chamar pixService.checkPaymentStatus
-    const paymentStatus = await pixService.checkPaymentStatus(
-      transaction.paymentId
-    );
+    // Verificar status do pagamento
+    const paymentStatus = await pixService.checkPaymentStatus(transaction.paymentId);
 
-    // 6. Se pago, atualizar status para PAYMENT_CONFIRMED
+    // Se pago, atualizar status da transação
     if (paymentStatus.isPaid && transaction.status === TransactionStatus.AWAITING_PAYMENT) {
       await prisma.transaction.update({
         where: { id: transactionId },
         data: {
           status: TransactionStatus.PAYMENT_CONFIRMED,
-          paymentConfirmedAt: new Date(),
-        },
+          paymentConfirmedAt: new Date()
+        }
       });
-
-      // Notificar o vendedor sobre o pagamento confirmado
-      // TODO: Implementar sistema de notificações
     }
 
-    // 7. Retornar status
-    return NextResponse.json({
-      success: true,
-      data: {
-        paymentId: transaction.paymentId,
-        isPaid: paymentStatus.isPaid,
-        status: paymentStatus.status,
-        paidAt: paymentStatus.paidAt,
-        transactionStatus: paymentStatus.isPaid 
-          ? TransactionStatus.PAYMENT_CONFIRMED 
-          : transaction.status,
-      },
-    });
+    return ApiResponse.success(paymentStatus);
   } catch (error) {
-    return handleApiError(error);
+    console.error('Error checking PIX payment:', error);
+    return ApiResponse.internalError('Erro ao verificar pagamento PIX');
   }
 }

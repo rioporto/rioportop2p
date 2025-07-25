@@ -273,6 +273,7 @@ model User {
   ratedRatings       Rating[]         @relation("RatedRatings")
   reputation         UserReputation?
   verificationTokens VerificationToken[]
+  uploadedImages     UploadedImage[]
   
   @@index([email])
   @@index([cpf])
@@ -1460,4 +1461,25 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expires])
   @@map("password_reset_tokens")
+}
+
+model UploadedImage {
+  id               String    @id @default(cuid())
+  cloudinaryId     String    @unique
+  url             String
+  folder          String    @default("users")
+  width           Int
+  height          Int
+  format          String
+  size            Int
+  moderationStatus String?   @default("pending")
+  moderationDetails Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([cloudinaryId])
+  @@index([moderationStatus])
 }
