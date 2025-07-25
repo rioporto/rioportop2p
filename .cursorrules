@@ -1,0 +1,41 @@
+Projeto: Rio Porto P2P - Plataforma de trading P2P de criptomoedas
+Stack: Next.js 15.4.3, TypeScript, Prisma ORM, PostgreSQL (Neon), Railway
+UI: Tailwind CSS, design skeumórfico premium, shadcn/ui components
+
+Padrões de Código:
+- SEMPRE use 'use client' para componentes com interatividade
+- Interfaces TypeScript com prefixo 'I' (ex: IButtonProps)
+- Serviços sempre com métodos estáticos
+- Use cn() helper para combinar classes Tailwind
+- Imports absolutos com @ (baseUrl configurado)
+
+Estrutura de Arquivos:
+- Componentes em /components com subpastas por categoria
+- API routes em /app/api seguindo convenção route.ts
+- Serviços em /services com lógica de negócio
+- Types em /types organizados por domínio
+
+Práticas Importantes:
+- NUNCA commitar .env ou credenciais
+- Sempre verificar autenticação com auth() do NextAuth
+- Usar apiResponse helpers para respostas consistentes
+- Transações Prisma para operações atômicas
+- Tratamento de erros com try/catch em todas APIs
+
+Design System:
+- 8 variantes de botões (flat, elevated, glass, gradient, etc)
+- Cores: primary (blue), secondary (purple), success (green)
+- Sombras: soft, medium, hard, xl, inner, skeuomorphic
+- Sempre usar variáveis CSS definidas em globals.css
+
+Segurança:
+- Middleware ativo para rotas protegidas
+- Session tokens: next-auth.session-token
+- Sempre validar inputs com Zod schemas
+- Rate limiting em APIs sensíveis
+
+Banco de Dados:
+- 24 tabelas mapeadas com Prisma
+- Sempre usar findUnique quando possível
+- Soft deletes com deletedAt
+- Índices otimizados para queries frequentes
