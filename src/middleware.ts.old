@@ -3,6 +3,7 @@ import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { API_ROUTES } from '@/lib/api/config';
 import { checkUserKYCLevel, checkUserIsAdmin } from '@/lib/auth/kyc';
+// import { withTelemetry } from './lib/monitoring/telemetry';
 
 // Função para verificar se uma rota é pública
 function isPublicRoute(pathname: string): boolean {
@@ -52,7 +53,8 @@ function isAdminRoute(pathname: string): boolean {
   });
 }
 
-export async function middleware(request: NextRequest) {
+// Middleware
+export default async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Permitir rotas públicas
