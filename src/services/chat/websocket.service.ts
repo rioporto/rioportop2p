@@ -160,3 +160,6 @@ export class WebSocketService {
     });
   }
 }
+
+// Exportar instância singleton
+export const webSocketService = new WebSocketService();

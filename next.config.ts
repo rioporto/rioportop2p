@@ -1,20 +1,10 @@
 import { withSentryConfig } from '@sentry/nextjs';
-import './src/env.mjs';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    serverActions: true,
-  },
   images: {
-    domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com'],
-  },
-  // Configuração do middleware
-  middleware: {
-    // Habilitar Edge Runtime para melhor performance
-    runtime: 'edge',
-    // Matcher configurado no middleware.ts
+    domains: ['avatars.githubusercontent.com', 'lh3.googleusercontent.com', 'res.cloudinary.com'],
   },
   // Configurações de segurança
   headers: async () => [

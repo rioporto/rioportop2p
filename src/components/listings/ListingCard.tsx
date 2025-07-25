@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { HeartIcon, ClockIcon, ChartBarIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
@@ -16,7 +16,13 @@ import { ListingBadges, TransactionStatusBadge, BadgeType } from './ListingBadge
 import { PaymentMethodChips } from './PaymentMethodChip';
 import { LimitProgressBar } from './LimitProgressBar';
 import { Sparkline } from './Sparkline';
-import { ListingCardHover } from './ListingCardHover';
+import dynamic from 'next/dynamic';
+
+// Lazy load the hover card component
+const ListingCardHover = dynamic(() => import('./ListingCardHover').then(mod => mod.ListingCardHover), {
+  ssr: false,
+  loading: () => <div className="animate-pulse bg-gray-200 rounded-2xl h-96" />
+});
 
 interface IListingCardProps {
   listing: IListing;
@@ -25,7 +31,7 @@ interface IListingCardProps {
   index?: number;
 }
 
-// Crypto icon mapping
+// Memoized constants
 const cryptoIcons: Record<string, React.ComponentType<any>> = {
   BTC: BitcoinIcon,
   ETH: EthereumIcon,
@@ -33,7 +39,6 @@ const cryptoIcons: Record<string, React.ComponentType<any>> = {
   BNB: BNBIcon
 };
 
-// Crypto color mapping
 const cryptoColors: Record<string, string> = {
   BTC: '#F7931A',
   ETH: '#627EEA',
@@ -41,7 +46,6 @@ const cryptoColors: Record<string, string> = {
   BNB: '#F3BA2F'
 };
 
-// Crypto gradient classes
 const cryptoGradients: Record<string, string> = {
   BTC: 'gradient-btc',
   ETH: 'gradient-eth',
@@ -49,48 +53,80 @@ const cryptoGradients: Record<string, string> = {
   BNB: 'gradient-bnb'
 };
 
-export function ListingCard({ listing, onSelect, showActions = true, index = 0 }: IListingCardProps) {
+function ListingCardComponent({ listing, onSelect, showActions = true, index = 0 }: IListingCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [showExpandedView, setShowExpandedView] = useState(false);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
+  // Memoize expensive calculations
+  const formatCurrency = useMemo(() => {
+    const formatter = new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: listing.fiatCurrency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(value);
-  };
+    });
+    return (value: number) => formatter.format(value);
+  }, [listing.fiatCurrency]);
 
-  const CryptoIcon = cryptoIcons[listing.cryptocurrency] || BitcoinIcon;
-  const cryptoColor = cryptoColors[listing.cryptocurrency] || '#666';
-  const cryptoGradient = cryptoGradients[listing.cryptocurrency] || 'gradient-primary';
-
-  // Mock data for demonstration
-  const sparklineData = Array.from({ length: 10 }, () => 
-    listing.pricePerUnit * (0.95 + Math.random() * 0.1)
+  const CryptoIcon = useMemo(() => 
+    cryptoIcons[listing.cryptocurrency] || BitcoinIcon,
+    [listing.cryptocurrency]
   );
 
-  // Determine user badges
-  const userBadges: BadgeType[] = [];
-  if (listing.user?.reputation && listing.user.reputation >= 4.8) {
-    userBadges.push('top-trader');
-  }
-  if (listing.user?.completedTrades && listing.user.completedTrades > 100) {
-    userBadges.push('verified');
-  }
-  if (Math.random() > 0.7) userBadges.push('fast-response');
-  if (listing.user?.completedTrades === 0) userBadges.push('new');
+  const cryptoColor = useMemo(() => 
+    cryptoColors[listing.cryptocurrency] || '#666',
+    [listing.cryptocurrency]
+  );
 
-  const handleFavorite = (e: React.MouseEvent) => {
+  const cryptoGradient = useMemo(() => 
+    cryptoGradients[listing.cryptocurrency] || 'gradient-primary',
+    [listing.cryptocurrency]
+  );
+
+  // Memoize sparkline data
+  const sparklineData = useMemo(() => 
+    Array.from({ length: 10 }, () => 
+      listing.pricePerUnit * (0.95 + Math.random() * 0.1)
+    ),
+    [listing.pricePerUnit]
+  );
+
+  // Memoize user badges
+  const userBadges = useMemo<BadgeType[]>(() => {
+    const badges: BadgeType[] = [];
+    if (listing.user?.reputation && listing.user.reputation >= 4.8) {
+      badges.push('top-trader');
+    }
+    if (listing.user?.completedTrades && listing.user.completedTrades > 100) {
+      badges.push('verified');
+    }
+    if (Math.random() > 0.7) badges.push('fast-response');
+    if (listing.user?.completedTrades === 0) badges.push('new');
+    return badges;
+  }, [listing.user?.reputation, listing.user?.completedTrades]);
+
+  // Memoize handlers
+  const handleFavorite = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    setIsFavorited(!isFavorited);
-  };
+    setIsFavorited(prev => !prev);
+  }, []);
 
-  const handleCardClick = () => {
+  const handleCardClick = useCallback(() => {
     setShowExpandedView(true);
-  };
+  }, []);
+
+  const handleAction = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    onSelect?.(listing);
+  }, [onSelect, listing]);
+
+  const handleExpandedAction = useCallback((action: string) => {
+    if (action === 'trade') {
+      onSelect?.(listing);
+    }
+    setShowExpandedView(false);
+  }, [onSelect, listing]);
 
   return (
     <>
@@ -296,10 +332,7 @@ export function ListingCard({ listing, onSelect, showActions = true, index = 0 }
             {/* Action button */}
             {showActions && (
               <Button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelect?.(listing);
-                }}
+                onClick={handleAction}
                 className={`
                   w-full relative overflow-hidden group
                   ${listing.type === 'BUY' 
@@ -334,18 +367,25 @@ export function ListingCard({ listing, onSelect, showActions = true, index = 0 }
         </div>
       </motion.div>
 
-      {/* Expanded view modal */}
-      <ListingCardHover
-        listing={listing}
-        isOpen={showExpandedView}
-        onClose={() => setShowExpandedView(false)}
-        onAction={(action) => {
-          if (action === 'trade') {
-            onSelect?.(listing);
-          }
-          setShowExpandedView(false);
-        }}
-      />
+      {showExpandedView && (
+        <ListingCardHover
+          listing={listing}
+          isOpen={showExpandedView}
+          onClose={() => setShowExpandedView(false)}
+          onAction={handleExpandedAction}
+        />
+      )}
     </>
   );
 }
+
+// Export memoized component
+export const ListingCard = React.memo(ListingCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function
+  return (
+    prevProps.listing.id === nextProps.listing.id &&
+    prevProps.listing.pricePerUnit === nextProps.listing.pricePerUnit &&
+    prevProps.listing.updatedAt === nextProps.listing.updatedAt &&
+    prevProps.showActions === nextProps.showActions
+  );
+});
