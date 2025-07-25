@@ -74,3 +74,8 @@ CHANGELOG.md
 PLANO-MESTRE.md
 TODO.md
 ROADMAP.md
+
+# Environment files
+.env
+.env.*
+!.env.example

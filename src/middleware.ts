@@ -26,8 +26,18 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // Por enquanto, permite acesso a todas as rotas
-  // TODO: Implementar verificação de autenticação quando resolver o problema do Edge Runtime
+  // Verificar se o usuário está autenticado
+  const token = request.cookies.get('next-auth.session-token');
+  
+  if (!token) {
+    // Se for uma rota de API, retorna 401
+    if (pathname.startsWith('/api/')) {
+      return new NextResponse('Unauthorized', { status: 401 });
+    }
+    // Se for uma página, redireciona para login
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+  
   return NextResponse.next();
 }
 
