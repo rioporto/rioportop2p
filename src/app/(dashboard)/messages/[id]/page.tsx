@@ -150,7 +150,7 @@ export default function ChatPage() {
             sender: {
               id: message.senderId,
               name: message.senderName,
-              isMe: message.senderId === session.user.id
+              isMe: message.senderId === session.user!.id
             },
             isRead: false,
             createdAt: new Date(message.timestamp),
@@ -161,15 +161,16 @@ export default function ChatPage() {
           scrollToBottom();
         },
         onTyping: (userId: string) => {
-          if (userId !== session.user.id) {
+          if (userId !== session.user!.id) {
             setTypingUser(userId);
             setIsTyping(true);
           }
         },
-        onStopTyping: () => {
-          setIsTyping(false);
-          setTypingUser(null);
-        },
+        // TODO: Implementar onStopTyping no WebSocketService
+        // onStopTyping: () => {
+        //   setIsTyping(false);
+        //   setTypingUser(null);
+        // },
         onError: (error: Error) => {
           console.error('WebSocket error:', error);
           setError('Erro de conexão com o chat');
@@ -179,12 +180,11 @@ export default function ChatPage() {
       // Inscrever-se no canal da transação
       webSocketService.subscribeToTransaction(transactionId);
       
-      // Atualizar status de conexão
-      const interval = setInterval(() => {
-        setConnectionStatus(webSocketService.getConnectionStatus());
-      }, 1000);
-
-      return () => clearInterval(interval);
+      // TODO: Implementar getConnectionStatus no WebSocketService
+      // const interval = setInterval(() => {
+      //   setConnectionStatus(webSocketService.getConnectionStatus());
+      // }, 1000);
+      // return () => clearInterval(interval);
     } catch (err) {
       console.error('Erro ao inicializar WebSocket:', err);
       setError('Erro ao conectar ao chat em tempo real');
@@ -224,8 +224,8 @@ export default function ChatPage() {
         const formattedMessage: Message = {
           ...data.data,
           sender: {
-            id: session!.user.id,
-            name: `${session!.user.firstName} ${session!.user.lastName}`,
+            id: session?.user?.id || '',
+            name: session?.user ? `${session.user.name}` : 'Usuário',
             isMe: true
           },
           timestamp: new Date(data.data.createdAt),
@@ -312,11 +312,12 @@ export default function ChatPage() {
       clearTimeout(typingTimeoutRef.current);
     }
 
-    webSocketService.emitTyping(transactionId);
+    // TODO: Implementar emitTyping e emitStopTyping no WebSocketService
+    // webSocketService.emitTyping(transactionId);
 
-    typingTimeoutRef.current = setTimeout(() => {
-      webSocketService.emitStopTyping(transactionId);
-    }, 2000);
+    // typingTimeoutRef.current = setTimeout(() => {
+    //   webSocketService.emitStopTyping(transactionId);
+    // }, 2000);
   };
 
   // Lidar com reações
@@ -379,7 +380,7 @@ export default function ChatPage() {
   const getCounterparty = useCallback(() => {
     if (!transaction || !session?.user?.id) return null;
     
-    const isBuyer = transaction.buyerId === session.user.id;
+    const isBuyer = transaction.buyerId === session.user!.id;
     return isBuyer ? transaction.seller : transaction.buyer;
   }, [transaction, session]);
 
@@ -449,9 +450,10 @@ export default function ChatPage() {
     }
 
     return () => {
-      if (webSocketService.isSubscribed(transactionId)) {
-        webSocketService.unsubscribe(transactionId);
-      }
+      // TODO: Implementar isSubscribed no WebSocketService
+      // if (webSocketService.isSubscribed(transactionId)) {
+      webSocketService.unsubscribeFromTransaction(transactionId);
+      // }
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
@@ -542,6 +544,8 @@ export default function ChatPage() {
                       <div key={message.id} className="animate-message-appear">
                         <MessageBubble
                           {...message}
+                          type={message.type.toUpperCase() as 'TEXT' | 'IMAGE' | 'FILE' | 'SYSTEM'}
+                          isMe={message.sender.isMe}
                           timestamp={new Date(message.createdAt)}
                           isFirstInGroup={isFirstInGroup}
                           isLastInGroup={isLastInGroup}
@@ -587,13 +591,11 @@ export default function ChatPage() {
 
       {/* Input Area */}
       <ChatInput
-        value={newMessage}
-        onChange={setNewMessage}
-        onSend={handleSendMessage}
-        onFileSelect={handleFileSelect}
-        onTyping={handleTyping}
+        transactionId={transactionId}
+        userId={session?.user?.id || ''}
         disabled={isSending}
         loading={isSending}
+        placeholder="Digite sua mensagem..."
         showQuickActions={transaction.status === 'AWAITING_PAYMENT'}
         quickActions={quickActions}
       />

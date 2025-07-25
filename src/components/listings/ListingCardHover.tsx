@@ -237,7 +237,7 @@ export function ListingCardHover({ listing, isOpen, onClose, onAction }: Listing
                     </Button>
                     <Button
                       onClick={() => onAction?.('message')}
-                      variant="secondary"
+                      variant="flat"
                       className="px-4"
                     >
                       <ChatBubbleLeftRightIcon className="w-5 h-5" />

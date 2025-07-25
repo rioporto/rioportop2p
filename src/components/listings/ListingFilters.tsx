@@ -137,7 +137,7 @@ export function ListingFilters({ filters, onFiltersChange, onReset }: IListingFi
 
         <div className="pt-4 flex gap-2">
           <Button
-            variant="outline"
+            variant="ghost"
             onClick={handleReset}
             className="flex-1"
           >

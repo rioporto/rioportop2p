@@ -249,7 +249,7 @@ export default function ListingsPage() {
                 {totalPages > 1 && (
                   <div className="flex justify-center items-center gap-4 mt-12">
                     <Button
-                      variant="secondary"
+                      variant="flat"
                       size="md"
                       disabled={currentPage === 1}
                       onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
@@ -298,7 +298,7 @@ export default function ListingsPage() {
                     </div>
                     
                     <Button
-                      variant="secondary"
+                      variant="flat"
                       size="md"
                       disabled={currentPage === totalPages}
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}

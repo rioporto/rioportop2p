@@ -130,7 +130,7 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ stats }) => {
         title="Saldo Total"
         value={formattedBalance}
         icon="💰"
-        variant="primary"
+        variant="gradient"
         animate
       />
 

@@ -190,7 +190,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
                   {activity.amount}
                 </span>
                 {activity.currency && (
-                  <Badge variant="primary" size="sm">
+                  <Badge variant="gradient" size="sm">
                     {activity.currency}
                   </Badge>
                 )}

@@ -99,7 +99,7 @@ export default function ProfilePage() {
             const levelNum = parseInt(level);
             const isCurrentLevel = levelNum === userLevel;
             const isCompleted = levelNum <= userLevel;
-            const requirements = kycRequirements[levelNum] || [];
+            const requirements = kycRequirements[levelNum as keyof typeof kycRequirements] || [];
 
             return (
               <div 

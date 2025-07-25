@@ -111,14 +111,14 @@ export default function VerifyPendingPage() {
             <Button
               onClick={handleResendEmail}
               disabled={isResending || !email}
-              variant="primary"
+              variant="gradient"
               className="w-full"
             >
               {isResending ? 'Reenviando...' : 'Reenviar email de verificação'}
             </Button>
 
             <Link href="/login" className="block">
-              <Button variant="outline" className="w-full">
+              <Button variant="ghost" className="w-full">
                 Voltar para o login
               </Button>
             </Link>

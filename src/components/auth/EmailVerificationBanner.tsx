@@ -60,7 +60,7 @@ export function EmailVerificationBanner({ email, isVerified }: EmailVerification
           <Button
             onClick={handleResendEmail}
             disabled={isResending}
-            variant="outline"
+            variant="ghost"
             size="sm"
             className="border-yellow-600 text-yellow-900 hover:bg-yellow-50"
           >

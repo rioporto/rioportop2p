@@ -36,21 +36,21 @@ export default function ShowcasePage() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex flex-wrap gap-4">
-                <Button variant="primary">Botão Primário</Button>
-                <Button variant="secondary">Botão Secundário</Button>
+                <Button variant="gradient">Botão Primário</Button>
+                <Button variant="flat">Botão Secundário</Button>
                 <Button variant="danger">Botão Perigo</Button>
                 <Button variant="metal">Botão Metálico</Button>
               </div>
               
               <div className="flex flex-wrap gap-4">
-                <Button variant="primary" size="sm">Pequeno</Button>
-                <Button variant="primary" size="md">Médio</Button>
-                <Button variant="primary" size="lg">Grande</Button>
+                <Button variant="gradient" size="sm">Pequeno</Button>
+                <Button variant="gradient" size="md">Médio</Button>
+                <Button variant="gradient" size="lg">Grande</Button>
               </div>
 
               <div className="flex flex-wrap gap-4">
-                <Button variant="primary" loading>Carregando...</Button>
-                <Button variant="primary" disabled>Desabilitado</Button>
+                <Button variant="gradient" loading>Carregando...</Button>
+                <Button variant="gradient" disabled>Desabilitado</Button>
                 <Button
                   variant="metal"
                   icon={
@@ -148,7 +148,7 @@ export default function ShowcasePage() {
             <div className="space-y-4">
               <BadgeGroup>
                 <Badge variant="default">Padrão</Badge>
-                <Badge variant="primary">Primário</Badge>
+                <Badge variant="gradient">Primário</Badge>
                 <Badge variant="success">Sucesso</Badge>
                 <Badge variant="warning">Aviso</Badge>
                 <Badge variant="danger">Perigo</Badge>
@@ -215,7 +215,7 @@ export default function ShowcasePage() {
               <Button variant="metal" onClick={() => setCofreModalOpen(true)}>
                 Abrir Modal Cofre
               </Button>
-              <Button variant="secondary" onClick={() => setShowToast(true)}>
+              <Button variant="flat" onClick={() => setShowToast(true)}>
                 Mostrar Toast
               </Button>
             </div>
@@ -230,10 +230,10 @@ export default function ShowcasePage() {
           size="md"
           footer={
             <>
-              <Button variant="secondary" onClick={() => setModalOpen(false)}>
+              <Button variant="flat" onClick={() => setModalOpen(false)}>
                 Cancelar
               </Button>
-              <Button variant="primary" onClick={() => setModalOpen(false)}>
+              <Button variant="gradient" onClick={() => setModalOpen(false)}>
                 Confirmar
               </Button>
             </>

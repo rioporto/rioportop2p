@@ -151,7 +151,7 @@ export const QRCodeDisplay: React.FC<IQRCodeDisplayProps> = ({
             
             <Button
               size="sm"
-              variant="primary"
+              variant="gradient"
               className="absolute right-2 top-1/2 -translate-y-1/2"
               onClick={handleCopyCode}
               disabled={isExpired}

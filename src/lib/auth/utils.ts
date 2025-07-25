@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { KYCLevel, KYC_LIMITS } from '@/types/auth';
 import { auth } from './auth';
 import { NextRequest } from 'next/server';
@@ -18,9 +19,8 @@ export async function comparePasswords(
 
 export function generateVerificationToken(): string {
   // Usar crypto para gerar token mais seguro
-  if (typeof window === 'undefined' && typeof global !== 'undefined') {
+  if (typeof window === 'undefined') {
     // Node.js environment
-    const crypto = require('crypto');
     return crypto.randomBytes(32).toString('hex');
   } else {
     // Browser environment (fallback)

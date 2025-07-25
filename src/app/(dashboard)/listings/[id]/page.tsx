@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/Button';
 import { KYCLevel } from '@/types/kyc';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 async function getListingDetails(id: string) {
@@ -56,19 +56,20 @@ async function getListingDetails(id: string) {
       id: listing.user.id,
       name: `${listing.user.firstName} ${listing.user.lastName}`,
       email: listing.user.email,
-      kycLevel: listing.user.kycLevel as KYCLevel,
+      kycLevel: listing.user.kycLevel as unknown as KYCLevel,
     },
     paymentMethods: listing.paymentMethods.map((pm) => pm.paymentMethod),
   };
 }
 
 function getKYCBadge(level: KYCLevel) {
-  const badges = {
+  const badges: Record<KYCLevel, { text: string; className: string }> = {
+    [KYCLevel.PLATFORM_ACCESS]: { text: 'Acesso Plataforma', className: 'bg-gray-50 text-gray-600' },
     [KYCLevel.BASIC]: { text: 'KYC Básico', className: 'bg-gray-100 text-gray-700' },
-    [KYCLevel.INTERMEDIARY]: { text: 'KYC Intermediário', className: 'bg-blue-100 text-blue-700' },
+    [KYCLevel.INTERMEDIATE]: { text: 'KYC Intermediário', className: 'bg-blue-100 text-blue-700' },
     [KYCLevel.ADVANCED]: { text: 'KYC Avançado', className: 'bg-green-100 text-green-700' }
   };
-  return badges[level] || badges[KYCLevel.BASIC];
+  return badges[level] || badges[KYCLevel.PLATFORM_ACCESS];
 }
 
 function formatCurrency(value: number) {
@@ -84,7 +85,8 @@ export default async function ListingDetailsPage({ params }: PageProps) {
     redirect('/login');
   }
 
-  const listing = await getListingDetails(params.id);
+  const { id } = await params;
+  const listing = await getListingDetails(id);
 
   if (!listing) {
     notFound();
@@ -152,13 +154,13 @@ export default async function ListingDetailsPage({ params }: PageProps) {
           {isOwner ? (
             <>
               <Button
-                variant="secondary"
+                variant="flat"
                 onClick={() => window.location.href = `/listings/${listing.id}/edit`}
               >
                 Editar
               </Button>
               <Button
-                variant="outline"
+                variant="ghost"
                 onClick={() => {
                   // Implementar lógica de desativar
                   console.log('Desativar anúncio');
@@ -169,7 +171,7 @@ export default async function ListingDetailsPage({ params }: PageProps) {
             </>
           ) : (
             <Button
-              variant="primary"
+              variant="gradient"
               size="lg"
               onClick={() => {
                 // Implementar lógica de negociação
@@ -294,7 +296,7 @@ export default async function ListingDetailsPage({ params }: PageProps) {
               {!isOwner && (
                 <div className="border-t pt-4">
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
                     className="w-full"
                     onClick={() => {

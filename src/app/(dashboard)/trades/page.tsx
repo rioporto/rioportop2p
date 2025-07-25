@@ -142,13 +142,13 @@ export default function TradesPage() {
             <Button
               onClick={() => router.push(`/trades/${transaction.id}/payment`)}
               size="sm"
-              variant="primary"
+              variant="gradient"
             >
               Pagar
             </Button>
           );
         }
-        return <Button size="sm" variant="secondary" disabled>Aguardando</Button>;
+        return <Button size="sm" variant="flat" disabled>Aguardando</Button>;
 
       case 'PAYMENT_CONFIRMED':
         if (!isBuyer) {
@@ -156,20 +156,20 @@ export default function TradesPage() {
             <Button
               onClick={() => router.push(`/trades/${transaction.id}/release`)}
               size="sm"
-              variant="success"
+              variant="gradient"
             >
               Liberar Crypto
             </Button>
           );
         }
-        return <Button size="sm" variant="secondary" disabled>Aguardando</Button>;
+        return <Button size="sm" variant="flat" disabled>Aguardando</Button>;
 
       case 'COMPLETED':
         return (
           <Button
             onClick={() => router.push(`/trades/${transaction.id}`)}
             size="sm"
-            variant="secondary"
+            variant="flat"
           >
             Ver Detalhes
           </Button>
@@ -180,7 +180,7 @@ export default function TradesPage() {
           <Button
             onClick={() => router.push(`/trades/${transaction.id}`)}
             size="sm"
-            variant="secondary"
+            variant="flat"
           >
             Ver Detalhes
           </Button>
@@ -304,7 +304,7 @@ export default function TradesPage() {
           <Button
             onClick={() => fetchTransactions(pagination.page - 1)}
             disabled={pagination.page === 1}
-            variant="secondary"
+            variant="flat"
             size="sm"
           >
             Anterior
@@ -319,7 +319,7 @@ export default function TradesPage() {
           <Button
             onClick={() => fetchTransactions(pagination.page + 1)}
             disabled={pagination.page === pagination.totalPages}
-            variant="secondary"
+            variant="flat"
             size="sm"
           >
             Próxima

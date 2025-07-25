@@ -79,3 +79,4 @@ ROADMAP.md
 .env
 .env.*
 !.env.example
+.env

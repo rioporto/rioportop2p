@@ -8,8 +8,8 @@ export { PATCH, DELETE };
 
 // GET /api/users/:id - Get single user
 export const GET = withMiddleware(
-  async (req: NextRequest, context: { params: { id: string } }) => {
-    const userId = context.params.id;
+  async (req: NextRequest, context: { params: Promise<{ id: string }> }) => {
+    const { id: userId } = await context.params;
     
     // TODO: Check if requesting user has permission to view this user
     

@@ -42,7 +42,7 @@ export const PortfolioChart: React.FC<PortfolioChartProps> = ({
           <CardTitle variant="gradient" size="xl">
             {title}
           </CardTitle>
-          <Badge variant="primary" size="lg">
+          <Badge variant="gradient" size="lg">
             {formattedTotal}
           </Badge>
         </div>

@@ -52,7 +52,7 @@ export default function DashboardError({
           <div className="flex flex-col gap-3 mt-6">
             <Button
               onClick={reset}
-              variant="primary"
+              variant="gradient"
               size="lg"
               className="w-full"
             >
@@ -60,7 +60,7 @@ export default function DashboardError({
             </Button>
             <Link href="/" className="w-full">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="lg"
                 className="w-full"
               >

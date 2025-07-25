@@ -273,7 +273,7 @@ export default function NewListingPage() {
             <div className="flex gap-4 pt-4">
               <Button
                 type="button"
-                variant="secondary"
+                variant="flat"
                 onClick={() => router.push('/listings')}
                 disabled={isSubmitting}
               >
@@ -281,7 +281,7 @@ export default function NewListingPage() {
               </Button>
               <Button
                 type="submit"
-                variant="primary"
+                variant="gradient"
                 loading={isSubmitting}
                 disabled={selectedPaymentMethods.length === 0}
                 fullWidth

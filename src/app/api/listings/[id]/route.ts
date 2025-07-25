@@ -16,7 +16,7 @@ const updateListingSchema = z.object({
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verificar autenticação
@@ -25,7 +25,7 @@ export async function PUT(
       return ApiResponse.unauthorized();
     }
 
-    const listingId = params.id;
+    const { id: listingId } = await params;
 
     // Verificar se o listing existe e pertence ao usuário
     const existingListing = await prisma.listing.findFirst({
@@ -163,7 +163,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Verificar autenticação
@@ -172,7 +172,7 @@ export async function DELETE(
       return ApiResponse.unauthorized();
     }
 
-    const listingId = params.id;
+    const { id: listingId } = await params;
 
     // Verificar se o listing existe e pertence ao usuário
     const existingListing = await prisma.listing.findFirst({

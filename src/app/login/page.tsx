@@ -25,11 +25,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: { verified?: string; email?: string; error?: string };
+  searchParams: Promise<{ verified?: string; email?: string; error?: string }>;
 }) {
+  const params = await searchParams;
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-md w-full space-y-8">
@@ -45,7 +47,7 @@ export default function LoginPage({
           </p>
         </div>
 
-        {searchParams.verified === 'true' && (
+        {params.verified === 'true' && (
           <Alert variant="success" className="mb-4">
             <p className="text-sm">
               Email verificado com sucesso! Agora você pode fazer login.
@@ -53,7 +55,7 @@ export default function LoginPage({
           </Alert>
         )}
 
-        {searchParams.error === 'verification_failed' && (
+        {params.error === 'verification_failed' && (
           <Alert variant="error" className="mb-4">
             <p className="text-sm">
               Erro ao verificar email. Por favor, tente novamente ou solicite um novo link.
