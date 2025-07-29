@@ -7,37 +7,23 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const amount = body.amount || 100; // Default R$ 100
 
-    console.log('=== TESTE PIX INICIADO ===');
+    console.log('=== TESTE PIX INICIADO (MODO SIMPLIFICADO) ===');
     console.log('Amount:', amount);
     console.log('Has MP Token:', !!process.env.MERCADO_PAGO_ACCESS_TOKEN);
-    console.log('Token length:', process.env.MERCADO_PAGO_ACCESS_TOKEN?.length);
-
-    // Criar pagamento de teste no Mercado Pago
-    const mpService = getMercadoPagoService();
-    console.log('MercadoPagoService criado');
     
-    const pixData = await mpService.createPixPayment({
-      tradeId: 'test-' + Date.now(),
-      amount: amount,
-      buyerEmail: 'teste@rioporto.com.br',
-      buyerName: 'Usuário Teste',
-      description: `Rio Porto P2P - Teste PIX R$ ${amount}`
-    });
+    // Por enquanto, retornar dados mock diretamente sem usar MercadoPagoService
+    const mockPixKey = `00020126330014BR.GOV.BCB.PIX0114${Date.now()}5204000053039865802BR5913RIO PORTO P2P6009SAO PAULO62070503***63041234`;
     
-    console.log('PIX Data recebido:', {
-      hasId: !!pixData.id,
-      hasQrCode: !!pixData.qrCode,
-      hasQrCodeBase64: !!pixData.qrCodeBase64,
-      status: pixData.status
-    });
-
+    // QR Code base64 genérico
+    const mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABeklEQVR4nO3VQQ0AIRDAwOf/GkYiEAlbCNjZM2fmnM+1twN4M5YkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJupZ9A2CgA3XoAAAAAElFTkSuQmCC';
+    
     return apiResponse.success({
       pixTransaction: {
         id: 'test-' + Date.now(),
-        qrCode: pixData.qrCodeBase64,
-        qrCodeText: pixData.copyPaste,
+        qrCode: mockQRCodeBase64,
+        qrCodeText: mockPixKey,
         amount: amount,
-        expiresAt: new Date(pixData.expirationDate)
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000)
       }
     });
 
