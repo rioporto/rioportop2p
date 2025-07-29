@@ -185,7 +185,7 @@ export default function TestPixPage() {
                         type="text"
                         value={pixData.qrCodeText}
                         readOnly
-                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono"
+                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono text-gray-900"
                       />
                       <Button
                         onClick={copyToClipboard}
