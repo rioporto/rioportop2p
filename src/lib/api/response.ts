@@ -128,3 +128,7 @@ export class ApiResponse {
     return this.internalError('An unknown error occurred');
   }
 }
+
+// Export convenient instances for backward compatibility
+export const apiResponse = ApiResponse;
+export const handleApiError = (error: unknown) => ApiResponse.fromError(error);
