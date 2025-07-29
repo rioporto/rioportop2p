@@ -1,139 +1,171 @@
 import { NextRequest } from 'next/server';
+import { auth } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/prisma';
-import { ApiResponse } from '@/lib/api/response';
-import { checkAuth } from '@/lib/auth/utils';
+import { apiResponse, handleApiError } from '@/lib/api/response';
+import { getMercadoPagoService } from '@/services/payments/mercadopago.service';
 import { z } from 'zod';
-import { TransactionStatus } from '@prisma/client';
-import { pixService } from '@/services/payments/pix.service';
 
-// Schema de validação para criar pagamento PIX
 const createPixSchema = z.object({
-  transactionId: z.string().uuid('ID da transação inválido'),
-  amount: z.number().positive('Valor deve ser positivo'),
-  description: z.string().optional()
+  tradeId: z.string().uuid(),
 });
 
 export async function POST(req: NextRequest) {
-  // Verificar autenticação
-  const authResult = await checkAuth(req);
-  if ('status' in authResult) {
-    return authResult;
-  }
-  const { userId } = authResult;
-
   try {
-    const body = await req.json();
-    
-    // Validar dados
-    const validation = createPixSchema.safeParse(body);
-    if (!validation.success) {
-      return ApiResponse.badRequest(
-        'Dados inválidos',
-        'VALIDATION_ERROR',
-        validation.error.errors
-      );
+    const session = await auth();
+    if (!session?.user) {
+      return apiResponse.unauthorized();
     }
 
-    const { transactionId, amount, description } = validation.data;
+    const body = await req.json();
+    const { tradeId } = createPixSchema.parse(body);
 
-    // Verificar se transação existe e usuário é o comprador
-    const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
+    // Buscar a trade
+    const trade = await prisma.trade.findUnique({
+      where: { id: tradeId },
       include: {
+        listing: {
+          include: {
+            user: true
+          }
+        },
         buyer: true,
         seller: true
       }
     });
 
-    if (!transaction) {
-      return ApiResponse.notFound('Transação não encontrada');
+    if (!trade) {
+      return apiResponse.error('Trade não encontrada');
     }
 
-    if (transaction.buyerId !== userId) {
-      return ApiResponse.forbidden('Apenas o comprador pode gerar pagamento');
+    // Verificar se o usuário é o comprador
+    if (trade.buyerId !== session.user.id) {
+      return apiResponse.error('Apenas o comprador pode gerar o PIX');
     }
 
-    if (transaction.status !== TransactionStatus.AWAITING_PAYMENT) {
-      return ApiResponse.badRequest('Transação não está aguardando pagamento');
+    // Verificar status da trade
+    if (trade.status !== 'PENDING') {
+      return apiResponse.error('PIX já foi gerado ou trade não está pendente');
     }
 
-    // Gerar pagamento PIX
-    const pixPayment = await pixService.createPayment({
-      amount,
-      description: description || `Pagamento para transação ${transactionId}`,
-      buyerId: userId,
-      sellerId: transaction.sellerId
-    });
-
-    // Atualizar transação com ID do pagamento
-    await prisma.transaction.update({
-      where: { id: transactionId },
-      data: {
-        paymentId: pixPayment.id
+    // Verificar se já existe um PIX para esta trade
+    const existingPix = await prisma.pixTransaction.findFirst({
+      where: {
+        tradeId: tradeId,
+        status: { in: ['PENDING', 'APPROVED'] }
       }
     });
 
-    return ApiResponse.success(pixPayment);
+    if (existingPix) {
+      return apiResponse.error('PIX já existe para esta trade');
+    }
+
+    // Criar pagamento no Mercado Pago
+    const mpService = getMercadoPagoService();
+    const pixData = await mpService.createPixPayment({
+      tradeId: trade.id,
+      amount: trade.totalAmount,
+      buyerEmail: trade.buyer.email,
+      buyerName: `${trade.buyer.firstName} ${trade.buyer.lastName}`,
+      description: `Rio Porto P2P - ${trade.cryptoAmount} ${trade.listing.cryptoSymbol}`
+    });
+
+    // Salvar no banco
+    const pixTransaction = await prisma.pixTransaction.create({
+      data: {
+        tradeId: trade.id,
+        payerId: session.user.id,
+        recipientId: trade.sellerId,
+        amount: trade.totalAmount,
+        status: 'PENDING',
+        pixKey: pixData.copyPaste,
+        qrCode: pixData.qrCodeBase64,
+        externalId: pixData.id.toString(),
+        expiresAt: new Date(pixData.expirationDate)
+      }
+    });
+
+    // Atualizar status da trade
+    await prisma.trade.update({
+      where: { id: tradeId },
+      data: { 
+        status: 'PAYMENT_PENDING',
+        updatedAt: new Date()
+      }
+    });
+
+    return apiResponse.success({
+      pixTransaction: {
+        id: pixTransaction.id,
+        qrCode: pixData.qrCodeBase64,
+        qrCodeText: pixData.copyPaste,
+        amount: trade.totalAmount,
+        expiresAt: pixTransaction.expiresAt
+      }
+    });
+
   } catch (error) {
-    console.error('Error creating PIX payment:', error);
-    return ApiResponse.internalError('Erro ao gerar pagamento PIX');
+    return handleApiError(error);
   }
 }
 
+// GET - Consultar status do PIX
 export async function GET(req: NextRequest) {
-  // Verificar autenticação
-  const authResult = await checkAuth(req);
-  if ('status' in authResult) {
-    return authResult;
-  }
-  const { userId } = authResult;
-
   try {
-    const { searchParams } = new URL(req.url);
-    const transactionId = searchParams.get('transactionId');
-
-    if (!transactionId) {
-      return ApiResponse.badRequest('ID da transação é obrigatório');
+    const session = await auth();
+    if (!session?.user) {
+      return apiResponse.unauthorized();
     }
 
-    // Verificar se transação existe e usuário faz parte dela
-    const transaction = await prisma.transaction.findUnique({
-      where: { id: transactionId },
-      include: {
-        buyer: true,
-        seller: true
-      }
+    const { searchParams } = new URL(req.url);
+    const tradeId = searchParams.get('tradeId');
+
+    if (!tradeId) {
+      return apiResponse.error('Trade ID é obrigatório');
+    }
+
+    const pixTransaction = await prisma.pixTransaction.findFirst({
+      where: {
+        tradeId: tradeId,
+        OR: [
+          { payerId: session.user.id },
+          { recipientId: session.user.id }
+        ]
+      },
+      orderBy: { createdAt: 'desc' }
     });
 
-    if (!transaction) {
-      return ApiResponse.notFound('Transação não encontrada');
+    if (!pixTransaction) {
+      return apiResponse.error('PIX não encontrado');
     }
 
-    if (transaction.buyerId !== userId && transaction.sellerId !== userId) {
-      return ApiResponse.forbidden('Você não faz parte desta transação');
-    }
-
-    if (!transaction.paymentId) {
-      return ApiResponse.badRequest('Pagamento não iniciado');
-    }
-
-    // Verificar status do pagamento
-    const paymentStatus = await pixService.checkPaymentStatus(transaction.paymentId);
-
-    // Se pago, atualizar status da transação
-    if (paymentStatus.isPaid && transaction.status === TransactionStatus.AWAITING_PAYMENT) {
-      await prisma.transaction.update({
-        where: { id: transactionId },
-        data: {
-          status: TransactionStatus.PAYMENT_CONFIRMED,
-          paymentConfirmedAt: new Date()
+    // Se ainda está pendente, consultar status no MP
+    if (pixTransaction.status === 'PENDING' && pixTransaction.externalId) {
+      try {
+        const mpService = getMercadoPagoService();
+        const status = await mpService.getPaymentStatus(parseInt(pixTransaction.externalId));
+        
+        // Atualizar se mudou
+        if (status === 'approved' && pixTransaction.status !== 'APPROVED') {
+          await prisma.$transaction([
+            prisma.pixTransaction.update({
+              where: { id: pixTransaction.id },
+              data: { status: 'APPROVED' }
+            }),
+            prisma.trade.update({
+              where: { id: pixTransaction.tradeId },
+              data: { status: 'PAYMENT_CONFIRMED' }
+            })
+          ]);
+          pixTransaction.status = 'APPROVED';
         }
-      });
+      } catch (error) {
+        console.error('Erro ao consultar status no MP:', error);
+      }
     }
 
-    return ApiResponse.success(paymentStatus);
+    return apiResponse.success({ pixTransaction });
+
   } catch (error) {
-    console.error('Error checking PIX payment:', error);
-    return ApiResponse.internalError('Erro ao verificar pagamento PIX');
+    return handleApiError(error);
   }
 }
