@@ -1,20 +1,69 @@
 'use client';
 
 import { useState } from 'react';
-import { PixQRCode } from '@/components/payments/PixQRCode';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-
-// Mock de trade ID para teste
-const MOCK_TRADE_ID = '550e8400-e29b-41d4-a716-446655440000';
+import { Copy, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils/format';
 
 export default function TestPixPage() {
   const [showQRCode, setShowQRCode] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pixData, setPixData] = useState<{
+    qrCode: string;
+    qrCodeText: string;
+    amount: number;
+    expiresAt: string;
+  } | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const generateTestPix = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/payments/pix/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: 100 })
+      });
+
+      const data = await response.json();
+      console.log('Test PIX response:', data);
+
+      if (!response.ok) {
+        throw new Error(data.error?.message || data.error || 'Erro ao gerar PIX de teste');
+      }
+
+      if (!data.data?.pixTransaction) {
+        throw new Error('Resposta inválida do servidor');
+      }
+
+      setPixData(data.data.pixTransaction);
+      setShowQRCode(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao gerar QR Code');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const copyToClipboard = async () => {
+    if (!pixData?.qrCodeText) return;
+
+    try {
+      await navigator.clipboard.writeText(pixData.qrCodeText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch (err) {
+      console.error('Erro ao copiar:', err);
+    }
+  };
 
   const handlePaymentConfirmed = () => {
     setPaymentConfirmed(true);
-    alert('Pagamento confirmado! ✅');
   };
 
   return (
@@ -35,15 +84,23 @@ export default function TestPixPage() {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-yellow-800">
                 ⚠️ <strong>Modo de Teste:</strong> Este é um ambiente de teste. 
-                O QR Code gerado é mockado e não processará pagamentos reais.
+                {process.env.MERCADO_PAGO_ACCESS_TOKEN ? 
+                  ' O QR Code será gerado pelo Mercado Pago mas não cobrará valores reais em modo teste.' : 
+                  ' O QR Code gerado é mockado e não processará pagamentos reais.'}
               </p>
             </div>
+            {error && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
             <Button
-              onClick={() => setShowQRCode(true)}
+              onClick={generateTestPix}
               variant="gradient"
               size="lg"
+              disabled={loading}
             >
-              Gerar QR Code PIX (R$ 100,00)
+              {loading ? 'Gerando...' : 'Gerar QR Code PIX (R$ 100,00)'}
             </Button>
           </Card>
         ) : (
@@ -65,58 +122,130 @@ export default function TestPixPage() {
                   onClick={() => {
                     setShowQRCode(false);
                     setPaymentConfirmed(false);
+                    setPixData(null);
                   }}
                   variant="elevated"
                 >
                   Fazer Novo Teste
                 </Button>
               </Card>
-            ) : (
-              <PixQRCode
-                tradeId={MOCK_TRADE_ID}
-                amount={100}
-                onPaymentConfirmed={handlePaymentConfirmed}
-              />
-            )}
+            ) : pixData ? (
+              <Card className="p-8">
+                <div className="flex flex-col items-center gap-6">
+                  {/* Valor */}
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-1">Valor a pagar</p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {formatCurrency(pixData.amount)}
+                    </p>
+                  </div>
+
+                  {/* QR Code */}
+                  <div className="relative">
+                    {pixData.qrCode.startsWith('data:image') || pixData.qrCode.length < 100 ? (
+                      <img
+                        src={`data:image/png;base64,${pixData.qrCode}`}
+                        alt="QR Code PIX"
+                        className="w-64 h-64 rounded-lg bg-gray-100"
+                      />
+                    ) : (
+                      <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <p className="text-gray-500 text-center p-4">
+                          QR Code visual não disponível em modo mock
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* PIX Copia e Cola */}
+                  <div className="w-full max-w-md">
+                    <p className="text-sm text-gray-600 mb-2 text-center">PIX Copia e Cola</p>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={pixData.qrCodeText}
+                        readOnly
+                        className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs font-mono"
+                      />
+                      <Button
+                        onClick={copyToClipboard}
+                        variant="elevated"
+                        size="sm"
+                        className="shrink-0"
+                      >
+                        {copied ? (
+                          <>
+                            <CheckCircle className="w-4 h-4 mr-1" />
+                            Copiado!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4 mr-1" />
+                            Copiar
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Tempo de expiração */}
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Clock className="w-4 h-4" />
+                    <span>Expira em 30 minutos</span>
+                  </div>
+
+                  {/* Instruções */}
+                  <div className="bg-blue-50 rounded-lg p-4 w-full max-w-md">
+                    <h4 className="font-semibold text-blue-900 mb-2">Como pagar:</h4>
+                    <ol className="text-sm text-blue-800 space-y-1">
+                      <li>1. Abra o app do seu banco</li>
+                      <li>2. Escolha pagar com PIX</li>
+                      <li>3. Escaneie o QR Code ou use o código copia e cola</li>
+                      <li>4. Confirme o pagamento</li>
+                    </ol>
+                  </div>
+
+                  {/* Simulação de confirmação */}
+                  <Button
+                    onClick={handlePaymentConfirmed}
+                    variant="gradient"
+                    className="mt-4"
+                  >
+                    Simular Pagamento Confirmado
+                  </Button>
+                </div>
+              </Card>
+            ) : null}
           </div>
         )}
 
-        {/* Instruções de teste */}
+        {/* Instruções de configuração */}
         <div className="mt-8">
           <Card className="p-6">
             <h3 className="font-semibold text-gray-900 mb-3">
-              Como testar a integração:
+              Status da Integração:
             </h3>
-            <ol className="space-y-2 text-sm text-gray-600">
-              <li>
-                <strong>1. Obter credenciais:</strong>
-                <ul className="ml-4 mt-1 space-y-1">
-                  <li>• Acesse https://www.mercadopago.com.br/developers/panel/app</li>
-                  <li>• Crie uma aplicação ou use existente</li>
-                  <li>• Copie o Access Token de Produção</li>
-                </ul>
-              </li>
-              <li>
-                <strong>2. Configurar variáveis:</strong>
-                <ul className="ml-4 mt-1 space-y-1">
-                  <li>• Adicione MERCADO_PAGO_ACCESS_TOKEN no .env</li>
-                  <li>• Adicione também no Railway</li>
-                </ul>
-              </li>
-              <li>
-                <strong>3. Webhook (opcional):</strong>
-                <ul className="ml-4 mt-1 space-y-1">
-                  <li>• Configure a URL: https://rioporto.com.br/api/webhooks/mercadopago</li>
-                  <li>• Eventos: payment.updated</li>
-                </ul>
-              </li>
-            </ol>
-            
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-              <p className="text-sm text-blue-800">
-                💡 <strong>Dica:</strong> Sem as credenciais, o sistema funciona em modo MOCK,
-                gerando QR Codes falsos para teste de interface.
-              </p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className={process.env.MERCADO_PAGO_ACCESS_TOKEN ? "text-green-600" : "text-yellow-600"}>
+                  {process.env.MERCADO_PAGO_ACCESS_TOKEN ? "✅" : "⚠️"}
+                </span>
+                <span>
+                  Mercado Pago: {process.env.MERCADO_PAGO_ACCESS_TOKEN ? "Configurado" : "Modo Mock"}
+                </span>
+              </div>
+              {!process.env.MERCADO_PAGO_ACCESS_TOKEN && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-gray-700 font-medium mb-2">Para ativar a integração real:</p>
+                  <ol className="space-y-1 text-gray-600">
+                    <li>1. Acesse https://www.mercadopago.com.br/developers/panel/app</li>
+                    <li>2. Crie uma aplicação com nome "rioporto2p-api"</li>
+                    <li>3. Selecione "Pagamentos on-line" e "Não" para e-commerce</li>
+                    <li>4. Copie o Access Token de Produção</li>
+                    <li>5. Adicione no Railway: MERCADO_PAGO_ACCESS_TOKEN</li>
+                  </ol>
+                </div>
+              )}
             </div>
           </Card>
         </div>

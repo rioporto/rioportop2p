@@ -51,12 +51,19 @@ export function PixQRCode({ tradeId, amount, onPaymentConfirmed }: PixQRCodeProp
       });
 
       const data = await response.json();
+      console.log('Response data:', data); // Debug
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao gerar PIX');
+        throw new Error(data.error?.message || data.error || 'Erro ao gerar PIX');
       }
 
-      setPixData(data.pixTransaction);
+      // Verificar se temos os dados corretos
+      if (!data.data?.pixTransaction) {
+        console.error('Resposta inválida:', data);
+        throw new Error('Resposta inválida do servidor');
+      }
+
+      setPixData(data.data.pixTransaction);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao gerar QR Code');
     } finally {
