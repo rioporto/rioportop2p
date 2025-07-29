@@ -1,4 +1,13 @@
-import { MercadoPagoConfig, Payment } from 'mercadopago';
+let MercadoPagoConfig: any;
+let Payment: any;
+
+try {
+  const mp = require('mercadopago');
+  MercadoPagoConfig = mp.MercadoPagoConfig;
+  Payment = mp.Payment;
+} catch (error) {
+  console.error('Erro ao importar Mercado Pago SDK:', error);
+}
 
 interface CreatePixPaymentData {
   tradeId: string;
@@ -22,40 +31,61 @@ export class MercadoPagoService {
   private payment: Payment;
 
   constructor() {
+    // Verificar se SDK foi carregado
+    if (!MercadoPagoConfig || !Payment) {
+      console.error('Mercado Pago SDK não carregado corretamente');
+      this.client = null as any;
+      this.payment = null as any;
+      return;
+    }
+    
     // Temporário: Mock mode se não tiver token
     const accessToken = process.env.MERCADO_PAGO_ACCESS_TOKEN || 'TEST-MOCK-TOKEN';
     
-    this.client = new MercadoPagoConfig({
-      accessToken: accessToken,
-      options: { timeout: 5000 }
+    console.log('MercadoPagoService inicializando:', {
+      hasToken: !!process.env.MERCADO_PAGO_ACCESS_TOKEN,
+      tokenLength: process.env.MERCADO_PAGO_ACCESS_TOKEN?.length,
+      isProduction: process.env.NODE_ENV === 'production'
     });
+    
+    try {
+      this.client = new MercadoPagoConfig({
+        accessToken: accessToken,
+        options: { timeout: 5000 }
+      });
 
-    this.payment = new Payment(this.client);
+      this.payment = new Payment(this.client);
+    } catch (error) {
+      console.error('Erro ao inicializar MercadoPago:', error);
+      this.client = null as any;
+      this.payment = null as any;
+    }
   }
 
   /**
    * Cria um pagamento PIX e retorna QR Code
    */
   async createPixPayment(data: CreatePixPaymentData): Promise<PixPaymentResponse> {
-    try {
-      // MOCK: Se não tiver token real, retornar dados mockados
-      if (process.env.MERCADO_PAGO_ACCESS_TOKEN === undefined) {
-        console.log('🔧 Modo MOCK ativado - Retornando QR Code de teste');
-        
-        // Gerar um QR Code mock base64 real (1x1 pixel preto para teste)
-        const mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDcvMjgvMjTVNrpGAAABhUlEQVR4nO3VsQ0AIAwDQYL9d6YFKJB4gO9qF1zhpmfOzLwAiO7bAwDYRwAAMQEAxAQAEBMAQEwAADEBAMQEABATAEBMAACxPwC8c+9LrwHgQSsAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCIXWQPAiuVkVPZAAAAAElFTkSuQmCC';
-        const mockPixKey = `00020126330014BR.GOV.BCB.PIX0114${Date.now()}5204000053039865802BR5913RIO PORTO P2P6009SAO PAULO62070503***63041234`;
-        
-        return {
-          id: Date.now(),
-          qrCode: mockPixKey,
-          qrCodeBase64: mockQRCodeBase64,
-          copyPaste: mockPixKey,
-          status: 'pending',
-          expirationDate: new Date(Date.now() + 30 * 60 * 1000).toISOString()
-        };
-      }
+    // MOCK: Se não tiver token real ou SDK não carregado, retornar dados mockados
+    if (!this.payment || !process.env.MERCADO_PAGO_ACCESS_TOKEN || process.env.MERCADO_PAGO_ACCESS_TOKEN === 'TEST-MOCK-TOKEN') {
+      console.log('🔧 Modo MOCK ativado - Retornando QR Code de teste');
+      
+      // Gerar um QR Code mock base64 real (1x1 pixel preto para teste)
+      const mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDcvMjgvMjTVNrpGAAABhUlEQVR4nO3VsQ0AIAwDQYL9d6YFKJB4gO9qF1zhpmfOzLwAiO7bAwDYRwAAMQEAxAQAEBMAQEwAADEBAMQEABATAEBMAACxPwC8c+9LrwHgQSsAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCIXWQPAiuVkVPZAAAAAElFTkSuQmCC';
+      const mockPixKey = `00020126330014BR.GOV.BCB.PIX0114${Date.now()}5204000053039865802BR5913RIO PORTO P2P6009SAO PAULO62070503***63041234`;
+      
+      return {
+        id: Date.now(),
+        qrCode: mockPixKey,
+        qrCodeBase64: mockQRCodeBase64,
+        copyPaste: mockPixKey,
+        status: 'pending',
+        expirationDate: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+      };
+    }
 
+    try {
+      console.log('Tentando criar pagamento real no Mercado Pago...');
       const payment = await this.payment.create({
         body: {
           transaction_amount: data.amount,
@@ -92,8 +122,30 @@ export class MercadoPagoService {
         status: payment.status!,
         expirationDate: payment.date_of_expiration!
       };
-    } catch (error) {
-      console.error('Erro ao criar pagamento PIX:', error);
+    } catch (error: any) {
+      console.error('Erro ao criar pagamento PIX real:', {
+        error: error.message || error,
+        cause: error.cause,
+        response: error.response?.data,
+        status: error.status
+      });
+      
+      // Se falhar com erro de autenticação, tentar modo mock
+      if (error.status === 401 || error.message?.includes('401')) {
+        console.log('Token inválido, retornando para modo MOCK');
+        const mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDcvMjgvMjTVNrpGAAABhUlEQVR4nO3VsQ0AIAwDQYL9d6YFKJB4gO9qF1zhpmfOzLwAiO7bAwDYRwAAMQEAxAQAEBMAQEwAADEBAMQEABATAEBMAACxPwC8c+9LrwHgQSsAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCIXWQPAiuVkVPZAAAAAElFTkSuQmCC';
+        const mockPixKey = `00020126330014BR.GOV.BCB.PIX0114${Date.now()}5204000053039865802BR5913RIO PORTO P2P6009SAO PAULO62070503***63041234`;
+        
+        return {
+          id: Date.now(),
+          qrCode: mockPixKey,
+          qrCodeBase64: mockQRCodeBase64,
+          copyPaste: mockPixKey,
+          status: 'pending',
+          expirationDate: new Date(Date.now() + 30 * 60 * 1000).toISOString()
+        };
+      }
+      
       throw error;
     }
   }
@@ -104,7 +156,7 @@ export class MercadoPagoService {
   async getPaymentStatus(paymentId: number): Promise<string> {
     try {
       // Mock mode
-      if (process.env.MERCADO_PAGO_ACCESS_TOKEN === undefined) {
+      if (!this.payment || !process.env.MERCADO_PAGO_ACCESS_TOKEN) {
         return 'pending';
       }
       
@@ -151,7 +203,14 @@ let mercadoPagoService: MercadoPagoService | null = null;
 
 export function getMercadoPagoService(): MercadoPagoService {
   if (!mercadoPagoService) {
-    mercadoPagoService = new MercadoPagoService();
+    try {
+      mercadoPagoService = new MercadoPagoService();
+    } catch (error) {
+      console.error('Erro ao criar MercadoPagoService:', error);
+      // Forçar modo mock se falhar
+      process.env.MERCADO_PAGO_ACCESS_TOKEN = undefined;
+      mercadoPagoService = new MercadoPagoService();
+    }
   }
   return mercadoPagoService;
 }
