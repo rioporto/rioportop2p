@@ -41,7 +41,15 @@ export default function TestPixPage() {
         throw new Error('Resposta inválida do servidor');
       }
 
-      setPixData(data.data.pixTransaction);
+      const pixTransaction = data.data.pixTransaction;
+      console.log('PIX Transaction:', {
+        hasQrCode: !!pixTransaction.qrCode,
+        qrCodeLength: pixTransaction.qrCode?.length,
+        qrCodePreview: pixTransaction.qrCode?.substring(0, 50) + '...',
+        isReal: pixTransaction.isReal
+      });
+
+      setPixData(pixTransaction);
       setShowQRCode(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao gerar QR Code');
@@ -136,23 +144,37 @@ export default function TestPixPage() {
                     <p className="text-3xl font-bold text-gray-900">
                       {formatCurrency(pixData.amount)}
                     </p>
+                    {pixData.isReal !== undefined && (
+                      <p className={`text-xs mt-2 ${pixData.isReal ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {pixData.isReal ? '✅ PIX Real (Mercado Pago)' : '⚠️ Modo Mock'}
+                      </p>
+                    )}
+                    {pixData.mockReason && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Motivo: {pixData.mockReason}
+                      </p>
+                    )}
                   </div>
 
                   {/* QR Code */}
                   <div className="relative">
-                    {pixData.qrCode.startsWith('data:image') || pixData.qrCode.length < 100 ? (
-                      <img
-                        src={`data:image/png;base64,${pixData.qrCode}`}
-                        alt="QR Code PIX"
-                        className="w-64 h-64 rounded-lg bg-gray-100"
-                      />
-                    ) : (
-                      <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <p className="text-gray-500 text-center p-4">
-                          QR Code visual não disponível em modo mock
-                        </p>
-                      </div>
-                    )}
+                    <img
+                      src={
+                        pixData.qrCode.startsWith('data:image')
+                          ? pixData.qrCode
+                          : `data:image/png;base64,${pixData.qrCode}`
+                      }
+                      alt="QR Code PIX"
+                      className="w-64 h-64 rounded-lg bg-gray-100"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const fallback = document.createElement('div');
+                        fallback.className = 'w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center';
+                        fallback.innerHTML = '<p class="text-gray-500 text-center p-4">QR Code não pôde ser carregado</p>';
+                        target.parentElement?.appendChild(fallback);
+                      }}
+                    />
                   </div>
 
                   {/* PIX Copia e Cola */}
