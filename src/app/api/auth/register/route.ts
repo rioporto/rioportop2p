@@ -9,6 +9,7 @@ import { leadApi } from '@/lib/api/lead';
 import { LeadSource, LeadInterest } from '@/lib/api/lead';
 import { newsletterApi } from '@/lib/api/newsletter';
 import { verifyCaptcha } from '@/lib/security/captcha';
+import { emailService } from '@/services/email.service';
 
 // Custom rate limit for registration
 const REGISTRATION_RATE_LIMIT = {
@@ -168,6 +169,28 @@ export async function POST(req: NextRequest) {
       // Generate verification token for future use
       const verificationToken = generateVerificationToken();
       console.log('Generated verification token');
+      
+      // Save verification token and send email
+      try {
+        // Try to save token in database (if table exists)
+        try {
+          await prisma.$executeRaw`
+            INSERT INTO verification_tokens (user_id, token, type, expires_at)
+            VALUES (${user.id}, ${verificationToken}, 'EMAIL_VERIFICATION', ${new Date(Date.now() + 24 * 60 * 60 * 1000)})
+          `;
+          console.log('Verification token saved to database');
+        } catch (dbError) {
+          console.error('Could not save verification token to DB (table might not exist):', dbError);
+          // Continue anyway - email can still be sent
+        }
+        
+        // Send verification email
+        const emailSent = await emailService.sendVerificationEmail(user.email, verificationToken);
+        console.log('Verification email sent:', emailSent);
+      } catch (error) {
+        console.error('Error in email verification process:', error);
+        // Don't fail registration if email fails
+      }
       
       // Asynchronous tasks (don't wait for these)
       try {

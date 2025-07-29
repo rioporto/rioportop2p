@@ -98,7 +98,7 @@ export const RegisterForm: React.FC = () => {
                 {...register('name')}
                 type="text"
                 id="name"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 shadow-sm"
                 placeholder="João Silva"
                 disabled={isLoading}
               />
@@ -118,7 +118,7 @@ export const RegisterForm: React.FC = () => {
                 {...register('email')}
                 type="email"
                 id="email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm mt-2"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 shadow-sm mt-2"
                 placeholder="seu@email.com"
                 disabled={isLoading}
               />
@@ -139,7 +139,7 @@ export const RegisterForm: React.FC = () => {
                 type="text"
                 id="cpf"
                 onChange={handleCPFChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm mt-2"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 shadow-sm mt-2"
                 placeholder="123.456.789-00"
                 disabled={isLoading}
               />
@@ -160,7 +160,7 @@ export const RegisterForm: React.FC = () => {
                 type="text"
                 id="phone"
                 onChange={handlePhoneChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm mt-2"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 shadow-sm mt-2"
                 placeholder="(11) 99999-9999"
                 disabled={isLoading}
               />
@@ -180,7 +180,7 @@ export const RegisterForm: React.FC = () => {
                 {...register('password')}
                 type="password"
                 id="password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm mt-2"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 shadow-sm mt-2"
                 placeholder="••••••••"
                 disabled={isLoading}
               />
@@ -200,7 +200,7 @@ export const RegisterForm: React.FC = () => {
                 {...register('confirmPassword')}
                 type="password"
                 id="confirmPassword"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white text-gray-900 placeholder-gray-400 shadow-sm"
                 placeholder="••••••••"
                 disabled={isLoading}
               />
