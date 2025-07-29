@@ -1,8 +1,15 @@
-import QRCode from 'qrcode';
-
+let QRCode: any;
 let MercadoPagoConfig: any;
 let Payment: any;
 
+// Importar QRCode dinamicamente
+try {
+  QRCode = require('qrcode');
+} catch (error) {
+  console.error('Erro ao importar QRCode:', error);
+}
+
+// Importar Mercado Pago SDK
 try {
   const mp = require('mercadopago');
   MercadoPagoConfig = mp.MercadoPagoConfig;
@@ -77,24 +84,31 @@ export class MercadoPagoService {
       
       // Gerar QR Code real usando a biblioteca qrcode
       let mockQRCodeBase64 = '';
-      try {
-        mockQRCodeBase64 = await QRCode.toDataURL(mockPixKey, {
-          errorCorrectionLevel: 'M',
-          type: 'image/png',
-          quality: 0.92,
-          margin: 1,
-          color: {
-            dark: '#000000',
-            light: '#FFFFFF'
-          },
-          width: 256
-        });
-        // Remover o prefixo data:image/png;base64,
-        mockQRCodeBase64 = mockQRCodeBase64.replace(/^data:image\/png;base64,/, '');
-      } catch (error) {
-        console.error('Erro ao gerar QR Code:', error);
-        // Fallback para imagem básica
-        mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      if (QRCode && QRCode.toDataURL) {
+        try {
+          mockQRCodeBase64 = await QRCode.toDataURL(mockPixKey, {
+            errorCorrectionLevel: 'M',
+            type: 'image/png',
+            quality: 0.92,
+            margin: 1,
+            color: {
+              dark: '#000000',
+              light: '#FFFFFF'
+            },
+            width: 256
+          });
+          // Remover o prefixo data:image/png;base64,
+          mockQRCodeBase64 = mockQRCodeBase64.replace(/^data:image\/png;base64,/, '');
+        } catch (error) {
+          console.error('Erro ao gerar QR Code:', error);
+        }
+      }
+      
+      // Se não conseguiu gerar, usar fallback
+      if (!mockQRCodeBase64) {
+        console.log('Usando QR Code fallback (biblioteca não disponível)');
+        // QR Code de teste genérico
+        mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABeklEQVR4nO3VQQ0AIRDAwOf/GkYiEAlbCNjZM2fmnM+1twN4M5YkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJupZ9A2CgA3XoAAAAAElFTkSuQmCC';
       }
       
       return {
@@ -159,22 +173,27 @@ export class MercadoPagoService {
         const mockPixKey = `00020126330014BR.GOV.BCB.PIX0114${Date.now()}5204000053039865802BR5913RIO PORTO P2P6009SAO PAULO62070503***63041234`;
         
         let mockQRCodeBase64 = '';
-        try {
-          mockQRCodeBase64 = await QRCode.toDataURL(mockPixKey, {
-            errorCorrectionLevel: 'M',
-            type: 'image/png',
-            quality: 0.92,
-            margin: 1,
-            color: {
-              dark: '#000000',
-              light: '#FFFFFF'
-            },
-            width: 256
-          });
-          mockQRCodeBase64 = mockQRCodeBase64.replace(/^data:image\/png;base64,/, '');
-        } catch (qrError) {
-          console.error('Erro ao gerar QR Code no fallback:', qrError);
-          mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+        if (QRCode && QRCode.toDataURL) {
+          try {
+            mockQRCodeBase64 = await QRCode.toDataURL(mockPixKey, {
+              errorCorrectionLevel: 'M',
+              type: 'image/png',
+              quality: 0.92,
+              margin: 1,
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              },
+              width: 256
+            });
+            mockQRCodeBase64 = mockQRCodeBase64.replace(/^data:image\/png;base64,/, '');
+          } catch (qrError) {
+            console.error('Erro ao gerar QR Code no fallback:', qrError);
+          }
+        }
+        
+        if (!mockQRCodeBase64) {
+          mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAJYAAACWCAYAAAA8AXHiAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABeklEQVR4nO3VQQ0AIRDAwOf/GkYiEAlbCNjZM2fmnM+1twN4M5YkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJMpYkY0kyliRjSTKWJGNJupZ9A2CgA3XoAAAAAElFTkSuQmCC';
         }
         
         return {

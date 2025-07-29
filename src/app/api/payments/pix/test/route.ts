@@ -7,14 +7,28 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const amount = body.amount || 100; // Default R$ 100
 
+    console.log('=== TESTE PIX INICIADO ===');
+    console.log('Amount:', amount);
+    console.log('Has MP Token:', !!process.env.MERCADO_PAGO_ACCESS_TOKEN);
+    console.log('Token length:', process.env.MERCADO_PAGO_ACCESS_TOKEN?.length);
+
     // Criar pagamento de teste no Mercado Pago
     const mpService = getMercadoPagoService();
+    console.log('MercadoPagoService criado');
+    
     const pixData = await mpService.createPixPayment({
       tradeId: 'test-' + Date.now(),
       amount: amount,
       buyerEmail: 'teste@rioporto.com.br',
       buyerName: 'Usuário Teste',
       description: `Rio Porto P2P - Teste PIX R$ ${amount}`
+    });
+    
+    console.log('PIX Data recebido:', {
+      hasId: !!pixData.id,
+      hasQrCode: !!pixData.qrCode,
+      hasQrCodeBase64: !!pixData.qrCodeBase64,
+      status: pixData.status
     });
 
     return apiResponse.success({
