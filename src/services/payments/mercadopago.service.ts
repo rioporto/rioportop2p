@@ -123,6 +123,16 @@ export class MercadoPagoService {
 
     try {
       console.log('Tentando criar pagamento real no Mercado Pago...');
+      console.log('Dados do pagamento:', {
+        amount: data.amount,
+        description: data.description,
+        buyerEmail: data.buyerEmail,
+        buyerName: data.buyerName,
+        hasToken: !!process.env.MERCADO_PAGO_ACCESS_TOKEN,
+        tokenLength: process.env.MERCADO_PAGO_ACCESS_TOKEN?.length,
+        isProduction: !process.env.MERCADO_PAGO_ACCESS_TOKEN?.includes('TEST')
+      });
+      
       const payment = await this.payment.create({
         body: {
           transaction_amount: data.amount,
@@ -132,6 +142,17 @@ export class MercadoPagoService {
             email: data.buyerEmail,
             first_name: data.buyerName.split(' ')[0],
             last_name: data.buyerName.split(' ').slice(1).join(' ') || '',
+            identification: {
+              type: 'CPF',
+              number: '12345678909' // TODO: usar CPF real quando implementar KYC
+            }
+          },
+          // Adicionar point_of_interaction explicitamente
+          point_of_interaction: {
+            type: 'PIX',
+            transaction_data: {
+              qr_code_base64: true
+            }
           },
           // Metadata para rastrear no webhook
           metadata: {
@@ -164,8 +185,15 @@ export class MercadoPagoService {
         error: error.message || error,
         cause: error.cause,
         response: error.response?.data,
-        status: error.status
+        status: error.status,
+        stack: error.stack
       });
+      
+      // Tratar erro específico de PIX não habilitado
+      if (error.message?.includes('Collector user without key enabled for QR render')) {
+        console.log('PIX não habilitado na conta. Retornando modo mock com mensagem específica.');
+        throw new Error('PIX não está habilitado em sua conta Mercado Pago. Por favor, verifique em https://www.mercadopago.com.br/settings/pix');
+      }
       
       // Se falhar com erro de autenticação, tentar modo mock
       if (error.status === 401 || error.message?.includes('401')) {
