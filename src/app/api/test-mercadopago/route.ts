@@ -46,5 +46,61 @@ export async function GET(req: NextRequest) {
     }
   }
 
+  // Testar API diretamente
+  diagnostics.api = {
+    accountInfo: null,
+    error: null
+  };
+
+  if (process.env.MERCADO_PAGO_ACCESS_TOKEN) {
+    try {
+      const response = await fetch('https://api.mercadopago.com/users/me', {
+        headers: {
+          'Authorization': `Bearer ${process.env.MERCADO_PAGO_ACCESS_TOKEN}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        diagnostics.api.accountInfo = {
+          id: data.id,
+          nickname: data.nickname,
+          email: data.email,
+          siteId: data.site_id,
+          countryId: data.country_id,
+          tags: data.tags || [],
+          identification: data.identification,
+          isTest: data.tags?.includes('test_user') || false
+        };
+      } else {
+        diagnostics.api.error = `API Error: ${response.status} ${response.statusText}`;
+        const errorText = await response.text();
+        diagnostics.api.errorDetails = errorText;
+      }
+    } catch (error: any) {
+      diagnostics.api.error = error.message;
+    }
+  }
+
+  // Adicionar recomendações
+  diagnostics.recommendations = [];
+  
+  if (!diagnostics.env.hasToken) {
+    diagnostics.recommendations.push('Configure MERCADO_PAGO_ACCESS_TOKEN no Railway');
+  }
+  
+  if (diagnostics.api.accountInfo?.isTest) {
+    diagnostics.recommendations.push('Você está usando credenciais de TESTE. Use credenciais de PRODUÇÃO.');
+  }
+  
+  if (diagnostics.api.error?.includes('401')) {
+    diagnostics.recommendations.push('Token inválido ou expirado. Gere um novo token no painel do Mercado Pago.');
+  }
+
+  if (diagnostics.api.accountInfo && !diagnostics.api.accountInfo.tags?.includes('pix_enabled')) {
+    diagnostics.recommendations.push('PIX pode não estar habilitado. Verifique em https://www.mercadopago.com.br/settings/pix');
+  }
+
   return apiResponse.success(diagnostics);
 }
