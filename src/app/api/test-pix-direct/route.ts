@@ -28,12 +28,6 @@ export async function POST(req: NextRequest) {
           number: '12345678909'
         }
       },
-      // Adicionar pix_keys se necessário
-      point_of_interaction: {
-        transaction_data: {
-          qr_code_base64: true  // Solicitar QR Code em base64
-        }
-      }
     };
 
     console.log('Payment data:', JSON.stringify(paymentData, null, 2));

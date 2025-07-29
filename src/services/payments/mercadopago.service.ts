@@ -147,13 +147,6 @@ export class MercadoPagoService {
               number: '12345678909' // TODO: usar CPF real quando implementar KYC
             }
           },
-          // Adicionar point_of_interaction explicitamente
-          point_of_interaction: {
-            type: 'PIX',
-            transaction_data: {
-              qr_code_base64: true
-            }
-          },
           // Metadata para rastrear no webhook
           metadata: {
             trade_id: data.tradeId,
