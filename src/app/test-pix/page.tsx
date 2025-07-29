@@ -84,9 +84,7 @@ export default function TestPixPage() {
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-yellow-800">
                 ⚠️ <strong>Modo de Teste:</strong> Este é um ambiente de teste. 
-                {process.env.MERCADO_PAGO_ACCESS_TOKEN ? 
-                  ' O QR Code será gerado pelo Mercado Pago mas não cobrará valores reais em modo teste.' : 
-                  ' O QR Code gerado é mockado e não processará pagamentos reais.'}
+                O QR Code gerado é para teste e não processará pagamentos reais.
               </p>
             </div>
             {error && (
@@ -223,29 +221,22 @@ export default function TestPixPage() {
         <div className="mt-8">
           <Card className="p-6">
             <h3 className="font-semibold text-gray-900 mb-3">
-              Status da Integração:
+              Como configurar Mercado Pago:
             </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center gap-2">
-                <span className={process.env.MERCADO_PAGO_ACCESS_TOKEN ? "text-green-600" : "text-yellow-600"}>
-                  {process.env.MERCADO_PAGO_ACCESS_TOKEN ? "✅" : "⚠️"}
-                </span>
-                <span>
-                  Mercado Pago: {process.env.MERCADO_PAGO_ACCESS_TOKEN ? "Configurado" : "Modo Mock"}
-                </span>
-              </div>
-              {!process.env.MERCADO_PAGO_ACCESS_TOKEN && (
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-gray-700 font-medium mb-2">Para ativar a integração real:</p>
-                  <ol className="space-y-1 text-gray-600">
-                    <li>1. Acesse https://www.mercadopago.com.br/developers/panel/app</li>
-                    <li>2. Crie uma aplicação com nome "rioporto2p-api"</li>
-                    <li>3. Selecione "Pagamentos on-line" e "Não" para e-commerce</li>
-                    <li>4. Copie o Access Token de Produção</li>
-                    <li>5. Adicione no Railway: MERCADO_PAGO_ACCESS_TOKEN</li>
-                  </ol>
-                </div>
-              )}
+            <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+              <ol className="space-y-1 text-gray-600 text-sm">
+                <li>1. Acesse https://www.mercadopago.com.br/developers/panel/app</li>
+                <li>2. Crie uma aplicação com nome "rioporto2p-api"</li>
+                <li>3. Selecione "Pagamentos on-line" e "Não" para e-commerce</li>
+                <li>4. Copie o Access Token de Produção</li>
+                <li>5. Adicione no Railway: MERCADO_PAGO_ACCESS_TOKEN</li>
+              </ol>
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-blue-800">
+                💡 <strong>Nota:</strong> Após configurar as credenciais no Railway,
+                o sistema gerará QR Codes PIX reais do Mercado Pago.
+              </p>
             </div>
           </Card>
         </div>

@@ -42,8 +42,8 @@ export class MercadoPagoService {
       if (process.env.MERCADO_PAGO_ACCESS_TOKEN === undefined) {
         console.log('🔧 Modo MOCK ativado - Retornando QR Code de teste');
         
-        // Gerar um QR Code mock base64 simples
-        const mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+        // Gerar um QR Code mock base64 real (1x1 pixel preto para teste)
+        const mockQRCodeBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAQAAAAEACAYAAABccqhmAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDcvMjgvMjTVNrpGAAABhUlEQVR4nO3VsQ0AIAwDQYL9d6YFKJB4gO9qF1zhpmfOzLwAiO7bAwDYRwAAMQEAxAQAEBMAQEwAADEBAMQEABATAEBMAACxPwC8c+9LrwHgQSsAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCICQAgJgCAmAAAYgIAiAkAICYAgJgAAGICAIgJACAmAICYAABiAgCIXWQPAiuVkVPZAAAAAElFTkSuQmCC';
         const mockPixKey = `00020126330014BR.GOV.BCB.PIX0114${Date.now()}5204000053039865802BR5913RIO PORTO P2P6009SAO PAULO62070503***63041234`;
         
         return {
@@ -103,6 +103,11 @@ export class MercadoPagoService {
    */
   async getPaymentStatus(paymentId: number): Promise<string> {
     try {
+      // Mock mode
+      if (process.env.MERCADO_PAGO_ACCESS_TOKEN === undefined) {
+        return 'pending';
+      }
+      
       const payment = await this.payment.get({ id: paymentId });
       return payment.status || 'unknown';
     } catch (error) {

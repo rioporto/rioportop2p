@@ -28,7 +28,21 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Erro no teste PIX:', error);
+    console.error('Erro detalhado no teste PIX:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      hasToken: !!process.env.MERCADO_PAGO_ACCESS_TOKEN
+    });
+    
+    // Retornar erro mais específico
+    if (error instanceof Error) {
+      if (error.message.includes('MERCADO_PAGO_ACCESS_TOKEN')) {
+        return apiResponse.error('CONFIG_ERROR', 'Mercado Pago não configurado corretamente', 500);
+      }
+      return apiResponse.error('PAYMENT_ERROR', error.message, 500);
+    }
+    
     return handleApiError(error);
   }
 }
