@@ -24,7 +24,7 @@ export default function TestPixPage() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/payments/pix/test', {
+      const response = await fetch('/api/test-pix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: 100 })
