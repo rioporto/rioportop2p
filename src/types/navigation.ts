@@ -14,7 +14,7 @@ export const NAVIGATION_ITEMS: INavigationItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',
-    href: '/',
+    href: '/dashboard',
     icon: 'home',
     minKYCLevel: KYCLevel.PLATFORM_ACCESS
   },
