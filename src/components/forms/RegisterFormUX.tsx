@@ -549,7 +549,9 @@ export const RegisterFormUX: React.FC = () => {
           const errorJson = JSON.parse(errorText);
           
           // Tratamento especial para email duplicado
-          if (errorJson.code === 'USER_ALREADY_EXISTS' || errorJson.code === 'PHONE_ALREADY_EXISTS') {
+          if (errorJson.code === 'EMAIL_ALREADY_VERIFIED') {
+            setError('Este email já está cadastrado e verificado. Faça login ou use outro email.');
+          } else if (errorJson.code === 'USER_ALREADY_EXISTS' || errorJson.code === 'PHONE_ALREADY_EXISTS') {
             const isEmailError = errorJson.code === 'USER_ALREADY_EXISTS';
             setError(isEmailError ? 
               'Este email já está cadastrado. Faça login ou use outro email.' :

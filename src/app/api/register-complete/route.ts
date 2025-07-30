@@ -29,14 +29,39 @@ export async function POST(req: NextRequest) {
     
     // Verificar se email já existe
     const existingUser = await prisma.user.findUnique({
-      where: { email: body.email.toLowerCase() }
+      where: { email: body.email.toLowerCase() },
+      include: {
+        verificationTokens: {
+          where: {
+            type: 'email',
+            expiresAt: {
+              gt: new Date()
+            }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 1
+        }
+      }
     });
     
     if (existingUser) {
-      return NextResponse.json({
-        success: false,
-        error: 'Este email já está cadastrado'
-      }, { status: 409 });
+      // Se o email já foi verificado, bloquear completamente
+      if (existingUser.emailVerified) {
+        return NextResponse.json({
+          success: false,
+          error: 'Este email já está cadastrado e verificado. Faça login ou use outro email.',
+          code: 'EMAIL_ALREADY_VERIFIED'
+        }, { status: 409 });
+      }
+      
+      // Se não foi verificado, permitir recadastro (sobrescrever dados)
+      // Mas primeiro vamos deletar o usuário antigo não verificado
+      await prisma.user.delete({
+        where: { id: existingUser.id }
+      });
+      console.log('Deleted unverified user:', existingUser.id);
     }
     
     // Hash da senha

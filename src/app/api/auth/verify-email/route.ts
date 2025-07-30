@@ -76,83 +76,64 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  console.log('=== RESEND EMAIL VERIFICATION ROUTE CALLED ===');
+  console.log('=== EMAIL VERIFICATION BY CODE ROUTE CALLED ===');
   
   try {
     const body = await req.json();
-    const { email } = body;
+    const { token } = body;
     
-    if (!email) {
-      return ApiResponse.badRequest('Email não fornecido', 'MISSING_EMAIL');
+    if (!token) {
+      return ApiResponse.badRequest('Código de verificação não fornecido', 'MISSING_TOKEN');
     }
     
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-    });
-    
-    if (!user) {
-      return ApiResponse.notFound('Usuário não encontrado', 'USER_NOT_FOUND');
-    }
-    
-    // Check if already verified
-    if (user.emailVerified) {
-      return ApiResponse.badRequest('Email já verificado', 'ALREADY_VERIFIED');
-    }
-    
-    // Check for rate limiting - only allow resend every 5 minutes
-    const recentToken = await prisma.verificationToken.findFirst({
+    // Find verification token in database (código de 6 dígitos)
+    const verificationToken = await prisma.verificationToken.findFirst({
       where: {
-        userId: user.id,
+        token: token.toString(),
         type: 'email',
-        createdAt: {
-          gte: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+        usedAt: null, // Not used yet
+        expiresAt: {
+          gt: new Date() // Not expired
+        }
+      },
+      include: {
+        user: true,
+      },
+    });
+    
+    if (!verificationToken) {
+      return ApiResponse.badRequest('Código de verificação inválido ou expirado', 'INVALID_TOKEN');
+    }
+    
+    // Update user and token in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Mark user email as verified
+      await tx.user.update({
+        where: { id: verificationToken.userId },
+        data: {
+          emailVerified: true,
+          emailVerifiedAt: new Date(),
         },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      });
+      
+      // Mark token as used
+      await tx.verificationToken.update({
+        where: { id: verificationToken.id },
+        data: {
+          usedAt: new Date(),
+        },
+      });
     });
     
-    if (recentToken) {
-      const waitTime = Math.ceil((5 * 60 * 1000 - (Date.now() - recentToken.createdAt.getTime())) / 1000);
-      return ApiResponse.tooManyRequests(
-        `Por favor, aguarde ${waitTime} segundos antes de solicitar outro email de verificação`,
-        'RATE_LIMITED'
-      );
-    }
-    
-    // Generate new verification token
-    const { generateVerificationToken } = await import('@/lib/auth/utils');
-    const verificationToken = generateVerificationToken();
-    const tokenExpiry = new Date();
-    tokenExpiry.setHours(tokenExpiry.getHours() + 24); // 24 hours expiry
-    
-    // Create new verification token
-    await prisma.verificationToken.create({
-      data: {
-        userId: user.id,
-        token: verificationToken,
-        type: 'email',
-        expiresAt: tokenExpiry,
-      },
-    });
-    
-    // Send verification email
-    const { emailService } = await import('@/services/email.service');
-    const emailSent = await emailService.sendVerificationEmail(user.email, verificationToken);
-    
-    if (!emailSent) {
-      return ApiResponse.internalError('Erro ao enviar email de verificação');
-    }
+    console.log('Email verified successfully for user:', verificationToken.userId);
     
     return ApiResponse.success({
-      message: 'Email de verificação enviado com sucesso',
-      email: user.email,
+      message: 'Email verificado com sucesso',
+      email: verificationToken.user.email,
     });
     
   } catch (error) {
-    console.error('Resend verification error:', error);
-    return ApiResponse.internalError('Erro ao reenviar email de verificação');
+    console.error('Email verification error:', error);
+    return ApiResponse.internalError('Erro ao verificar email');
   }
 }

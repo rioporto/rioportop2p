@@ -8,11 +8,63 @@ export default function VerifyContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get('email');
 
   // Removido verificação automática via URL - agora só aceita código manual
+  
+  // Timer para cooldown do reenvio
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const handleResendCode = async () => {
+    if (!email || resendLoading || resendCooldown > 0) return;
+    
+    try {
+      setResendLoading(true);
+      setError(null);
+      setResendSuccess(false);
+      
+      const response = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      
+      const result = await response.json();
+      
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      
+      setResendSuccess(true);
+      setResendCooldown(60); // 60 segundos de cooldown
+      
+      // Se retornou código (desenvolvimento), mostrar alert
+      if (result.verificationCode) {
+        alert(`Novo código: ${result.verificationCode}`);
+      }
+      
+      setTimeout(() => {
+        setResendSuccess(false);
+      }, 5000);
+    } catch (error) {
+      setError('Erro ao reenviar código');
+    } finally {
+      setResendLoading(false);
+    }
+  };
 
   const handleVerification = async (token: string) => {
     try {
@@ -28,13 +80,13 @@ export default function VerifyContent() {
       const result = await response.json();
 
       if (!result.success) {
-        setError(result.error.message);
+        setError(result.error?.message || result.error || 'Código inválido ou expirado');
         return;
       }
 
       setSuccess(true);
       setTimeout(() => {
-        router.push('/login');
+        router.push('/login?verified=true');
       }, 3000);
     } catch (error) {
       setError('Erro ao verificar email');
@@ -129,12 +181,28 @@ export default function VerifyContent() {
             </button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
+            {resendSuccess && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-2 rounded-lg text-sm">
+                Novo código enviado com sucesso!
+              </div>
+            )}
+            
             <p className="text-sm text-gray-600">
-              Não recebeu o email?{' '}
-              <button className="font-medium text-blue-600 hover:text-blue-500 transition-colors">
-                Reenviar código
-              </button>
+              Não recebeu o código?{' '}
+              {resendCooldown > 0 ? (
+                <span className="text-gray-500">
+                  Aguarde {resendCooldown}s para reenviar
+                </span>
+              ) : (
+                <button 
+                  onClick={handleResendCode}
+                  disabled={resendLoading || !email}
+                  className="font-medium text-blue-600 hover:text-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {resendLoading ? 'Enviando...' : 'Reenviar código'}
+                </button>
+              )}
             </p>
           </div>
         </div>
