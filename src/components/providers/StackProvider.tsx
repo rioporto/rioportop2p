@@ -9,16 +9,16 @@ export function StackProvider({ children }: { children: React.ReactNode }) {
         projectId: process.env.NEXT_PUBLIC_STACK_PROJECT_ID!,
         publishableClientKey: process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY!,
         urls: {
-          home: process.env.NEXT_PUBLIC_STACK_URL || "https://rioporto.com.br",
-          signIn: "/auth/signin",
+          home: "https://rioporto.com.br",
+          signIn: "/handler/sign-in",
           afterSignIn: "/dashboard",
-          signUp: "/auth/signup",
+          signUp: "/handler/sign-up",
           afterSignUp: "/dashboard",
           signOut: "/",
           afterSignOut: "/",
-          emailVerification: "/auth/verify-email",
-          passwordReset: "/auth/reset-password",
-          forgotPassword: "/auth/forgot-password",
+          emailVerification: "/handler/verify-email",
+          passwordReset: "/handler/reset-password",
+          forgotPassword: "/handler/forgot-password",
           userProfile: "/profile",
           selectOrganization: "/select-organization"
         }

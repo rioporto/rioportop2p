@@ -8,6 +8,7 @@ import "../styles/themes/dark.css";
 import "../styles/animations.css";
 import "../styles/accessibility.css";
 import { ThemeProvider, ThemeScript } from "@/contexts/ThemeContext";
+import { StackProvider } from "@/components/providers/StackProvider";
 import { 
   defaultMetadata, 
   organizationSchema, 
@@ -74,9 +75,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+        <StackProvider>
+          <ThemeProvider>
+            {children}
+          </ThemeProvider>
+        </StackProvider>
       </body>
     </html>
   );
