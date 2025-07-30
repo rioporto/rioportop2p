@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     console.log('Registration attempt for:', body.email);
     console.log('Request body:', JSON.stringify(body, null, 2));
+    console.log('Phone number:', body.whatsapp);
     
     // Validação básica com log detalhado
     const missingFields = [];
@@ -46,6 +47,14 @@ export async function POST(req: NextRequest) {
       }
     });
     
+    console.log('Existing user found:', existingUser ? {
+      id: existingUser.id,
+      email: existingUser.email,
+      emailVerified: existingUser.emailVerified,
+      phone: existingUser.phone,
+      tokens: existingUser.verificationTokens.length
+    } : 'No user found');
+    
     // Hash da senha (fazer antes para usar em ambos os casos)
     const passwordHash = await bcrypt.hash(body.password, 10);
     
@@ -68,6 +77,25 @@ export async function POST(req: NextRequest) {
       console.log('Updating unverified user:', existingUser.id);
       
       // Se não foi verificado, atualizar os dados do usuário existente
+      // Verificar se o telefone já está em uso por outro usuário
+      if (body.whatsapp) {
+        const phoneInUse = await prisma.user.findFirst({
+          where: {
+            phone: body.whatsapp.replace(/\D/g, ''),
+            id: { not: existingUser.id }
+          }
+        });
+        
+        if (phoneInUse) {
+          console.log('Phone already in use by another user:', phoneInUse.id);
+          return NextResponse.json({
+            success: false,
+            error: 'Este número de WhatsApp já está cadastrado.',
+            code: 'PHONE_ALREADY_EXISTS'
+          }, { status: 409 });
+        }
+      }
+      
       user = await prisma.user.update({
         where: { id: existingUser.id },
         data: {
@@ -97,22 +125,31 @@ export async function POST(req: NextRequest) {
         newsletter: body.newsletter
       });
       
-      user = await prisma.user.create({
-        data: {
-          id: generateUUID(),
-          email: body.email.toLowerCase(),
-          firstName: body.name.split(' ')[0],
-          lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
-          passwordHash,
-          phone: body.whatsapp?.replace(/\D/g, ''), // Remove caracteres não numéricos
-          kycLevel: 'PLATFORM_ACCESS',
-          status: 'ACTIVE',
-          termsAcceptedAt: body.acceptTerms ? new Date() : null,
-          marketingConsent: body.newsletter || false
-        }
-      });
-      
-      console.log('User created successfully:', user.id);
+      try {
+        user = await prisma.user.create({
+          data: {
+            id: generateUUID(),
+            email: body.email.toLowerCase(),
+            firstName: body.name.split(' ')[0],
+            lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
+            passwordHash,
+            phone: body.whatsapp?.replace(/\D/g, ''), // Remove caracteres não numéricos
+            kycLevel: 'PLATFORM_ACCESS',
+            status: 'ACTIVE',
+            termsAcceptedAt: body.acceptTerms ? new Date() : null,
+            marketingConsent: body.newsletter || false
+          }
+        });
+        
+        console.log('User created successfully:', user.id);
+      } catch (createError: any) {
+        console.error('Error creating user:', createError);
+        console.error('Prisma error code:', createError.code);
+        console.error('Prisma error meta:', createError.meta);
+        
+        // Re-throw para ser capturado pelo catch principal
+        throw createError;
+      }
     }
     
     // Criar token de verificação separadamente (armazenamos o código curto)
