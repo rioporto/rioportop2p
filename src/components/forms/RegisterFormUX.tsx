@@ -536,7 +536,8 @@ export const RegisterFormUX: React.FC = () => {
       setError(null);
       vibrate();
 
-      console.log('Sending registration data:', data);
+      // Adicionar timestamp para garantir que é o código novo
+      console.log(`[${new Date().toISOString()}] Sending registration data:`, data);
 
       const response = await fetch('/api/register-complete', {
         method: 'POST',
@@ -544,15 +545,20 @@ export const RegisterFormUX: React.FC = () => {
         body: JSON.stringify(data),
       });
 
-      console.log('Response status:', response.status);
+      console.log(`[${new Date().toISOString()}] Response status:`, response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.log('Error response text:', errorText);
+        console.log(`[${new Date().toISOString()}] Error response text:`, errorText);
+        
+        // Mostrar alert temporário para debug
+        if (response.status === 409) {
+          alert(`Erro 409: ${errorText}`);
+        }
         
         try {
           const errorJson = JSON.parse(errorText);
-          console.log('Parsed error:', errorJson);
+          console.log(`[${new Date().toISOString()}] Parsed error:`, errorJson);
           
           // Tratamento especial para email duplicado
           if (errorJson.code === 'EMAIL_ALREADY_VERIFIED') {
