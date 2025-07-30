@@ -1294,6 +1294,11 @@ model Message {
   type              MessageType    @default(TEXT)
   fileUrl           String?        @map("file_url")
   
+  // Reply
+  replyToId         String?        @map("reply_to_id")
+  replyTo           Message?       @relation("MessageReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies           Message[]      @relation("MessageReplies")
+  
   // Read status
   isRead            Boolean        @default(false) @map("is_read")
   readAt            DateTime?      @map("read_at")
@@ -1304,6 +1309,7 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
+  @@index([replyToId])
   @@map("messages")
 }
 

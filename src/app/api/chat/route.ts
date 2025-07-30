@@ -11,7 +11,8 @@ const createMessageSchema = z.object({
   transactionId: z.string().uuid('ID da transação inválido'),
   content: z.string().min(1, 'Mensagem é obrigatória').max(1000, 'Mensagem muito longa'),
   type: z.nativeEnum(MessageType).default(MessageType.TEXT),
-  fileUrl: z.string().url().optional()
+  fileUrl: z.string().url().optional(),
+  replyToId: z.string().uuid().optional()
 });
 
 export async function POST(req: NextRequest) {
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { transactionId, content, type, fileUrl } = validation.data;
+    const { transactionId, content, type, fileUrl, replyToId } = validation.data;
 
     // Verificar se usuário faz parte da transação
     const transaction = await prisma.transaction.findUnique({
@@ -91,7 +92,8 @@ export async function POST(req: NextRequest) {
         senderId: userId,
         content,
         type,
-        fileUrl
+        fileUrl,
+        replyToId
       },
       include: {
         sender: {
@@ -99,6 +101,19 @@ export async function POST(req: NextRequest) {
             id: true,
             firstName: true,
             lastName: true
+          }
+        },
+        replyTo: {
+          select: {
+            id: true,
+            content: true,
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true
+              }
+            }
           }
         }
       }
@@ -119,7 +134,12 @@ export async function POST(req: NextRequest) {
       content: message.content,
       timestamp: message.createdAt,
       type: message.type.toLowerCase(),
-      fileUrl: message.fileUrl
+      fileUrl: message.fileUrl,
+      replyToId: message.replyToId,
+      replyTo: message.replyTo ? {
+        content: message.replyTo.content,
+        senderName: `${message.replyTo.sender.firstName} ${message.replyTo.sender.lastName}`
+      } : undefined
     };
 
     // Enviar evento via Pusher
@@ -183,6 +203,19 @@ export async function GET(req: NextRequest) {
                 firstName: true,
                 lastName: true
               }
+            },
+            replyTo: {
+              select: {
+                id: true,
+                content: true,
+                sender: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true
+                  }
+                }
+              }
             }
           }
         }
@@ -205,7 +238,12 @@ export async function GET(req: NextRequest) {
       fileUrl: msg.fileUrl,
       isRead: msg.isRead,
       readAt: msg.readAt,
-      createdAt: msg.createdAt
+      createdAt: msg.createdAt,
+      replyToId: msg.replyToId,
+      replyTo: msg.replyTo ? {
+        content: msg.replyTo.content,
+        senderName: `${msg.replyTo.sender.firstName} ${msg.replyTo.sender.lastName}`
+      } : undefined
     }));
 
     return ApiResponse.success({ messages: formattedMessages });
