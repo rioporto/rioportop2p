@@ -42,9 +42,9 @@ export async function POST(req: NextRequest) {
     // Hash da senha
     const passwordHash = await bcrypt.hash(body.password, 10);
     
-    // Gerar token de verificação
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 horas
+    // Gerar código de verificação de 6 dígitos
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos para código
     
     // Criar usuário com logs detalhados
     console.log('Creating user with data:', {
@@ -73,36 +73,58 @@ export async function POST(req: NextRequest) {
     
     console.log('User created successfully:', user.id);
     
-    // Criar token de verificação separadamente
+    // Criar token de verificação separadamente (armazenamos o código curto)
     const verification = await prisma.verificationToken.create({
       data: {
         userId: user.id,
-        token: verificationToken,
+        token: verificationCode,
         type: 'email',
         expiresAt: verificationExpires
       }
     });
     
-    // URL de verificação
-    const verificationUrl = `${process.env.NEXTAUTH_URL || 'https://rioporto.com.br'}/verify?token=${verificationToken}`;
-    
-    // Enviar email de verificação
+    // Enviar email de verificação com código
     try {
       await sendEmail({
         to: user.email,
-        subject: 'Verifique seu email - Rio Porto P2P',
+        subject: 'Código de verificação - Rio Porto P2P',
         html: `
           <!DOCTYPE html>
           <html>
             <head>
               <meta charset="utf-8">
-              <title>Verifique seu email</title>
+              <title>Código de verificação</title>
               <style>
                 body { font-family: Arial, sans-serif; color: #333; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background-color: #1a1a1a; color: white; padding: 20px; text-align: center; }
-                .content { padding: 20px; background-color: #f5f5f5; }
-                .button { background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block; }
+                .header { background-color: #1a1a1a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { padding: 30px; background-color: #f5f5f5; border-radius: 0 0 8px 8px; }
+                .code-box { 
+                  background-color: #ffffff; 
+                  border: 2px solid #4CAF50; 
+                  border-radius: 8px; 
+                  padding: 20px; 
+                  text-align: center; 
+                  margin: 20px 0;
+                }
+                .code { 
+                  font-size: 32px; 
+                  font-weight: bold; 
+                  color: #1a1a1a; 
+                  letter-spacing: 8px; 
+                  font-family: monospace;
+                }
+                .timer { 
+                  color: #666; 
+                  font-size: 14px; 
+                  margin-top: 10px;
+                }
+                .footer { 
+                  text-align: center; 
+                  color: #999; 
+                  font-size: 12px; 
+                  margin-top: 20px;
+                }
               </style>
             </head>
             <body>
@@ -112,14 +134,19 @@ export async function POST(req: NextRequest) {
                 </div>
                 <div class="content">
                   <h2>Olá ${user.firstName}!</h2>
-                  <p>Obrigado por se cadastrar na Rio Porto P2P. Para completar seu cadastro, por favor verifique seu email clicando no botão abaixo:</p>
-                  <p style="text-align: center;">
-                    <a href="${verificationUrl}" class="button">Verificar Email</a>
-                  </p>
-                  <p>Ou copie e cole este link no seu navegador:</p>
-                  <p style="word-break: break-all;">${verificationUrl}</p>
-                  <p>Este link é válido por 24 horas.</p>
-                  <p>Se você não criou uma conta na Rio Porto P2P, pode ignorar este email.</p>
+                  <p>Use o código abaixo para verificar seu email e completar seu cadastro:</p>
+                  
+                  <div class="code-box">
+                    <div class="code">${verificationCode}</div>
+                    <div class="timer">Válido por 30 minutos</div>
+                  </div>
+                  
+                  <p>Digite este código na tela de verificação para ativar sua conta.</p>
+                  
+                  <div class="footer">
+                    <p>Se você não criou uma conta na Rio Porto P2P, pode ignorar este email.</p>
+                    <p>Este é um email automático, não responda.</p>
+                  </div>
                 </div>
               </div>
             </body>
@@ -132,25 +159,26 @@ export async function POST(req: NextRequest) {
       console.error('Failed to send verification email:', emailError);
       // Não falhar o registro se o email falhar
       
-      // Em desenvolvimento, mostrar link de verificação no console
+      // Em desenvolvimento, mostrar código de verificação no console
       if (process.env.NODE_ENV === 'development' || !process.env.RESEND_API_KEY) {
         console.log('');
-        console.log('🔗 LINK DE VERIFICAÇÃO (copie e cole no navegador):');
-        console.log(verificationUrl);
+        console.log('📧 CÓDIGO DE VERIFICAÇÃO:');
+        console.log(`   ${verificationCode}`);
+        console.log('   (válido por 30 minutos)');
         console.log('');
       }
     }
     
-    // Se não há API key, incluir link de verificação na resposta
+    // Se não há API key, incluir código de verificação na resposta
     const response: any = {
       success: true,
-      message: 'Conta criada com sucesso! Verifique seu email para ativar sua conta.',
+      message: 'Conta criada com sucesso! Verifique seu email para o código de verificação.',
       requiresVerification: true
     };
     
     if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY === '') {
-      response.verificationUrl = verificationUrl;
-      response.message = 'Conta criada! Use o link abaixo para verificar (email não configurado):';
+      response.verificationCode = verificationCode;
+      response.message = 'Conta criada! Use o código abaixo para verificar (email não configurado):';
     }
     
     return NextResponse.json(response, { status: 201 });

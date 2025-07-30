@@ -199,7 +199,7 @@ const PasswordStrengthIndicator: React.FC<{ password: string }> = ({ password })
   );
 };
 
-// Componente de animação de sucesso
+// Componente de animação de sucesso (verificationUrl agora contém o código de 6 dígitos)
 const SuccessAnimation: React.FC<{ email: string; onContinue: () => void; verificationUrl?: string }> = ({ email, onContinue, verificationUrl }) => {
   return (
     <motion.div
@@ -283,20 +283,18 @@ const SuccessAnimation: React.FC<{ email: string; onContinue: () => void; verifi
             <EnvelopeIcon className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
             <div className="text-left">
               <p className="text-sm font-semibold text-green-400">
-                {verificationUrl ? 'Conta criada! Verifique seu email:' : 'Email de verificação enviado!'}
+                {verificationUrl ? 'Conta criada! Use o código abaixo:' : 'Código de verificação enviado!'}
               </p>
               <p className="text-xs text-gray-400 mt-1">
                 {verificationUrl ? (
                   <>
                     <span className="block mb-2">Email não configurado no servidor.</span>
-                    <a 
-                      href={verificationUrl} 
-                      className="text-blue-400 hover:text-blue-300 underline break-all"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      Clique aqui para verificar sua conta
-                    </a>
+                    <div className="bg-black/50 border border-green-500/50 rounded-lg px-4 py-2 mt-2">
+                      <span className="text-2xl font-mono font-bold text-green-400 tracking-wider">
+                        {verificationUrl}
+                      </span>
+                    </div>
+                    <span className="block mt-2 text-xs">Digite este código na próxima tela</span>
                   </>
                 ) : (
                   <>Verifique sua caixa de entrada em <span className="font-mono text-green-400">{email}</span></>
@@ -571,20 +569,18 @@ export const RegisterFormUX: React.FC = () => {
 
       const result = await response.json();
 
-      // Se houver URL de verificação, salva no estado
-      if (result.verificationUrl) {
-        setVerificationUrl(result.verificationUrl);
+      // Se houver código de verificação, salva no estado (para desenvolvimento)
+      if (result.verificationCode) {
+        setVerificationUrl(result.verificationCode); // Reutilizando o state para o código
       }
 
       setSuccess(true);
       vibrate([50, 100, 50, 100]); // Vibração de sucesso
       
-      // Aguarda mais tempo se não há email configurado
+      // Sempre redireciona para página de verificação
       setTimeout(() => {
-        if (!result.verificationUrl) {
-          router.push('/verify?email=' + encodeURIComponent(data.email));
-        }
-      }, result.verificationUrl ? 10000 : 3000);
+        router.push('/verify?email=' + encodeURIComponent(data.email));
+      }, 3000);
     } catch (error) {
       console.error('Erro ao registrar:', error);
       

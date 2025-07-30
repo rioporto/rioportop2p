@@ -12,13 +12,7 @@ export default function VerifyContent() {
   const router = useRouter();
   const email = searchParams.get('email');
 
-  useEffect(() => {
-    // Verifica se tem token na URL (link direto do email)
-    const token = searchParams.get('token');
-    if (token) {
-      handleVerification(token);
-    }
-  }, [searchParams]);
+  // Removido verificação automática via URL - agora só aceita código manual
 
   const handleVerification = async (token: string) => {
     try {
@@ -108,15 +102,21 @@ export default function VerifyContent() {
                 type="text"
                 id="code"
                 value={verificationCode}
-                onChange={(e) => setVerificationCode(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  // Permitir apenas números
+                  const value = e.target.value.replace(/\D/g, '');
+                  setVerificationCode(value);
+                }}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white shadow-sm text-center text-2xl tracking-widest font-mono"
-                placeholder="XXXXXX"
-                maxLength={20}
+                placeholder="000000"
+                maxLength={6}
                 disabled={isLoading}
                 autoComplete="off"
+                inputMode="numeric"
+                pattern="[0-9]{6}"
               />
               <p className="mt-2 text-xs text-gray-500">
-                O código foi enviado para seu email e é válido por 24 horas
+                Digite o código de 6 dígitos enviado para seu email (válido por 30 minutos)
               </p>
             </div>
 
