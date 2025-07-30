@@ -93,6 +93,9 @@ export async function POST(req: NextRequest) {
         });
         
         console.log('Deleted unverified user and all relations:', existingUser.id);
+        
+        // Aguardar um pouco para garantir que a exclusão foi propagada
+        await new Promise(resolve => setTimeout(resolve, 100));
       } catch (deleteError) {
         console.error('Error deleting unverified user:', deleteError);
         // Se falhar ao deletar, retornar erro específico
@@ -103,6 +106,20 @@ export async function POST(req: NextRequest) {
           details: process.env.NODE_ENV === 'development' ? deleteError : undefined
         }, { status: 500 });
       }
+    }
+    
+    // Verificar novamente se o email está livre antes de criar
+    const doubleCheck = await prisma.user.findUnique({
+      where: { email: body.email.toLowerCase() }
+    });
+    
+    if (doubleCheck) {
+      console.error('Email still exists after deletion attempt!', doubleCheck.id);
+      return NextResponse.json({
+        success: false,
+        error: 'Email ainda está em uso. Por favor, aguarde alguns minutos e tente novamente.',
+        code: 'EMAIL_STILL_EXISTS'
+      }, { status: 409 });
     }
     
     // Hash da senha
@@ -255,23 +272,34 @@ export async function POST(req: NextRequest) {
     console.error('Error type:', typeof error);
     console.error('Error constructor:', error?.constructor?.name);
     
+    // Log específico para erro do Prisma
+    if (error && typeof error === 'object' && 'code' in error) {
+      console.error('Prisma error code:', (error as any).code);
+      console.error('Prisma error meta:', (error as any).meta);
+    }
+    
     if (error instanceof Error) {
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack);
       
-      // Verificar se é erro do Prisma
-      if (error.message.includes('Unique constraint')) {
+      // Verificar se é erro do Prisma P2002 (unique constraint)
+      if (error.message.includes('Unique constraint') || (error as any).code === 'P2002') {
         console.error('Unique constraint violation detected');
         console.error('Full error:', error);
         
+        // Pegar o campo do meta do Prisma
+        const meta = (error as any).meta;
+        const target = meta?.target;
+        console.error('Target field:', target);
+        
         // Tentar identificar qual campo causou o erro
-        if (error.message.includes('email')) {
+        if (target?.includes('email') || error.message.includes('email')) {
           return NextResponse.json({
             success: false,
             error: 'Este email já está cadastrado. Se você esqueceu de verificar, tente novamente em alguns minutos.',
             code: 'EMAIL_ALREADY_EXISTS'
           }, { status: 409 });
-        } else if (error.message.includes('phone')) {
+        } else if (target?.includes('phone') || error.message.includes('phone')) {
           return NextResponse.json({
             success: false,
             error: 'Este número de WhatsApp já está cadastrado.',
@@ -281,7 +309,8 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({
             success: false,
             error: 'Email ou telefone já cadastrado',
-            code: 'UNIQUE_CONSTRAINT'
+            code: 'UNIQUE_CONSTRAINT',
+            field: target
           }, { status: 409 });
         }
       }
