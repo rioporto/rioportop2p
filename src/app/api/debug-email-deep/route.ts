@@ -57,11 +57,40 @@ export async function GET(req: NextRequest) {
     });
     
     // 7. Busca SQL direta (para garantir)
-    const rawSearch = await prisma.$queryRaw`
-      SELECT id, email, email_verified, created_at 
-      FROM "User" 
-      WHERE LOWER(email) = LOWER(${email})
-    `;
+    let rawSearch = null;
+    let rawCount = null;
+    let tableInfo = null;
+    
+    try {
+      // Primeiro, verificar qual é o nome real da tabela
+      tableInfo = await prisma.$queryRaw`
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name ILIKE '%user%'
+      `;
+      
+      // Tentar buscar o usuário
+      rawSearch = await prisma.$queryRaw`
+        SELECT id, email, "emailVerified" as email_verified, "createdAt" as created_at 
+        FROM "User" 
+        WHERE LOWER(email) = LOWER(${email})
+      `;
+      
+      // Contar total de usuários
+      rawCount = await prisma.$queryRaw`
+        SELECT COUNT(*) as count FROM "User"
+      `;
+      
+    } catch (e: any) {
+      console.error('Raw SQL error:', e);
+      rawSearch = { 
+        error: 'SQL query failed', 
+        message: e.message,
+        code: e.code,
+        tableInfo: tableInfo
+      };
+    }
     
     return NextResponse.json({
       searchEmail: email,
@@ -85,6 +114,8 @@ export async function GET(req: NextRequest) {
         })),
         domainSearch: domainSearch,
         rawSqlSearch: rawSearch,
+        rawSqlCount: rawCount,
+        databaseTables: tableInfo,
         stats: {
           totalUsers,
           recentUsers
