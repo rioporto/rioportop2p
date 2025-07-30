@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '@/lib/api/responses';
+import { apiResponse } from '@/lib/api/response';
 
 export async function GET(req: NextRequest) {
   // Check Stack Auth environment variables
