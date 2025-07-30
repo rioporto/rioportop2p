@@ -169,6 +169,19 @@ export async function POST(req: NextRequest) {
         console.error('Error creating user:', createError);
         console.error('Prisma error code:', createError.code);
         console.error('Prisma error meta:', createError.meta);
+        console.error('Full error object:', JSON.stringify(createError, null, 2));
+        
+        // Retornar erro específico direto aqui
+        if (createError.code === 'P2002') {
+          const target = createError.meta?.target;
+          return NextResponse.json({
+            success: false,
+            error: `Erro de duplicação no campo: ${target}. Detalhes: ${createError.message}`,
+            code: 'P2002',
+            field: target,
+            details: createError
+          }, { status: 409 });
+        }
         
         // Re-throw para ser capturado pelo catch principal
         throw createError;
