@@ -8,7 +8,7 @@ import "../styles/themes/dark.css";
 import "../styles/animations.css";
 import "../styles/accessibility.css";
 import { ThemeProvider, ThemeScript } from "@/contexts/ThemeContext";
-// import { StackProvider } from "@/components/providers/StackProvider"; // Temporariamente desabilitado
+import { ClientStackProvider } from "@/components/providers/ClientStackProvider";
 import { 
   defaultMetadata, 
   organizationSchema, 
@@ -75,11 +75,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
-        {/* <StackProvider> Temporariamente desabilitado */}
+        <ClientStackProvider>
           <ThemeProvider>
             {children}
           </ThemeProvider>
-        {/* </StackProvider> */}
+        </ClientStackProvider>
       </body>
     </html>
   );
