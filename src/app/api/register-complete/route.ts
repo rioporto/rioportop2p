@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
     
-    // Verificar se email já existe
-    const existingUser = await prisma.user.findUnique({
+    // Verificar se email já existe (incluindo soft-deleted)
+    let existingUser = await prisma.user.findUnique({
       where: { email: body.email.toLowerCase() },
       include: {
         verificationTokens: {
@@ -46,6 +46,47 @@ export async function POST(req: NextRequest) {
         }
       }
     });
+    
+    // Se não encontrou, verificar se existe um usuário deletado
+    if (!existingUser) {
+      const deletedUsers = await prisma.$queryRaw<any[]>`
+        SELECT * FROM users 
+        WHERE email = ${body.email.toLowerCase()} 
+        AND deleted_at IS NOT NULL
+        LIMIT 1
+      `;
+      
+      if (deletedUsers.length > 0) {
+        console.log('Found soft-deleted user, restoring...');
+        
+        // Restaurar o usuário deletado
+        await prisma.$executeRaw`
+          UPDATE users 
+          SET deleted_at = NULL,
+              status = 'ACTIVE'
+          WHERE id = ${deletedUsers[0].id}
+        `;
+        
+        // Buscar novamente o usuário restaurado
+        existingUser = await prisma.user.findUnique({
+          where: { email: body.email.toLowerCase() },
+          include: {
+            verificationTokens: {
+              where: {
+                type: 'email',
+                expiresAt: {
+                  gt: new Date()
+                }
+              },
+              orderBy: {
+                createdAt: 'desc'
+              },
+              take: 1
+            }
+          }
+        });
+      }
+    }
     
     console.log('Existing user found:', existingUser ? {
       id: existingUser.id,
@@ -132,9 +173,10 @@ export async function POST(req: NextRequest) {
       
       // Verificar se o telefone já está em uso antes de criar
       if (body.whatsapp) {
+        const cleanPhone = body.whatsapp.replace(/\D/g, '');
         const phoneInUse = await prisma.user.findFirst({
           where: {
-            phone: body.whatsapp.replace(/\D/g, '')
+            phone: cleanPhone
           }
         });
         
@@ -144,6 +186,23 @@ export async function POST(req: NextRequest) {
             success: false,
             error: 'Este número de WhatsApp já está cadastrado por outro usuário.',
             code: 'PHONE_ALREADY_EXISTS'
+          }, { status: 409 });
+        }
+        
+        // Verificar também usuários deletados com esse telefone
+        const deletedWithPhone = await prisma.$queryRaw<any[]>`
+          SELECT id, email FROM users 
+          WHERE phone = ${cleanPhone} 
+          AND deleted_at IS NOT NULL
+          LIMIT 1
+        `;
+        
+        if (deletedWithPhone.length > 0) {
+          console.log('Phone exists in deleted user:', deletedWithPhone[0]);
+          return NextResponse.json({
+            success: false,
+            error: 'Este número de WhatsApp já foi utilizado anteriormente. Entre em contato com o suporte.',
+            code: 'PHONE_PREVIOUSLY_USED'
           }, { status: 409 });
         }
       }
