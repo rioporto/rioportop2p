@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
 
-const StackLogoutButton = dynamic(
-  () => import('@/components/ui/StackLogoutButton').then(mod => mod.StackLogoutButton),
+const SimpleLogoutButton = dynamic(
+  () => import('@/components/ui/SimpleLogoutButton').then(mod => mod.SimpleLogoutButton),
   { ssr: false }
 );
 import { 
@@ -171,7 +171,7 @@ export function DashboardClient({ user, stats, recentTransactions, recentMessage
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 relative z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-4">
@@ -200,7 +200,7 @@ export function DashboardClient({ user, stats, recentTransactions, recentMessage
               </Link>
               
               {/* User Menu */}
-              <div className="relative" ref={userMenuRef}>
+              <div className="relative z-50" ref={userMenuRef}>
                 <button 
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors"
@@ -223,7 +223,7 @@ export function DashboardClient({ user, stats, recentTransactions, recentMessage
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50"
                     >
                       <Link 
                         href="/profile"
@@ -254,7 +254,7 @@ export function DashboardClient({ user, stats, recentTransactions, recentMessage
                       
                       <div className="border-t border-gray-200 dark:border-gray-700">
                         <div className="p-3">
-                          <StackLogoutButton variant="ghost" className="w-full" />
+                          <SimpleLogoutButton variant="ghost" className="w-full" />
                         </div>
                       </div>
                     </motion.div>

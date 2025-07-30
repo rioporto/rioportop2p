@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { KYCBadge } from '@/components/ui/KYCBadge';
 import { KYCLevel, KYC_LEVELS } from '@/types/kyc';
-import { StackLogoutButton } from '@/components/ui/StackLogoutButton';
+import { SimpleLogoutButton } from '@/components/ui/SimpleLogoutButton';
 import { useUser } from '@stackframe/stack';
 
 export function ProfileClient() {
@@ -114,7 +114,7 @@ export function ProfileClient() {
           </Link>
           
           <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
-            <StackLogoutButton className="w-full justify-center" />
+            <SimpleLogoutButton className="w-full justify-center" />
           </div>
         </div>
       </div>
