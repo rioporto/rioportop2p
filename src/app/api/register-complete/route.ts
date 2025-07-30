@@ -46,6 +46,15 @@ export async function POST(req: NextRequest) {
       }
     });
     
+    // Hash da senha (fazer antes para usar em ambos os casos)
+    const passwordHash = await bcrypt.hash(body.password, 10);
+    
+    // Gerar código de verificação de 6 dígitos
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const verificationExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos para código
+    
+    let user;
+    
     if (existingUser) {
       // Se o email já foi verificado, bloquear completamente
       if (existingUser.emailVerified) {
@@ -56,105 +65,55 @@ export async function POST(req: NextRequest) {
         }, { status: 409 });
       }
       
-      // Se não foi verificado, permitir recadastro (sobrescrever dados)
-      // Mas primeiro vamos deletar o usuário antigo não verificado
-      try {
-        // Usar transação para garantir que tudo seja deletado
-        await prisma.$transaction(async (tx) => {
-          // 1. Deletar tokens de verificação
-          await tx.verificationToken.deleteMany({
-            where: { userId: existingUser.id }
-          });
-          
-          // 2. Deletar sessões
-          await tx.userSession.deleteMany({
-            where: { userId: existingUser.id }
-          });
-          
-          // 3. Deletar dispositivos
-          await tx.userDevice.deleteMany({
-            where: { userId: existingUser.id }
-          });
-          
-          // 4. Deletar perfil se existir
-          await tx.userProfile.deleteMany({
-            where: { userId: existingUser.id }
-          });
-          
-          // 5. Deletar documentos
-          await tx.userDocument.deleteMany({
-            where: { userId: existingUser.id }
-          });
-          
-          // 6. Finalmente deletar o usuário
-          await tx.user.delete({
-            where: { id: existingUser.id }
-          });
-        });
-        
-        console.log('Deleted unverified user and all relations:', existingUser.id);
-        
-        // Aguardar um pouco para garantir que a exclusão foi propagada
-        await new Promise(resolve => setTimeout(resolve, 100));
-      } catch (deleteError) {
-        console.error('Error deleting unverified user:', deleteError);
-        // Se falhar ao deletar, retornar erro específico
-        return NextResponse.json({
-          success: false,
-          error: 'Erro ao processar recadastro. Tente novamente ou use outro email.',
-          code: 'DELETE_FAILED',
-          details: process.env.NODE_ENV === 'development' ? deleteError : undefined
-        }, { status: 500 });
-      }
-    }
-    
-    // Verificar novamente se o email está livre antes de criar
-    const doubleCheck = await prisma.user.findUnique({
-      where: { email: body.email.toLowerCase() }
-    });
-    
-    if (doubleCheck) {
-      console.error('Email still exists after deletion attempt!', doubleCheck.id);
-      return NextResponse.json({
-        success: false,
-        error: 'Email ainda está em uso. Por favor, aguarde alguns minutos e tente novamente.',
-        code: 'EMAIL_STILL_EXISTS'
-      }, { status: 409 });
-    }
-    
-    // Hash da senha
-    const passwordHash = await bcrypt.hash(body.password, 10);
-    
-    // Gerar código de verificação de 6 dígitos
-    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const verificationExpires = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos para código
-    
-    // Criar usuário com logs detalhados
-    console.log('Creating user with data:', {
-      email: body.email.toLowerCase(),
-      firstName: body.name.split(' ')[0],
-      lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
-      phone: body.whatsapp?.replace(/\D/g, ''),
-      acceptTerms: body.acceptTerms,
-      newsletter: body.newsletter
-    });
-    
-    const user = await prisma.user.create({
-      data: {
-        id: generateUUID(),
+      console.log('Updating unverified user:', existingUser.id);
+      
+      // Se não foi verificado, atualizar os dados do usuário existente
+      user = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          firstName: body.name.split(' ')[0],
+          lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
+          passwordHash,
+          phone: body.whatsapp?.replace(/\D/g, ''), // Atualizar telefone se fornecido
+          termsAcceptedAt: body.acceptTerms ? new Date() : null,
+          marketingConsent: body.newsletter || false
+        }
+      });
+      
+      // Deletar tokens antigos
+      await prisma.verificationToken.deleteMany({
+        where: { userId: user.id }
+      });
+      
+      console.log('Updated existing unverified user');
+    } else {
+      // Criar novo usuário
+      console.log('Creating new user with data:', {
         email: body.email.toLowerCase(),
         firstName: body.name.split(' ')[0],
         lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
-        passwordHash,
-        phone: body.whatsapp?.replace(/\D/g, ''), // Remove caracteres não numéricos
-        kycLevel: 'PLATFORM_ACCESS',
-        status: 'ACTIVE',
-        termsAcceptedAt: body.acceptTerms ? new Date() : null,
-        marketingConsent: body.newsletter || false
-      }
-    });
-    
-    console.log('User created successfully:', user.id);
+        phone: body.whatsapp?.replace(/\D/g, ''),
+        acceptTerms: body.acceptTerms,
+        newsletter: body.newsletter
+      });
+      
+      user = await prisma.user.create({
+        data: {
+          id: generateUUID(),
+          email: body.email.toLowerCase(),
+          firstName: body.name.split(' ')[0],
+          lastName: body.name.split(' ').slice(1).join(' ') || body.name.split(' ')[0],
+          passwordHash,
+          phone: body.whatsapp?.replace(/\D/g, ''), // Remove caracteres não numéricos
+          kycLevel: 'PLATFORM_ACCESS',
+          status: 'ACTIVE',
+          termsAcceptedAt: body.acceptTerms ? new Date() : null,
+          marketingConsent: body.newsletter || false
+        }
+      });
+      
+      console.log('User created successfully:', user.id);
+    }
     
     // Criar token de verificação separadamente (armazenamos o código curto)
     const verification = await prisma.verificationToken.create({
