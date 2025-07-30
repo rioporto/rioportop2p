@@ -1,10 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const email = searchParams.get('email') || 'cetewov199@ikanteri.com';
+  const whatsapp = searchParams.get('whatsapp') || '11999999999';
+  
+  return handleTest({ email, whatsapp });
+}
+
 export async function POST(req: NextRequest) {
+  const body = await req.json();
+  return handleTest(body);
+}
+
+async function handleTest(params: { email: string; whatsapp: string }) {
   try {
-    const body = await req.json();
-    const { email, whatsapp } = body;
+    const { email, whatsapp } = params;
     
     // Verificar email
     const emailUser = await prisma.user.findUnique({
