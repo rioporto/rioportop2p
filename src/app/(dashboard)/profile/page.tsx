@@ -1,3 +1,5 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 
 // Import dinâmico para evitar erro de build com Stack Auth
