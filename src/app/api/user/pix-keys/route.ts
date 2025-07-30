@@ -30,8 +30,12 @@ export async function GET(req: NextRequest) {
         pixKey: true,
         keyType: true,
         accountHolderName: true,
+        accountHolderDoc: true,
         bankName: true,
+        bankCode: true,
         isDefault: true,
+        isActive: true,
+        verifiedAt: true,
         lastUsedAt: true,
         createdAt: true
       },
