@@ -70,16 +70,16 @@ export async function GET(req: NextRequest) {
         AND table_name ILIKE '%user%'
       `;
       
-      // Tentar buscar o usuário
+      // Tentar buscar o usuário (tabela users em minúsculo)
       rawSearch = await prisma.$queryRaw`
-        SELECT id, email, "emailVerified" as email_verified, "createdAt" as created_at 
-        FROM "User" 
+        SELECT id, email, email_verified, created_at 
+        FROM users 
         WHERE LOWER(email) = LOWER(${email})
       `;
       
       // Contar total de usuários
       rawCount = await prisma.$queryRaw`
-        SELECT COUNT(*) as count FROM "User"
+        SELECT COUNT(*) as count FROM users
       `;
       
     } catch (e: any) {

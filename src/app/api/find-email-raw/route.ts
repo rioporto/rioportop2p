@@ -44,11 +44,18 @@ export async function GET(req: NextRequest) {
           // Tentar buscar o email
           const emailColumn = (hasEmailColumn as any[])[0].column_name;
           
-          const users = await prisma.$queryRawUnsafe(`
-            SELECT * 
-            FROM "${tableName}"
-            WHERE LOWER("${emailColumn}") = LOWER('${email}')
-          `);
+          // Construir query segura
+          let users;
+          if (emailColumn.toLowerCase() === 'email') {
+            users = await prisma.$queryRawUnsafe(`
+              SELECT * 
+              FROM "${tableName}"
+              WHERE "${emailColumn}" = $1
+            `, email.toLowerCase());
+          } else {
+            // Para outras colunas que possam ter email no nome mas não sejam texto
+            continue;
+          }
           
           if ((users as any[]).length > 0) {
             results.found.push({
