@@ -25,12 +25,17 @@ interface ClientStackProviderProps {
 }
 
 export function ClientStackProvider({ children }: ClientStackProviderProps) {
-  // Verificar se estamos no cliente
+  // Por enquanto, desabilitar Stack Auth completamente
+  // O erro toClientJson está persistindo mesmo com dynamic imports
+  return <>{children}</>;
+  
+  // TODO: Reativar quando resolver o erro
+  // Código original comentado abaixo:
+  /*
   if (typeof window === 'undefined') {
     return <>{children}</>;
   }
 
-  // Verificar se as variáveis existem
   const projectId = process.env.NEXT_PUBLIC_STACK_PROJECT_ID;
   const publishableKey = process.env.NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY;
 
@@ -65,4 +70,5 @@ export function ClientStackProvider({ children }: ClientStackProviderProps) {
       </StackTheme>
     </StackProvider>
   );
+  */
 }
