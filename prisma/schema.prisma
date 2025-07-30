@@ -113,9 +113,10 @@ enum PaymentType {
 
 enum PixKeyType {
   CPF
+  CNPJ
   EMAIL
   PHONE
-  RANDOM
+  EVP // Chave aleatória
 }
 
 enum P2PAdType {
@@ -274,6 +275,7 @@ model User {
   reputation         UserReputation?
   verificationTokens VerificationToken[]
   uploadedImages     UploadedImage[]
+  pixKeys            UserPixKey[]
   
   @@index([email])
   @@index([cpf])
@@ -1482,4 +1484,38 @@ model UploadedImage {
   @@index([userId])
   @@index([cloudinaryId])
   @@index([moderationStatus])
+}
+
+model UserPixKey {
+  id                String      @id @default(uuid())
+  userId            String      @map("user_id")
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Chave PIX
+  pixKey            String      @map("pix_key")
+  keyType           PixKeyType  @map("key_type")
+  
+  // Dados validados
+  accountHolderName String      @map("account_holder_name")
+  accountHolderDoc  String      @map("account_holder_document")
+  bankName          String      @map("bank_name")
+  bankCode          String?     @map("bank_code")
+  
+  // Status
+  isDefault         Boolean     @default(false) @map("is_default")
+  isActive          Boolean     @default(true) @map("is_active")
+  verifiedAt        DateTime    @map("verified_at")
+  deactivatedAt     DateTime?   @map("deactivated_at")
+  
+  // Metadata
+  lastUsedAt        DateTime?   @map("last_used_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+  
+  @@unique([userId, pixKey])
+  @@index([userId])
+  @@index([pixKey])
+  @@index([isActive])
+  @@index([isDefault])
+  @@map("user_pix_keys")
 }
