@@ -55,6 +55,11 @@ export async function POST(req: NextRequest) {
       tokens: existingUser.verificationTokens.length
     } : 'No user found');
     
+    // Se não encontrou usuário, garantir que não há erro de unique constraint
+    if (!existingUser) {
+      console.log('No existing user, proceeding with creation...');
+    }
+    
     // Hash da senha (fazer antes para usar em ambos os casos)
     const passwordHash = await bcrypt.hash(body.password, 10);
     

@@ -558,8 +558,17 @@ export const RegisterFormUX: React.FC = () => {
               'Este WhatsApp já está cadastrado. Use outro número.'
             );
           } else {
-            const errorMessage = parseErrorMessage(errorJson);
-            setError(errorMessage);
+            // Log do erro real antes de processar
+            console.error('Error from server:', errorJson);
+            
+            // Se já tem uma mensagem de erro clara do servidor, use ela
+            if (errorJson.error && typeof errorJson.error === 'string') {
+              setError(errorJson.error);
+            } else {
+              // Só use parseErrorMessage como fallback
+              const errorMessage = parseErrorMessage(errorJson);
+              setError(errorMessage);
+            }
           }
         } catch {
           setError(errorMessages.server_error);
