@@ -14,6 +14,12 @@ export default function VerifyContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get('email');
+  
+  // Debug
+  useEffect(() => {
+    console.log('VerifyContent mounted');
+    console.log('Email from URL:', email);
+  }, [email]);
 
   // Removido verificação automática via URL - agora só aceita código manual
   
