@@ -130,6 +130,24 @@ export async function POST(req: NextRequest) {
         newsletter: body.newsletter
       });
       
+      // Verificar se o telefone já está em uso antes de criar
+      if (body.whatsapp) {
+        const phoneInUse = await prisma.user.findFirst({
+          where: {
+            phone: body.whatsapp.replace(/\D/g, '')
+          }
+        });
+        
+        if (phoneInUse) {
+          console.log('Phone already in use:', phoneInUse.id, phoneInUse.email);
+          return NextResponse.json({
+            success: false,
+            error: 'Este número de WhatsApp já está cadastrado por outro usuário.',
+            code: 'PHONE_ALREADY_EXISTS'
+          }, { status: 409 });
+        }
+      }
+      
       try {
         user = await prisma.user.create({
           data: {
