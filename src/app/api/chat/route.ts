@@ -44,7 +44,21 @@ export async function POST(req: NextRequest) {
         id: true,
         buyerId: true,
         sellerId: true,
-        status: true
+        status: true,
+        buyer: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        },
+        seller: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true
+          }
+        }
       }
     });
 
@@ -56,10 +70,24 @@ export async function POST(req: NextRequest) {
       return ApiResponse.forbidden('Você não faz parte desta transação');
     }
 
+    // Buscar ou criar conversation
+    let conversation = await prisma.conversation.findUnique({
+      where: { transactionId }
+    });
+
+    if (!conversation) {
+      conversation = await prisma.conversation.create({
+        data: {
+          transactionId,
+          lastMessageAt: new Date()
+        }
+      });
+    }
+
     // Criar mensagem
     const message = await prisma.message.create({
       data: {
-        transactionId,
+        conversationId: conversation.id,
         senderId: userId,
         content,
         type,
@@ -76,11 +104,29 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    // Atualizar lastMessageAt da conversation
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { lastMessageAt: new Date() }
+    });
+
+    // Formatar mensagem para o Pusher
+    const pusherMessage = {
+      id: message.id,
+      transactionId,
+      senderId: message.senderId,
+      senderName: `${message.sender.firstName} ${message.sender.lastName}`,
+      content: message.content,
+      timestamp: message.createdAt,
+      type: message.type.toLowerCase(),
+      fileUrl: message.fileUrl
+    };
+
     // Enviar evento via Pusher
     await triggerPusherEvent(
       `private-transaction-${transactionId}`,
       'new-message',
-      message
+      pusherMessage
     );
 
     return ApiResponse.success(message);
@@ -124,22 +170,45 @@ export async function GET(req: NextRequest) {
       return ApiResponse.forbidden('Você não faz parte desta transação');
     }
 
-    // Buscar mensagens
-    const messages = await prisma.message.findMany({
+    // Buscar conversation
+    const conversation = await prisma.conversation.findUnique({
       where: { transactionId },
-      orderBy: { createdAt: 'asc' },
       include: {
-        sender: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true
+        messages: {
+          orderBy: { createdAt: 'asc' },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true
+              }
+            }
           }
         }
       }
     });
 
-    return ApiResponse.success(messages);
+    if (!conversation) {
+      // Se não há conversation, não há mensagens
+      return ApiResponse.success({ messages: [] });
+    }
+
+    // Formatar mensagens para resposta
+    const formattedMessages = conversation.messages.map(msg => ({
+      id: msg.id,
+      transactionId,
+      senderId: msg.senderId,
+      senderName: `${msg.sender.firstName} ${msg.sender.lastName}`,
+      content: msg.content,
+      type: msg.type,
+      fileUrl: msg.fileUrl,
+      isRead: msg.isRead,
+      readAt: msg.readAt,
+      createdAt: msg.createdAt
+    }));
+
+    return ApiResponse.success({ messages: formattedMessages });
   } catch (error) {
     console.error('Error fetching messages:', error);
     return ApiResponse.internalError('Erro ao buscar mensagens');

@@ -9,15 +9,21 @@ export interface ChatMessage {
   senderName: string;
   content: string;
   timestamp: Date;
-  type: 'text' | 'system' | 'notification';
+  type: 'text' | 'system' | 'notification' | 'image' | 'file';
+  fileUrl?: string;
+  replyToId?: string;
 }
 
 interface WebSocketEventHandlers {
   onMessage?: (message: ChatMessage) => void;
-  onTyping?: (userId: string) => void;
+  onTyping?: (userId: string, userName?: string) => void;
+  onStopTyping?: (userId: string) => void;
   onUserJoined?: (userId: string) => void;
   onUserLeft?: (userId: string) => void;
   onError?: (error: Error) => void;
+  onConnectionChange?: (status: 'connected' | 'disconnected' | 'connecting') => void;
+  onMessageRead?: (messageId: string, userId: string) => void;
+  onMessageDelivered?: (messageId: string) => void;
 }
 
 export class WebSocketService {
@@ -25,6 +31,8 @@ export class WebSocketService {
   private eventHandlers: WebSocketEventHandlers = {};
   private isInitialized = false;
   private userId: string | null = null;
+  private connectionStatus: 'connected' | 'disconnected' | 'connecting' = 'disconnected';
+  private typingTimers: Map<string, NodeJS.Timeout> = new Map();
 
   /**
    * Inicializa o cliente Pusher
@@ -39,9 +47,17 @@ export class WebSocketService {
       this.userId = userId;
       
       // Configurar handlers globais
+      pusherClient.connection.bind('connecting', () => {
+        console.log('Conectando ao Pusher...');
+        this.connectionStatus = 'connecting';
+        this.eventHandlers.onConnectionChange?.('connecting');
+      });
+
       pusherClient.connection.bind('connected', () => {
         console.log('Conectado ao Pusher');
         this.isInitialized = true;
+        this.connectionStatus = 'connected';
+        this.eventHandlers.onConnectionChange?.('connected');
       });
 
       pusherClient.connection.bind('error', (error: any) => {
@@ -52,6 +68,8 @@ export class WebSocketService {
       pusherClient.connection.bind('disconnected', () => {
         console.log('Desconectado do Pusher');
         this.isInitialized = false;
+        this.connectionStatus = 'disconnected';
+        this.eventHandlers.onConnectionChange?.('disconnected');
       });
 
       // Conectar ao Pusher
@@ -112,10 +130,27 @@ export class WebSocketService {
       });
 
       // Evento de digitação
-      channel.bind(PUSHER_CONFIG.events.typing, (data: { userId: string }) => {
+      channel.bind(PUSHER_CONFIG.events.typing, (data: { userId: string, userName?: string }) => {
         if (data.userId !== this.userId) {
-          this.eventHandlers.onTyping?.(data.userId);
+          this.eventHandlers.onTyping?.(data.userId, data.userName);
         }
+      });
+
+      // Evento de parar digitação
+      channel.bind('stop-typing', (data: { userId: string }) => {
+        if (data.userId !== this.userId) {
+          this.eventHandlers.onStopTyping?.(data.userId);
+        }
+      });
+
+      // Evento de mensagem lida
+      channel.bind('message-read', (data: { messageId: string, userId: string }) => {
+        this.eventHandlers.onMessageRead?.(data.messageId, data.userId);
+      });
+
+      // Evento de mensagem entregue
+      channel.bind('message-delivered', (data: { messageId: string }) => {
+        this.eventHandlers.onMessageDelivered?.(data.messageId);
       });
     } catch (error) {
       console.error(`Erro ao inscrever no canal ${channelName}:`, error);
@@ -147,17 +182,134 @@ export class WebSocketService {
       return;
     }
 
-    fetch('/api/chat', {
-      method: 'PUT',
+    fetch('/api/chat/typing', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         transactionId,
+        isTyping: true,
       }),
     }).catch((error) => {
       console.error('Erro ao enviar evento de digitação:', error);
     });
+  }
+
+  /**
+   * Emite evento de digitação
+   */
+  emitTyping(transactionId: string): void {
+    this.notifyTyping(transactionId);
+    
+    // Limpar timer anterior se existir
+    const timerId = this.typingTimers.get(transactionId);
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+    
+    // Configurar timer para parar digitação após 3 segundos
+    const newTimerId = setTimeout(() => {
+      this.emitStopTyping(transactionId);
+      this.typingTimers.delete(transactionId);
+    }, 3000);
+    
+    this.typingTimers.set(transactionId, newTimerId);
+  }
+
+  /**
+   * Emite evento de parar digitação
+   */
+  emitStopTyping(transactionId: string): void {
+    if (!this.isInitialized) {
+      return;
+    }
+
+    // Limpar timer se existir
+    const timerId = this.typingTimers.get(transactionId);
+    if (timerId) {
+      clearTimeout(timerId);
+      this.typingTimers.delete(transactionId);
+    }
+
+    fetch('/api/chat/typing', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        transactionId,
+        isTyping: false,
+      }),
+    }).catch((error) => {
+      console.error('Erro ao enviar evento de parar digitação:', error);
+    });
+  }
+
+  /**
+   * Retorna o status atual da conexão
+   */
+  getConnectionStatus(): 'connected' | 'disconnected' | 'connecting' {
+    return this.connectionStatus;
+  }
+
+  /**
+   * Verifica se está inscrito em um canal
+   */
+  isSubscribed(transactionId: string): boolean {
+    return this.channels.has(transactionId);
+  }
+
+  /**
+   * Marca mensagem como lida
+   */
+  markMessageAsRead(transactionId: string, messageId: string): void {
+    if (!this.isInitialized) {
+      return;
+    }
+
+    fetch('/api/chat/read', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        transactionId,
+        messageId,
+      }),
+    }).catch((error) => {
+      console.error('Erro ao marcar mensagem como lida:', error);
+    });
+  }
+
+  /**
+   * Desconecta do Pusher
+   */
+  disconnect(): void {
+    // Limpar todos os timers
+    this.typingTimers.forEach(timer => clearTimeout(timer));
+    this.typingTimers.clear();
+    
+    // Cancelar inscrição de todos os canais
+    this.channels.forEach((_, transactionId) => {
+      this.unsubscribeFromTransaction(transactionId);
+    });
+    
+    // Desconectar do Pusher
+    pusherClient.disconnect();
+    this.isInitialized = false;
+    this.connectionStatus = 'disconnected';
+  }
+
+  /**
+   * Reconecta ao Pusher
+   */
+  reconnect(): void {
+    if (this.isInitialized || !this.userId) {
+      return;
+    }
+    
+    this.initializePusher(this.userId);
   }
 }
 

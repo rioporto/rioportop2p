@@ -166,11 +166,25 @@ export default function ChatPage() {
             setIsTyping(true);
           }
         },
-        // TODO: Implementar onStopTyping no WebSocketService
-        // onStopTyping: () => {
-        //   setIsTyping(false);
-        //   setTypingUser(null);
-        // },
+        onStopTyping: (userId: string) => {
+          if (userId !== session.user!.id) {
+            setIsTyping(false);
+            setTypingUser(null);
+          }
+        },
+        onConnectionChange: (status) => {
+          setConnectionStatus(status);
+        },
+        onMessageRead: (messageId, userId) => {
+          setMessages(prev => prev.map(msg => 
+            msg.id === messageId ? { ...msg, isRead: true, readAt: new Date() } : msg
+          ));
+        },
+        onMessageDelivered: (messageId) => {
+          setMessages(prev => prev.map(msg => 
+            msg.id === messageId ? { ...msg, status: 'delivered' } : msg
+          ));
+        },
         onError: (error: Error) => {
           console.error('WebSocket error:', error);
           setError('Erro de conexão com o chat');
@@ -180,11 +194,12 @@ export default function ChatPage() {
       // Inscrever-se no canal da transação
       webSocketService.subscribeToTransaction(transactionId);
       
-      // TODO: Implementar getConnectionStatus no WebSocketService
-      // const interval = setInterval(() => {
-      //   setConnectionStatus(webSocketService.getConnectionStatus());
-      // }, 1000);
-      // return () => clearInterval(interval);
+      // Atualizar status de conexão periodicamente
+      const interval = setInterval(() => {
+        setConnectionStatus(webSocketService.getConnectionStatus());
+      }, 1000);
+      
+      return () => clearInterval(interval);
     } catch (err) {
       console.error('Erro ao inicializar WebSocket:', err);
       setError('Erro ao conectar ao chat em tempo real');
@@ -308,16 +323,7 @@ export default function ChatPage() {
 
   // Lidar com digitação
   const handleTyping = () => {
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-
-    // TODO: Implementar emitTyping e emitStopTyping no WebSocketService
-    // webSocketService.emitTyping(transactionId);
-
-    // typingTimeoutRef.current = setTimeout(() => {
-    //   webSocketService.emitStopTyping(transactionId);
-    // }, 2000);
+    webSocketService.emitTyping(transactionId);
   };
 
   // Lidar com reações
@@ -450,10 +456,9 @@ export default function ChatPage() {
     }
 
     return () => {
-      // TODO: Implementar isSubscribed no WebSocketService
-      // if (webSocketService.isSubscribed(transactionId)) {
-      webSocketService.unsubscribeFromTransaction(transactionId);
-      // }
+      if (webSocketService.isSubscribed(transactionId)) {
+        webSocketService.unsubscribeFromTransaction(transactionId);
+      }
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
