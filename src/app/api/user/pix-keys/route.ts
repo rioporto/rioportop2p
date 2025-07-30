@@ -132,15 +132,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Validar com Mercado Pago
-    const validation = await PixValidationService.validateWithMercadoPago(
+    const pixValidation = await PixValidationService.validateWithMercadoPago(
       formattedKey,
       keyType
     );
 
-    if (!validation.valid) {
+    if (!pixValidation.valid) {
       return apiResponse.error(
         'INVALID_PIX_KEY',
-        validation.error || 'Chave PIX inválida',
+        pixValidation.error || 'Chave PIX inválida',
         400
       );
     }
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
     // Verificar titularidade
     const isOwner = PixValidationService.validateOwnership(
       user.cpf,
-      validation.accountHolderDocument
+      pixValidation.accountHolderDocument
     );
 
     if (!isOwner) {
@@ -195,10 +195,10 @@ export async function POST(req: NextRequest) {
           userId: session.user.id,
           pixKey: formattedKey,
           keyType,
-          accountHolderName: validation.accountHolderName,
-          accountHolderDoc: validation.accountHolderDocument,
-          bankName: validation.bankName,
-          bankCode: validation.bankCode,
+          accountHolderName: pixValidation.accountHolderName,
+          accountHolderDoc: pixValidation.accountHolderDocument,
+          bankName: pixValidation.bankName,
+          bankCode: pixValidation.bankCode,
           isDefault: setAsDefault || false,
           verifiedAt: new Date()
         }
