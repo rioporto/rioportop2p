@@ -4,13 +4,17 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { KYCBadge } from '@/components/ui/KYCBadge';
 import { KYCLevel, KYC_LEVELS } from '@/types/kyc';
+import { StackLogoutButton } from '@/components/ui/StackLogoutButton';
+import { useUser } from '@stackframe/stack';
 
 export default function ProfilePage() {
-  // Mock user data - será substituído por dados reais
+  const stackUser = useUser();
   const [userLevel, setUserLevel] = useState(KYCLevel.BASIC);
+  
+  // Usar dados reais do Stack Auth quando disponível
   const userInfo = {
-    name: 'João Silva',
-    email: 'usuario@example.com',
+    name: stackUser?.displayName || 'Usuário',
+    email: stackUser?.primaryEmail || 'usuario@example.com',
     cpf: '***.***.***-**',
     createdAt: '15/01/2024',
   };
@@ -84,6 +88,33 @@ export default function ProfilePage() {
           <div className="flex items-center justify-between">
             <span className="text-text-secondary">Nível KYC</span>
             <KYCBadge level={userLevel} showDescription />
+          </div>
+        </div>
+      </div>
+
+      {/* Account Actions */}
+      <div className="skeuomorphic-card p-6 mb-6">
+        <h2 className="text-xl font-semibold text-text-primary mb-4">
+          Ações da Conta
+        </h2>
+        
+        <div className="space-y-3">
+          <Link 
+            href="/profile/edit" 
+            className="w-full px-4 py-2 bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            Editar Informações
+          </Link>
+          
+          <Link 
+            href="/profile/security" 
+            className="w-full px-4 py-2 bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-2"
+          >
+            Segurança e Privacidade
+          </Link>
+          
+          <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+            <StackLogoutButton className="w-full justify-center" />
           </div>
         </div>
       </div>

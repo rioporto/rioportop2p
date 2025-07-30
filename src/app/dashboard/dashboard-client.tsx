@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { StackLogoutButton } from '@/components/ui/StackLogoutButton';
 import { 
   BanknotesIcon,
   ChatBubbleLeftRightIcon,
@@ -69,12 +70,25 @@ const item = {
 export function DashboardClient({ user, stats, recentTransactions, recentMessages }: DashboardClientProps) {
   const router = useRouter();
   const [greeting, setGreeting] = useState('');
+  const [showUserMenu, setShowUserMenu] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 12) setGreeting('Bom dia');
     else if (hour < 18) setGreeting('Boa tarde');
     else setGreeting('Boa noite');
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserMenu(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const kycStatusInfo = {
@@ -181,16 +195,66 @@ export function DashboardClient({ user, stats, recentTransactions, recentMessage
               </Link>
               
               {/* User Menu */}
-              <div className="flex items-center gap-3">
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-                    {user.firstName} {user.lastName}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-azul-bancario to-amarelo-ouro flex items-center justify-center text-white font-bold">
-                  {user.firstName[0]}{user.lastName[0]}
-                </div>
+              <div className="relative" ref={userMenuRef}>
+                <button 
+                  onClick={() => setShowUserMenu(!showUserMenu)}
+                  className="flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2 transition-colors"
+                >
+                  <div className="text-right hidden sm:block">
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-azul-bancario to-amarelo-ouro flex items-center justify-center text-white font-bold">
+                    {user.firstName[0]}{user.lastName[0]}
+                  </div>
+                </button>
+
+                <AnimatePresence>
+                  {showUserMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
+                    >
+                      <Link 
+                        href="/profile"
+                        className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Meu Perfil</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Gerenciar informações e KYC</p>
+                      </Link>
+                      
+                      <Link 
+                        href="/pix-keys"
+                        className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Chaves PIX</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{stats.pixKeys} chaves cadastradas</p>
+                      </Link>
+                      
+                      <Link 
+                        href="/wallet"
+                        className="block px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        onClick={() => setShowUserMenu(false)}
+                      >
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Carteira</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Saldos e endereços</p>
+                      </Link>
+                      
+                      <div className="border-t border-gray-200 dark:border-gray-700">
+                        <div className="p-3">
+                          <StackLogoutButton variant="ghost" className="w-full" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
           </div>
