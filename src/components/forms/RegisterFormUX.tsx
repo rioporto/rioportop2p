@@ -602,7 +602,10 @@ export const RegisterFormUX: React.FC = () => {
       
       // Sempre redireciona para página de verificação
       setTimeout(() => {
-        router.push('/verify?email=' + encodeURIComponent(data.email));
+        console.log('Redirecionando para verificação com email:', data.email);
+        const verifyUrl = '/verify?email=' + encodeURIComponent(data.email);
+        console.log('URL de verificação:', verifyUrl);
+        router.push(verifyUrl);
       }, 3000);
     } catch (error) {
       console.error('Erro ao registrar:', error);
