@@ -24,15 +24,38 @@ interface RailwayWebhook {
 
 export async function POST(req: NextRequest) {
   try {
-    const body: RailwayWebhook = await req.json();
-    
-    console.log('🚂 Railway Webhook:', {
-      type: body.type,
-      project: body.project.name,
-      environment: body.environment.name,
-      deploymentId: body.deployment?.id,
-      timestamp: body.timestamp
+    // Log headers para debug
+    const headers: Record<string, string> = {};
+    req.headers.forEach((value, key) => {
+      headers[key] = value;
     });
+    
+    console.log('🚂 Railway Webhook Request:', {
+      method: req.method,
+      url: req.url,
+      headers: headers
+    });
+
+    // Aceita qualquer payload
+    let body: any;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.log('Body não é JSON, tentando text...');
+      body = await req.text();
+    }
+    
+    console.log('🚂 Railway Webhook Body:', body);
+    
+    // Se for o formato esperado, processa normalmente
+    if (body && typeof body === 'object' && body.type) {
+      console.log('Formato reconhecido:', {
+        type: body.type,
+        project: body.project?.name,
+        environment: body.environment?.name,
+        deploymentId: body.deployment?.id,
+        timestamp: body.timestamp
+      });
 
     // Processar diferentes tipos de eventos
     switch (body.type) {
@@ -59,19 +82,24 @@ export async function POST(req: NextRequest) {
         break;
     }
 
-    // Salvar log em arquivo para debug
-    const fs = require('fs').promises;
-    const logPath = `railway-webhooks-${new Date().toISOString().split('T')[0]}.log`;
-    await fs.appendFile(
-      logPath, 
-      JSON.stringify({ timestamp: new Date().toISOString(), webhook: body }, null, 2) + '\n\n'
-    );
+      // Processar eventos...
+    } else {
+      console.log('Formato não reconhecido, retornando sucesso mesmo assim');
+    }
 
-    return apiResponse.success({ received: true });
+    // Sempre retorna sucesso para o Railway
+    return new Response(JSON.stringify({ received: true, status: 'ok' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
     
   } catch (error) {
     console.error('Erro ao processar webhook Railway:', error);
-    return apiResponse.error('Erro ao processar webhook', 500);
+    // Retorna 200 mesmo com erro para não fazer o Railway retry
+    return new Response(JSON.stringify({ received: true, error: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
 
