@@ -1,8 +1,7 @@
 'use client';
 
-import { useUser } from '@stackframe/stack';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
 
 interface StackLogoutButtonProps {
@@ -16,9 +15,23 @@ export function StackLogoutButton({
   showIcon = true,
   variant = 'danger' 
 }: StackLogoutButtonProps) {
-  const user = useUser();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Import Stack Auth dynamically to avoid build errors
+    import('@stackframe/stack').then((stackModule) => {
+      if (stackModule && stackModule.useUser) {
+        try {
+          const stackUser = stackModule.useUser();
+          setUser(stackUser);
+        } catch (error) {
+          console.error('Stack Auth not available:', error);
+        }
+      }
+    });
+  }, []);
 
   const handleLogout = async () => {
     if (!user) return;

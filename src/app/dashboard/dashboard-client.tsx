@@ -7,7 +7,12 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { StackLogoutButton } from '@/components/ui/StackLogoutButton';
+import dynamic from 'next/dynamic';
+
+const StackLogoutButton = dynamic(
+  () => import('@/components/ui/StackLogoutButton').then(mod => mod.StackLogoutButton),
+  { ssr: false }
+);
 import { 
   BanknotesIcon,
   ChatBubbleLeftRightIcon,
