@@ -87,18 +87,18 @@ export async function POST(req: NextRequest) {
       console.log('Formato não reconhecido, retornando sucesso mesmo assim');
     }
 
-    // Sempre retorna sucesso para o Railway
-    return new Response(JSON.stringify({ received: true, status: 'ok' }), {
+    // Sempre retorna sucesso para o Railway (formato simples)
+    return new Response('OK', {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'text/plain' }
     });
     
   } catch (error) {
     console.error('Erro ao processar webhook Railway:', error);
     // Retorna 200 mesmo com erro para não fazer o Railway retry
-    return new Response(JSON.stringify({ received: true, error: true }), {
+    return new Response('OK', {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'text/plain' }
     });
   }
 }
