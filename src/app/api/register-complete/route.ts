@@ -58,10 +58,51 @@ export async function POST(req: NextRequest) {
       
       // Se não foi verificado, permitir recadastro (sobrescrever dados)
       // Mas primeiro vamos deletar o usuário antigo não verificado
-      await prisma.user.delete({
-        where: { id: existingUser.id }
-      });
-      console.log('Deleted unverified user:', existingUser.id);
+      try {
+        // Usar transação para garantir que tudo seja deletado
+        await prisma.$transaction(async (tx) => {
+          // 1. Deletar tokens de verificação
+          await tx.verificationToken.deleteMany({
+            where: { userId: existingUser.id }
+          });
+          
+          // 2. Deletar sessões
+          await tx.userSession.deleteMany({
+            where: { userId: existingUser.id }
+          });
+          
+          // 3. Deletar dispositivos
+          await tx.userDevice.deleteMany({
+            where: { userId: existingUser.id }
+          });
+          
+          // 4. Deletar perfil se existir
+          await tx.userProfile.deleteMany({
+            where: { userId: existingUser.id }
+          });
+          
+          // 5. Deletar documentos
+          await tx.userDocument.deleteMany({
+            where: { userId: existingUser.id }
+          });
+          
+          // 6. Finalmente deletar o usuário
+          await tx.user.delete({
+            where: { id: existingUser.id }
+          });
+        });
+        
+        console.log('Deleted unverified user and all relations:', existingUser.id);
+      } catch (deleteError) {
+        console.error('Error deleting unverified user:', deleteError);
+        // Se falhar ao deletar, retornar erro específico
+        return NextResponse.json({
+          success: false,
+          error: 'Erro ao processar recadastro. Tente novamente ou use outro email.',
+          code: 'DELETE_FAILED',
+          details: process.env.NODE_ENV === 'development' ? deleteError : undefined
+        }, { status: 500 });
+      }
     }
     
     // Hash da senha
@@ -221,11 +262,28 @@ export async function POST(req: NextRequest) {
       // Verificar se é erro do Prisma
       if (error.message.includes('Unique constraint')) {
         console.error('Unique constraint violation detected');
-        return NextResponse.json({
-          success: false,
-          error: 'Email ou telefone já cadastrado',
-          code: 'UNIQUE_CONSTRAINT'
-        }, { status: 409 });
+        console.error('Full error:', error);
+        
+        // Tentar identificar qual campo causou o erro
+        if (error.message.includes('email')) {
+          return NextResponse.json({
+            success: false,
+            error: 'Este email já está cadastrado. Se você esqueceu de verificar, tente novamente em alguns minutos.',
+            code: 'EMAIL_ALREADY_EXISTS'
+          }, { status: 409 });
+        } else if (error.message.includes('phone')) {
+          return NextResponse.json({
+            success: false,
+            error: 'Este número de WhatsApp já está cadastrado.',
+            code: 'PHONE_ALREADY_EXISTS'
+          }, { status: 409 });
+        } else {
+          return NextResponse.json({
+            success: false,
+            error: 'Email ou telefone já cadastrado',
+            code: 'UNIQUE_CONSTRAINT'
+          }, { status: 409 });
+        }
       }
       
       if (error.message.includes('Foreign key constraint')) {
