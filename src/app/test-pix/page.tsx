@@ -18,6 +18,8 @@ export default function TestPixPage() {
     expiresAt: string;
   } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [customAmount, setCustomAmount] = useState('');
+  const [selectedAmount, setSelectedAmount] = useState(100);
 
   const generateTestPix = async () => {
     try {
@@ -27,7 +29,7 @@ export default function TestPixPage() {
       const response = await fetch('/api/test-pix', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: 100 })
+        body: JSON.stringify({ amount: selectedAmount })
       });
 
       const data = await response.json();
@@ -87,8 +89,62 @@ export default function TestPixPage() {
               Simular Compra de Bitcoin
             </h2>
             <p className="text-gray-600 mb-6">
-              Clique no botão abaixo para gerar um QR Code PIX de teste
+              Escolha um valor ou digite um valor personalizado
             </p>
+            
+            {/* Botões de valores pré-definidos */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {[10, 50, 100, 250, 500, 1000].map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => {
+                    setSelectedAmount(amount);
+                    setCustomAmount('');
+                  }}
+                  className={`px-4 py-3 rounded-lg font-medium transition-all ${
+                    selectedAmount === amount && !customAmount
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {formatCurrency(amount)}
+                </button>
+              ))}
+            </div>
+            
+            {/* Input para valor personalizado */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Ou digite um valor personalizado:
+              </label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">R$</span>
+                  <input
+                    type="number"
+                    value={customAmount}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setCustomAmount(value);
+                      if (value && parseFloat(value) > 0) {
+                        setSelectedAmount(parseFloat(value));
+                      }
+                    }}
+                    placeholder="0,00"
+                    min="0.01"
+                    step="0.01"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              {selectedAmount < 1 && (
+                <p className="text-xs text-red-600 mt-1">Valor mínimo: R$ 1,00</p>
+              )}
+              {selectedAmount > 50000 && (
+                <p className="text-xs text-red-600 mt-1">Valor máximo: R$ 50.000,00</p>
+              )}
+            </div>
+            
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-yellow-800">
                 ⚠️ <strong>Modo de Teste:</strong> Este é um ambiente de teste. 
@@ -104,9 +160,9 @@ export default function TestPixPage() {
               onClick={generateTestPix}
               variant="gradient"
               size="lg"
-              disabled={loading}
+              disabled={loading || selectedAmount < 1 || selectedAmount > 50000}
             >
-              {loading ? 'Gerando...' : 'Gerar QR Code PIX (R$ 100,00)'}
+              {loading ? 'Gerando...' : `Gerar QR Code PIX (${formatCurrency(selectedAmount)})`}
             </Button>
           </Card>
         ) : (
