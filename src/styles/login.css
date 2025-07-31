@@ -41,3 +41,18 @@
 .submit-button:active:not(:disabled) {
   transform: scale(0.98);
 }
+
+/* Barra de progresso animada */
+@keyframes loading-bar {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+.animate-loading-bar {
+  animation: loading-bar 2s ease-in-out infinite;
+}
+
+/* Prevenir scroll quando loading está ativo */
+body:has(.loading-overlay) {
+  overflow: hidden;
+}

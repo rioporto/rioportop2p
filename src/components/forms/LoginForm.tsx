@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginInput } from '@/lib/validations/auth';
@@ -17,6 +17,14 @@ export const LoginForm: React.FC<ILoginFormProps> = ({ callbackUrl = '/dashboard
   const [error, setError] = useState<string | null>(null);
   const [loadingMessage, setLoadingMessage] = useState('');
   const router = useRouter();
+  
+  // Limpar loading ao desmontar o componente
+  useEffect(() => {
+    return () => {
+      setIsLoading(false);
+      setLoadingMessage('');
+    };
+  }, []);
 
   const {
     register,
@@ -58,13 +66,17 @@ export const LoginForm: React.FC<ILoginFormProps> = ({ callbackUrl = '/dashboard
       setLoadingMessage('Login realizado! Preparando sua área segura...');
       
       // Pequeno delay para o usuário ver a mensagem de sucesso
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      router.push(callbackUrl);
-      router.refresh();
+      setLoadingMessage('Redirecionando...');
+      
+      // Manter o loading ativo durante o redirecionamento
+      // Forçar navegação com window.location para garantir carregamento completo
+      window.location.href = callbackUrl;
+      
+      // NÃO remover o loading aqui - deixar ativo até a página mudar
     } catch (error: any) {
       setError(error.message || 'Ocorreu um erro ao fazer login');
-    } finally {
       setIsLoading(false);
       setLoadingMessage('');
     }
@@ -75,9 +87,9 @@ export const LoginForm: React.FC<ILoginFormProps> = ({ callbackUrl = '/dashboard
       setIsLoading(true);
       setLoadingMessage('Conectando com o Google...');
       await signIn('google', { callbackUrl });
+      // Manter loading ativo - será removido quando a página mudar
     } catch (error) {
       setError('Erro ao fazer login com Google');
-    } finally {
       setIsLoading(false);
       setLoadingMessage('');
     }
@@ -87,11 +99,14 @@ export const LoginForm: React.FC<ILoginFormProps> = ({ callbackUrl = '/dashboard
     <div className="w-full max-w-md mx-auto relative">
       {/* Overlay de loading */}
       {isLoading && (
-        <div className="absolute inset-0 bg-gray-900 bg-opacity-50 rounded-2xl z-50 flex flex-col items-center justify-center loading-overlay">
-          <div className="bg-gray-800 p-6 rounded-xl shadow-xl text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-300 border-t-blue-600 mb-4"></div>
-            <p className="text-white font-medium loading-message">{loadingMessage}</p>
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex flex-col items-center justify-center loading-overlay">
+          <div className="bg-gray-800 p-8 rounded-xl shadow-2xl text-center max-w-sm w-full mx-4">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-4 border-gray-300 border-t-blue-600 mb-4"></div>
+            <p className="text-white font-semibold text-lg loading-message">{loadingMessage}</p>
             <p className="text-gray-400 text-sm mt-2">Por favor, aguarde...</p>
+            {loadingMessage.includes('Redirecionando') && (
+              <p className="text-gray-500 text-xs mt-4">Se demorar muito, <a href={callbackUrl} className="text-blue-400 hover:underline">clique aqui</a></p>
+            )}
           </div>
         </div>
       )}
